@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>النظام المحاسبي - معرض ال.جي</title>
+    <title>النظام المحاسبي</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -205,6 +205,10 @@
             align-items: center;
             z-index: 1000;
         }
+        
+        .hidden {
+            display: none !important;
+        }
     </style>
 </head>
 <body>
@@ -231,11 +235,6 @@
                 </div>
                 
                 <div class="controls-section">
-                    <div class="print-settings-btn">
-                        <button onclick="togglePrintSettings()" class="bg-blue-600 hover:bg-blue-500 px-3 py-2 rounded text-sm font-bold border border-blue-500 flex items-center gap-2">
-                            <i class="fas fa-print"></i> خيارات الطباعة
-                        </button>
-                    </div>
                     <button onclick="window.print()" class="bg-green-600 hover:bg-green-500 px-3 py-2 rounded text-sm font-bold border border-green-500 flex items-center gap-2">
                         <i class="fas fa-print"></i> طباعة
                     </button>
@@ -427,10 +426,8 @@
             renderBalances();
             setupDropdowns();
             
-            // إخفاء الloader بعد تأخير قصير
-            setTimeout(() => {
-                document.getElementById('loader').classList.add('hidden');
-            }, 300);
+            // إخفاء الloader مباشرة بعد تحميل البيانات
+            document.getElementById('loader').classList.add('hidden');
         }
 
         // عرض ميزان المراجعة بنفس تنسيق الـ PDF
@@ -578,6 +575,8 @@
             
             trialInput.oninput = function() {
                 updateList(this.value, trialList, uniqueAccounts, renderTrialBalance);
+                // البحث الفوري
+                renderTrialBalance();
             };
             
             // الأرصدة
@@ -593,6 +592,8 @@
             
             balancesInput.oninput = function() {
                 updateList(this.value, balancesList, balanceAccounts, renderBalances);
+                // البحث الفوري
+                renderBalances();
             };
             
             // دالة مشتركة لتحديث القائمة
@@ -702,42 +703,26 @@
         // إضافة مستمعات الأحداث
         document.querySelectorAll('.trial-search-input').forEach(el => {
             el.addEventListener('input', function() {
-                // إضافة تأخير للبحث لتحسين الأداء
-                clearTimeout(this.searchTimeout);
-                this.searchTimeout = setTimeout(() => {
-                    renderTrialBalance();
-                }, 300);
+                renderTrialBalance();
             });
         });
         
         document.getElementById('searchBalancesAccount').addEventListener('input', function() {
-            clearTimeout(this.searchTimeout);
-            this.searchTimeout = setTimeout(() => {
-                renderBalances();
-            }, 300);
+            renderBalances();
         });
 
-        // التحميل الأولي
-        window.onload = () => { 
+        // التحميل الأولي - يتم تنفيذه فور تحميل الصفحة
+        window.onload = function() {
             loadData();
-            
-            // إضافة مستمع لحالة الطباعة
-            window.matchMedia('print').addListener(function(mql) {
-                if (mql.matches) {
-                    // قبل الطباعة
-                    document.querySelectorAll('.tab-content').forEach(tab => {
-                        if (!tab.classList.contains('active')) {
-                            tab.style.display = 'none';
-                        }
-                    });
-                } else {
-                    // بعد الطباعة
-                    document.querySelectorAll('.tab-content').forEach(tab => {
-                        tab.style.display = '';
-                    });
-                }
-            });
         };
+        
+        // بديل: تنفيذ فور تحميل DOM
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+        });
+        
+        // بديل آخر: تنفيذ مباشر
+        loadData();
     </script>
 </body>
 </html>
