@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>النظام المحاسبي</title>
+    <title>النظام المحاسبي - معرض ال.جي</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -14,135 +14,236 @@
             background: #f8fafc; 
             margin: 0; 
             color: #334155;
-            font-size: 0.8rem; 
+            font-size: 0.85rem; 
         }
 
         .table-container { 
             background: white; 
-            border-radius: 8px; 
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border-radius: 10px; 
+            box-shadow: 0 6px 12px -2px rgba(0, 0, 0, 0.08);
             border: 1px solid #e2e8f0;
             margin-bottom: 1.5rem;
             overflow-x: auto;
+            transition: all 0.3s ease;
         }
 
-        table { width: 100%; border-collapse: collapse; }
+        .table-container:hover {
+            box-shadow: 0 8px 16px -3px rgba(0, 0, 0, 0.12);
+        }
+
+        table { 
+            width: 100%; 
+            border-collapse: separate;
+            border-spacing: 0;
+        }
 
         thead th { 
-            background-color: #3b82f6; 
+            background: linear-gradient(135deg, #3b82f6, #1e40af);
             color: white; 
-            padding: 10px 8px; 
-            font-weight: 700;
+            padding: 12px 10px; 
+            font-weight: 800;
             font-size: 0.85rem;
-            border: 1px solid #2563eb;
+            border: none;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            text-shadow: 0 1px 1px rgba(0,0,0,0.2);
+        }
+
+        thead th:first-child {
+            border-top-right-radius: 9px;
+        }
+
+        thead th:last-child {
+            border-top-left-radius: 9px;
         }
 
         td { 
-            padding: 8px 6px; 
-            border: 1px solid #e5e7eb; 
+            padding: 10px 8px; 
+            border-bottom: 1px solid #f1f5f9; 
             text-align: center;
-            font-size: 0.8rem;
+            font-size: 0.82rem;
+            transition: background 0.2s ease;
+        }
+
+        tbody tr:hover td {
+            background: #f8fafc;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
         }
 
         .section-title {
-            background: linear-gradient(to right, #1e40af, #3b82f6);
+            background: linear-gradient(135deg, #1e40af, #3b82f6);
             color: white;
-            padding: 10px 15px;
-            border-radius: 6px 6px 0 0;
-            font-weight: 700;
+            padding: 12px 20px;
+            border-radius: 10px 10px 0 0;
+            font-weight: 800;
             font-size: 0.9rem;
             text-align: center;
             margin-bottom: 0;
+            letter-spacing: 0.5px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .account-section {
-            margin-bottom: 2rem;
+            margin-bottom: 2.2rem;
+            transition: transform 0.3s ease;
         }
 
-        .account-section:last-child {
-            margin-bottom: 1rem;
+        .account-section:hover {
+            transform: translateY(-2px);
         }
 
         .total-row {
-            background-color: #f3f4f6;
-            font-weight: bold;
+            background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+            font-weight: 800;
+            position: relative;
+        }
+
+        .total-row::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #3b82f6, #10b981);
         }
 
         .total-row td {
             border-top: 2px solid #9ca3af;
             border-bottom: 2px solid #9ca3af;
+            font-size: 0.85rem;
         }
 
-        .search-wrapper { position: relative; width: 100%; }
+        .search-wrapper { 
+            position: relative; 
+            width: 100%; 
+        }
 
         .input-glass {
-            background: rgba(255, 255, 255, 0.95);
-            border: 1px solid #cbd5e1;
+            background: rgba(255, 255, 255, 0.92);
+            border: 2px solid #e2e8f0;
             color: #1e293b !important;
-            border-radius: 6px;
-            padding: 6px 10px;
+            border-radius: 8px;
+            padding: 8px 14px;
             font-size: 0.8rem;
             width: 100%;
             font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .input-glass:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
 
         .suggestions-list {
             position: absolute;
             top: 100%; left: 0; right: 0;
             background: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 0 0 6px 6px;
-            max-height: 150px;
+            border: 2px solid #e2e8f0;
+            border-radius: 0 0 8px 8px;
+            max-height: 180px;
             overflow-y: auto;
             z-index: 50;
             display: none;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            box-shadow: 0 6px 12px -2px rgba(0,0,0,0.1);
             color: #000000 !important;
         }
 
         .suggestion-item {
-            padding: 8px 10px;
+            padding: 10px 14px;
             cursor: pointer;
             border-bottom: 1px solid #f1f5f9;
-            font-size: 0.75rem;
-            color: #000000 !important;
+            font-size: 0.78rem;
+            color: #1e293b !important;
             text-align: right;
+            transition: all 0.2s ease;
         }
 
-        .suggestion-item:hover { background: #eff6ff; color: #2563eb !important; }
+        .suggestion-item:hover { 
+            background: #eff6ff; 
+            color: #2563eb !important; 
+            transform: translateX(-3px);
+        }
 
         .suggestion-item.active {
             background: #3b82f6 !important;
             color: white !important;
         }
 
-        header { padding: 1rem !important; }
-
-        .tab-button {
-            transition: all 0.3s ease;
+        header { 
+            padding: 0.8rem !important; 
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
-        .tab-button.active {
+        .main-tab-button {
+            transition: all 0.3s ease;
+            padding: 6px 16px;
+            font-size: 0.8rem;
+            border-radius: 8px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 100px;
+            justify-content: center;
+        }
+
+        .main-tab-button.active {
             background: #1d4ed8;
             transform: translateY(-2px);
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 8px -1px rgba(0,0,0,0.25);
+        }
+
+        .sub-tab-button {
+            transition: all 0.3s ease;
+            padding: 5px 12px;
+            font-size: 0.75rem;
+            border-radius: 6px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            min-width: 90px;
+            justify-content: center;
+        }
+
+        .sub-tab-button.active {
+            background: #2563eb;
+            transform: translateY(-1px);
+            box-shadow: 0 3px 6px -1px rgba(0,0,0,0.2);
         }
 
         .tab-content {
             display: none;
+            animation: fadeIn 0.4s ease;
         }
 
         .tab-content.active {
             display: block;
         }
 
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         @media print {
             @page { size: A4; margin: 0.5cm; }
-            header, .no-print, #loader, #printOptions, .suggestions-list, .tab-buttons { display: none !important; }
+            header, .no-print, #loader, .suggestions-list, .tab-buttons { display: none !important; }
             .table-container { 
                 box-shadow: none !important; 
                 border: 1px solid #000 !important;
                 margin-bottom: 20px !important;
+                break-inside: avoid;
             }
             table { width: 100%; border-collapse: collapse; }
             th { background-color: #ddd !important; color: black !important; border: 1px solid #000 !important; }
@@ -162,19 +263,29 @@
         .title-section {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 0.8rem;
         }
         
-        .tabs-section {
+        .main-tabs-section {
             display: flex;
-            gap: 0.5rem;
+            gap: 0.4rem;
             flex-grow: 1;
             justify-content: center;
         }
         
+        .sub-tabs-section {
+            display: flex;
+            gap: 0.3rem;
+            justify-content: center;
+            margin-top: 8px;
+            padding: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+        }
+        
         .controls-section {
             display: flex;
-            gap: 0.75rem;
+            gap: 0.6rem;
             align-items: center;
         }
 
@@ -184,12 +295,14 @@
 
         .positive-value {
             color: #059669;
-            font-weight: 600;
+            font-weight: 700;
+            text-shadow: 0 1px 1px rgba(5, 150, 105, 0.1);
         }
 
         .negative-value {
             color: #dc2626;
-            font-weight: 600;
+            font-weight: 700;
+            text-shadow: 0 1px 1px rgba(220, 38, 38, 0.1);
         }
 
         #loader {
@@ -198,7 +311,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(255, 255, 255, 0.95);
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -209,62 +322,150 @@
         .hidden {
             display: none !important;
         }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255,255,255,0.15);
+            padding: 6px 12px;
+            border-radius: 8px;
+        }
+
+        .logo-icon {
+            background: white;
+            color: #3b82f6;
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .main-content {
+            margin-top: 10px;
+            padding: 15px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+            min-height: 400px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 12px;
+            color: #6b7280;
+            font-size: 0.75rem;
+            margin-top: 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .value-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin: 0 2px;
+        }
+
+        .badge-positive {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-negative {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge-neutral {
+            background: #e5e7eb;
+            color: #4b5563;
+        }
     </style>
 </head>
 <body>
 
-    <div id="loader" class="fixed inset-0 bg-white/95 z-[1000] flex flex-col items-center justify-center">
-        <div class="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent"></div>
-        <p class="mt-4 text-gray-700 text-sm font-bold">جاري تحميل البيانات المحاسبية...</p>
+    <div id="loader" class="fixed inset-0 bg-gradient-to-br from-blue-50 to-gray-100 z-[1000] flex flex-col items-center justify-center">
+        <div class="animate-spin rounded-full h-14 w-14 border-4 border-blue-600 border-t-transparent mb-4"></div>
+        <p class="text-gray-700 text-sm font-bold">جاري تحميل النظام المحاسبي...</p>
+        <p class="text-gray-500 text-xs mt-2">معرض ال.جي</p>
     </div>
 
-    <header class="bg-gradient-to-r from-blue-800 to-blue-700 text-white shadow-lg mb-4 sticky top-0 z-30 no-print">
-        <div class="container mx-auto">
-            <div class="header-content mb-3">
+    <header class="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-700 text-white shadow-xl mb-4 sticky top-0 z-30 no-print">
+        <div class="container mx-auto px-3">
+            <div class="header-content mb-2">
                 <div class="title-section">
-                    <h1 class="text-xl font-bold">النظام المحاسبي - معرض ال.جي</h1>
+                    <div class="logo-container">
+                        <div class="logo-icon">
+                            <i class="fas fa-calculator"></i>
+                        </div>
+                        <h1 class="text-lg font-bold tracking-tight">النظام المحاسبي</h1>
+                    </div>
                 </div>
                 
-                <div class="tabs-section">
-                    <button onclick="switchTab('trialBalance')" class="tab-button active bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2">
-                        <i class="fas fa-balance-scale"></i> ميزان المراجعة
+                <div class="main-tabs-section">
+                    <button onclick="switchMainTab('accounting')" class="main-tab-button active bg-blue-700 hover:bg-blue-600 text-white px-3 py-2">
+                        <i class="fas fa-book"></i>
+                        <span>Accounting</span>
                     </button>
-                    <button onclick="switchTab('balances')" class="tab-button bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2">
-                        <i class="fas fa-file-invoice-dollar"></i> الأرصدة
+                    <button onclick="switchMainTab('reports')" class="main-tab-button bg-blue-700/70 hover:bg-blue-600 text-white px-3 py-2">
+                        <i class="fas fa-chart-line"></i>
+                        <span>التقارير</span>
+                    </button>
+                    <button onclick="switchMainTab('settings')" class="main-tab-button bg-blue-700/70 hover:bg-blue-600 text-white px-3 py-2">
+                        <i class="fas fa-cog"></i>
+                        <span>الإعدادات</span>
                     </button>
                 </div>
                 
                 <div class="controls-section">
-                    <button onclick="window.print()" class="bg-green-600 hover:bg-green-500 px-3 py-2 rounded text-sm font-bold border border-green-500 flex items-center gap-2">
-                        <i class="fas fa-print"></i> طباعة
+                    <button onclick="window.print()" class="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 px-3 py-2 rounded text-sm font-bold border border-green-500 flex items-center gap-2 shadow-md">
+                        <i class="fas fa-print"></i>
+                        <span>طباعة</span>
                     </button>
                 </div>
             </div>
 
+            <!-- التبويبات الفرعية لـ Accounting -->
+            <div id="accountingSubTabs" class="sub-tabs-section">
+                <button onclick="switchSubTab('trialBalance')" class="sub-tab-button active bg-blue-600/80 hover:bg-blue-500 text-white">
+                    <i class="fas fa-balance-scale-left text-xs"></i>
+                    <span>ميزان المراجعة</span>
+                </button>
+                <button onclick="switchSubTab('balances')" class="sub-tab-button bg-blue-600/70 hover:bg-blue-500 text-white">
+                    <i class="fas fa-file-invoice-dollar text-xs"></i>
+                    <span>الأرصدة</span>
+                </button>
+            </div>
+
             <!-- بحث ميزان المراجعة -->
             <div id="trialBalanceSearch" class="tab-content active">
-                <div class="grid grid-cols-4 gap-3 pb-2">
+                <div class="grid grid-cols-4 gap-3 pb-2 pt-1">
                     <div class="search-wrapper">
-                        <input type="text" id="searchTrialAccount" placeholder="اسم الحساب" class="input-glass trial-search-input" autocomplete="off">
+                        <input type="text" id="searchTrialAccount" placeholder="🔍 اسم الحساب" class="input-glass trial-search-input" autocomplete="off">
                         <div id="suggestTrialAccount" class="suggestions-list"></div>
                     </div>
                     <div class="search-wrapper">
-                        <input type="text" id="searchTrialUSD" placeholder="قيمة الدولار" class="input-glass trial-search-input" autocomplete="off">
+                        <input type="text" id="searchTrialUSD" placeholder="💵 قيمة الدولار" class="input-glass trial-search-input" autocomplete="off">
                     </div>
                     <div class="search-wrapper">
-                        <input type="text" id="searchTrialSYP" placeholder="قيمة السوري" class="input-glass trial-search-input" autocomplete="off">
+                        <input type="text" id="searchTrialSYP" placeholder="💰 قيمة السوري" class="input-glass trial-search-input" autocomplete="off">
                     </div>
                     <div class="search-wrapper">
-                        <input type="text" id="searchTrialTotal" placeholder="الإجمالي" class="input-glass trial-search-input" autocomplete="off">
+                        <input type="text" id="searchTrialTotal" placeholder="📊 الإجمالي" class="input-glass trial-search-input" autocomplete="off">
                     </div>
                 </div>
             </div>
 
             <!-- بحث الأرصدة -->
             <div id="balancesSearch" class="tab-content">
-                <div class="grid grid-cols-4 gap-3 pb-2">
+                <div class="grid grid-cols-4 gap-3 pb-2 pt-1">
                     <div class="search-wrapper">
-                        <input type="text" id="searchBalancesAccount" placeholder="اسم الحساب" class="input-glass balances-search-input" autocomplete="off">
+                        <input type="text" id="searchBalancesAccount" placeholder="🔍 اسم الحساب" class="input-glass balances-search-input" autocomplete="off">
                         <div id="suggestBalancesAccount" class="suggestions-list"></div>
                     </div>
                     <div class="col-span-3"></div>
@@ -274,37 +475,64 @@
     </header>
 
     <main class="container mx-auto px-4">
-        <!-- تبويب ميزان المراجعة -->
-        <div id="trialBalanceTable" class="tab-content active">
-            <div id="trialBalanceContent">
-                <!-- سيتم تعبئة البيانات بواسطة JavaScript -->
+        <!-- محتوى Accounting -->
+        <div id="accountingContent" class="main-tab-content main-content active">
+            <!-- تبويب ميزان المراجعة -->
+            <div id="trialBalanceTable" class="sub-tab-content active">
+                <div id="trialBalanceContent">
+                    <!-- سيتم تعبئة البيانات بواسطة JavaScript -->
+                </div>
+            </div>
+
+            <!-- تبويب الأرصدة -->
+            <div id="balancesTable" class="sub-tab-content">
+                <div class="table-container">
+                    <div class="section-title">كشف الأرصدة التفصيلي</div>
+                    <table id="balancesTableContent">
+                        <thead>
+                            <tr>
+                                <th>الحساب</th>
+                                <th>مبيعات $</th>
+                                <th>مبيعات ل.س</th>
+                                <th>مشتريات $</th>
+                                <th>مشتريات ل.س</th>
+                                <th>المدفوع $</th>
+                                <th>المدفوع ل.س</th>
+                                <th>الرصيد $</th>
+                                <th>الرصيد ل.س</th>
+                            </tr>
+                        </thead>
+                        <tbody id="balancesTableBody">
+                            <!-- سيتم تعبئة البيانات بواسطة JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
-        <!-- تبويب الأرصدة -->
-        <div id="balancesTable" class="tab-content">
-            <div class="table-container">
-                <table id="balancesTableContent">
-                    <thead>
-                        <tr>
-                            <th>الحساب</th>
-                            <th>مبيعات دولار</th>
-                            <th>مبيعات سوري</th>
-                            <th>مشتريات دولار</th>
-                            <th>مشتريات سوري</th>
-                            <th>المدفوع دولار</th>
-                            <th>المدفوع سوري</th>
-                            <th>الرصيد دولار</th>
-                            <th>الرصيد سوري</th>
-                        </tr>
-                    </thead>
-                    <tbody id="balancesTableBody">
-                        <!-- سيتم تعبئة البيانات بواسطة JavaScript -->
-                    </tbody>
-                </table>
+        <!-- محتوى التقارير -->
+        <div id="reportsContent" class="main-tab-content main-content">
+            <div class="text-center py-12">
+                <i class="fas fa-chart-bar text-4xl text-blue-500 mb-4"></i>
+                <h2 class="text-xl font-bold text-gray-700 mb-2">التقارير والإحصائيات</h2>
+                <p class="text-gray-600">قريباً... سيتم إضافة التقارير المالية والإحصائيات هنا</p>
+            </div>
+        </div>
+
+        <!-- محتوى الإعدادات -->
+        <div id="settingsContent" class="main-tab-content main-content">
+            <div class="text-center py-12">
+                <i class="fas fa-cogs text-4xl text-blue-500 mb-4"></i>
+                <h2 class="text-xl font-bold text-gray-700 mb-2">إعدادات النظام</h2>
+                <p class="text-gray-600">قريباً... سيتم إضافة خيارات الإعدادات والتخصيص هنا</p>
             </div>
         </div>
     </main>
+
+    <div class="footer no-print">
+        <p>معرض ال.جي © 2024 - النظام المحاسبي المتقدم</p>
+        <p class="text-xs mt-1 text-gray-500">آخر تحديث: ${new Date().toLocaleDateString('ar-SA')}</p>
+    </div>
 
     <script>
         // بيانات ميزان المراجعة من الـ PDF - بنفس التقسيم
@@ -416,7 +644,8 @@
             }
         ];
 
-        let currentTab = 'trialBalance';
+        let currentMainTab = 'accounting';
+        let currentSubTab = 'trialBalance';
         let currentFocusIndex = -1;
         let currentSuggestItems = [];
 
@@ -473,22 +702,22 @@
                     <thead>
                         <tr>
                             <th>الحساب</th>
-                            <th>دولار</th>
-                            <th>سوري</th>
+                            <th>دولار ($)</th>
+                            <th>ليرة سورية (ل.س)</th>
                         </tr>
                     </thead>
                     <tbody>
                         ${filteredAccounts.map((account, index) => `
                             <tr>
-                                <td class="text-right font-bold">${account.name}</td>
-                                <td class="${getValueClass(account.usd)}">${account.usd}</td>
-                                <td class="${getValueClass(account.syp)}">${account.syp}</td>
+                                <td class="text-right font-bold text-gray-800">${account.name}</td>
+                                <td class="${getValueClass(account.usd)}">${formatValueWithBadge(account.usd)}</td>
+                                <td class="${getValueClass(account.syp)}">${formatValueWithBadge(account.syp)}</td>
                             </tr>
                         `).join('')}
                         <tr class="total-row">
-                            <td class="text-right font-bold">الإجمالي</td>
-                            <td class="${getValueClass(section.total.usd)} font-bold">${section.total.usd}</td>
-                            <td class="${getValueClass(section.total.syp)} font-bold">${section.total.syp}</td>
+                            <td class="text-right font-bold text-gray-900">الإجمالي</td>
+                            <td class="${getValueClass(section.total.usd)} font-bold">${formatValueWithBadge(section.total.usd, true)}</td>
+                            <td class="${getValueClass(section.total.syp)} font-bold">${formatValueWithBadge(section.total.syp, true)}</td>
                         </tr>
                     </tbody>
                 `;
@@ -505,9 +734,10 @@
             // إذا لم توجد نتائج
             if (container.innerHTML === '') {
                 container.innerHTML = `
-                    <div class="text-center py-8 text-gray-500">
-                        <i class="fas fa-search text-2xl mb-2 block"></i>
-                        <p class="font-bold">لا توجد حسابات تطابق معايير البحث</p>
+                    <div class="text-center py-12 text-gray-500">
+                        <i class="fas fa-search text-3xl mb-3 text-blue-400"></i>
+                        <p class="font-bold text-lg mb-1">لا توجد حسابات تطابق معايير البحث</p>
+                        <p class="text-sm">حاول تغيير كلمات البحث أو استخدم تصفية مختلفة</p>
                     </div>
                 `;
             }
@@ -531,18 +761,31 @@
                 const tr = document.createElement('tr');
                 tr.className = rowClass;
                 tr.innerHTML = `
-                    <td class="text-right font-bold">${row.account}</td>
-                    <td>${row.sales_usd}</td>
-                    <td>${row.sales_syp}</td>
-                    <td>${row.purchases_usd}</td>
-                    <td>${row.purchases_syp}</td>
-                    <td class="${getValueClass(row.paid_usd)}">${row.paid_usd}</td>
-                    <td class="${getValueClass(row.paid_syp)}">${row.paid_syp}</td>
-                    <td class="${getValueClass(row.balance_usd)} font-bold">${row.balance_usd}</td>
-                    <td class="${getValueClass(row.balance_syp)} font-bold">${row.balance_syp}</td>
+                    <td class="text-right font-bold text-gray-800">${row.account}</td>
+                    <td>${formatValueWithBadge(row.sales_usd)}</td>
+                    <td>${formatValueWithBadge(row.sales_syp)}</td>
+                    <td>${formatValueWithBadge(row.purchases_usd)}</td>
+                    <td>${formatValueWithBadge(row.purchases_syp)}</td>
+                    <td class="${getValueClass(row.paid_usd)}">${formatValueWithBadge(row.paid_usd)}</td>
+                    <td class="${getValueClass(row.paid_syp)}">${formatValueWithBadge(row.paid_syp)}</td>
+                    <td class="${getValueClass(row.balance_usd)} font-bold">${formatValueWithBadge(row.balance_usd, true)}</td>
+                    <td class="${getValueClass(row.balance_syp)} font-bold">${formatValueWithBadge(row.balance_syp, true)}</td>
                 `;
                 tbody.appendChild(tr);
             });
+        }
+
+        // تنسيق القيمة مع شارة ملونة
+        function formatValueWithBadge(value, isTotal = false) {
+            if (!value || value === "0.00" || value === "0") {
+                return `<span class="value-badge badge-neutral">${value}</span>`;
+            }
+            
+            const numValue = parseFloat(value.replace(/[^\d.-]/g, '').replace(/,/g, ''));
+            const badgeClass = numValue > 0 ? 'badge-positive' : 
+                              numValue < 0 ? 'badge-negative' : 'badge-neutral';
+            
+            return `<span class="value-badge ${badgeClass}">${value}</span>`;
         }
 
         // تحديد لون القيمة بناءً على إشارتها
@@ -575,7 +818,6 @@
             
             trialInput.oninput = function() {
                 updateList(this.value, trialList, uniqueAccounts, renderTrialBalance);
-                // البحث الفوري
                 renderTrialBalance();
             };
             
@@ -592,7 +834,6 @@
             
             balancesInput.oninput = function() {
                 updateList(this.value, balancesList, balanceAccounts, renderBalances);
-                // البحث الفوري
                 renderBalances();
             };
             
@@ -672,29 +913,61 @@
             currentSuggestItems = [];
         }
 
-        // تبديل التبويبات
-        function switchTab(tabName) {
-            currentTab = tabName;
+        // تبديل التبويبات الرئيسية
+        function switchMainTab(tabName) {
+            currentMainTab = tabName;
             
-            // تحديث أزرار التبويبات
-            document.querySelectorAll('.tab-button').forEach(btn => {
+            // تحديث أزرار التبويبات الرئيسية
+            document.querySelectorAll('.main-tab-button').forEach(btn => {
                 btn.classList.remove('active');
             });
-            document.querySelectorAll('.tab-content').forEach(content => {
+            document.querySelectorAll('.main-tab-content').forEach(content => {
                 content.classList.remove('active');
             });
             
-            // تفعيل التبويب المختار
-            const tabs = {
-                'trialBalance': ['trialBalanceSearch', 'trialBalanceTable'],
-                'balances': ['balancesSearch', 'balancesTable']
-            };
+            // تفعيل التبويب الرئيسي المختار
+            document.getElementById(`${tabName}Content`).classList.add('active');
+            document.querySelector(`[onclick="switchMainTab('${tabName}')"]`).classList.add('active');
             
-            tabs[tabName].forEach(id => {
-                document.getElementById(id).classList.add('active');
+            // إظهار أو إخفاء التبويبات الفرعية
+            const subTabs = document.getElementById('accountingSubTabs');
+            if (tabName === 'accounting') {
+                subTabs.style.display = 'flex';
+                // إظهار البحث المناسب
+                switchSubTab(currentSubTab);
+            } else {
+                subTabs.style.display = 'none';
+                // إخفاء جميع أقسام البحث
+                document.querySelectorAll('#trialBalanceSearch, #balancesSearch').forEach(el => {
+                    el.classList.remove('active');
+                });
+            }
+            
+            // إخفاء جميع القوائم المنسدلة
+            hideAllSuggestLists();
+        }
+
+        // تبديل التبويبات الفرعية
+        function switchSubTab(tabName) {
+            currentSubTab = tabName;
+            
+            // تحديث أزرار التبويبات الفرعية
+            document.querySelectorAll('.sub-tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelectorAll('.sub-tab-content').forEach(content => {
+                content.classList.remove('active');
             });
             
-            document.querySelector(`[onclick="switchTab('${tabName}')"]`).classList.add('active');
+            // تفعيل التبويب الفرعي المختار
+            document.getElementById(`${tabName}Table`).classList.add('active');
+            document.querySelector(`[onclick="switchSubTab('${tabName}')"]`).classList.add('active');
+            
+            // إظهار البحث المناسب
+            document.querySelectorAll('#trialBalanceSearch, #balancesSearch').forEach(el => {
+                el.classList.remove('active');
+            });
+            document.getElementById(`${tabName}Search`).classList.add('active');
             
             // إخفاء جميع القوائم المنسدلة
             hideAllSuggestLists();
@@ -715,14 +988,6 @@
         window.onload = function() {
             loadData();
         };
-        
-        // بديل: تنفيذ فور تحميل DOM
-        document.addEventListener('DOMContentLoaded', function() {
-            loadData();
-        });
-        
-        // بديل آخر: تنفيذ مباشر
-        loadData();
     </script>
 </body>
 </html>
