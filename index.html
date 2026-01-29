@@ -3,103 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>النظام المحاسبي - معرض ال.جي</title>
+    <title>النظام المحاسبي</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --success: #059669;
+            --danger: #dc2626;
+            --warning: #d97706;
+            --info: #0ea5e9;
+            --light: #f8fafc;
+            --dark: #1e293b;
+        }
+
         body { 
             font-family: 'Cairo', sans-serif; 
-            background: #f8fafc; 
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
             margin: 0; 
-            color: #334155;
-            font-size: 0.85rem; 
+            color: var(--dark);
+            font-size: 0.85rem;
+            min-height: 100vh;
         }
 
+        /* تصميم الجداول المحسن */
         .table-container { 
             background: white; 
-            border-radius: 10px; 
-            box-shadow: 0 6px 12px -2px rgba(0, 0, 0, 0.08);
-            border: 1px solid #e2e8f0;
-            margin-bottom: 1.5rem;
+            border-radius: 12px; 
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            margin-bottom: 1.8rem;
             overflow-x: auto;
             transition: all 0.3s ease;
+            position: relative;
+            backdrop-filter: blur(10px);
         }
 
-        .table-container:hover {
-            box-shadow: 0 8px 16px -3px rgba(0, 0, 0, 0.12);
+        .table-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--info));
+            border-radius: 12px 12px 0 0;
         }
 
         table { 
             width: 100%; 
             border-collapse: separate;
             border-spacing: 0;
+            min-width: 600px;
         }
 
+        /* تحسين رؤوس الجداول */
         thead th { 
-            background: linear-gradient(135deg, #3b82f6, #1e40af);
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white; 
-            padding: 12px 10px; 
-            font-weight: 800;
-            font-size: 0.85rem;
+            padding: 10px 8px;
+            font-weight: 700;
+            font-size: 0.8rem;
             border: none;
             position: sticky;
             top: 0;
             z-index: 10;
-            text-shadow: 0 1px 1px rgba(0,0,0,0.2);
+            text-shadow: 0 1px 1px rgba(0,0,0,0.15);
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+            border-right: 1px solid rgba(255,255,255,0.15);
+            border-bottom: 2px solid rgba(255,255,255,0.2);
         }
 
         thead th:first-child {
-            border-top-right-radius: 9px;
+            border-top-right-radius: 11px;
+            border-right: none;
         }
 
         thead th:last-child {
-            border-top-left-radius: 9px;
+            border-top-left-radius: 11px;
         }
 
+        /* تحسين خلايا الجداول */
         td { 
             padding: 10px 8px; 
-            border-bottom: 1px solid #f1f5f9; 
+            border-bottom: 1px solid rgba(241, 245, 249, 0.8); 
             text-align: center;
             font-size: 0.82rem;
-            transition: background 0.2s ease;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        /* تأثير hover على الصفوف */
+        tbody tr {
+            transition: all 0.2s ease;
+        }
+
+        tbody tr:hover {
+            background: linear-gradient(90deg, rgba(37, 99, 235, 0.04), rgba(37, 99, 235, 0.02));
+            transform: translateX(2px);
+            box-shadow: inset 2px 0 0 var(--primary);
         }
 
         tbody tr:hover td {
-            background: #f8fafc;
+            background: transparent;
         }
 
+        /* آخر صف بدون حدود */
         tbody tr:last-child td {
             border-bottom: none;
         }
 
+        /* تصميم العناوين */
         .section-title {
-            background: linear-gradient(135deg, #1e40af, #3b82f6);
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
             color: white;
             padding: 12px 20px;
-            border-radius: 10px 10px 0 0;
-            font-weight: 800;
-            font-size: 0.9rem;
+            border-radius: 12px 12px 0 0;
+            font-weight: 700;
+            font-size: 0.85rem;
             text-align: center;
             margin-bottom: 0;
             letter-spacing: 0.5px;
             text-shadow: 0 1px 2px rgba(0,0,0,0.2);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 40px;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1));
         }
 
         .account-section {
-            margin-bottom: 2.2rem;
+            margin-bottom: 2rem;
             transition: transform 0.3s ease;
         }
 
         .account-section:hover {
-            transform: translateY(-2px);
+            transform: translateY(-3px);
         }
 
+        /* صف الإجمالي */
         .total-row {
-            background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
-            font-weight: 800;
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            font-weight: 700;
             position: relative;
         }
 
@@ -110,208 +167,279 @@
             left: 0;
             right: 0;
             height: 2px;
-            background: linear-gradient(90deg, #3b82f6, #10b981);
+            background: linear-gradient(90deg, var(--primary), var(--success));
         }
 
         .total-row td {
-            border-top: 2px solid #9ca3af;
-            border-bottom: 2px solid #9ca3af;
-            font-size: 0.85rem;
+            border-top: 2px solid rgba(156, 163, 175, 0.3);
+            border-bottom: 2px solid rgba(156, 163, 175, 0.3);
+            font-size: 0.84rem;
+            font-weight: 700;
         }
 
+        /* تصميم البحث */
         .search-wrapper { 
             position: relative; 
             width: 100%; 
         }
 
         .input-glass {
-            background: rgba(255, 255, 255, 0.92);
-            border: 2px solid #e2e8f0;
-            color: #1e293b !important;
-            border-radius: 8px;
-            padding: 8px 14px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid rgba(226, 232, 240, 0.8);
+            color: var(--dark) !important;
+            border-radius: 10px;
+            padding: 9px 14px;
             font-size: 0.8rem;
             width: 100%;
             font-weight: 600;
             transition: all 0.3s ease;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.04);
         }
 
         .input-glass:focus {
             outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-
-        .suggestions-list {
-            position: absolute;
-            top: 100%; left: 0; right: 0;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
             background: white;
-            border: 2px solid #e2e8f0;
-            border-radius: 0 0 8px 8px;
-            max-height: 180px;
-            overflow-y: auto;
-            z-index: 50;
-            display: none;
-            box-shadow: 0 6px 12px -2px rgba(0,0,0,0.1);
-            color: #000000 !important;
         }
 
-        .suggestion-item {
-            padding: 10px 14px;
-            cursor: pointer;
-            border-bottom: 1px solid #f1f5f9;
-            font-size: 0.78rem;
-            color: #1e293b !important;
-            text-align: right;
-            transition: all 0.2s ease;
+        .input-glass::placeholder {
+            color: #94a3b8;
+            font-weight: 500;
         }
 
-        .suggestion-item:hover { 
-            background: #eff6ff; 
-            color: #2563eb !important; 
-            transform: translateX(-3px);
-        }
-
-        .suggestion-item.active {
-            background: #3b82f6 !important;
-            color: white !important;
-        }
-
+        /* التبويبات */
         header { 
             padding: 0.8rem !important; 
-            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            background: linear-gradient(135deg, var(--dark), var(--primary-dark));
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+            border-bottom: 3px solid rgba(255,255,255,0.1);
         }
 
         .main-tab-button {
-            transition: all 0.3s ease;
-            padding: 6px 16px;
-            font-size: 0.8rem;
-            border-radius: 8px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 8px 20px;
+            font-size: 0.82rem;
+            border-radius: 10px;
             font-weight: 700;
             display: flex;
             align-items: center;
-            gap: 6px;
-            min-width: 100px;
+            gap: 8px;
+            min-width: 120px;
             justify-content: center;
+            background: rgba(255,255,255,0.12);
+            color: rgba(255,255,255,0.9);
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(5px);
+        }
+
+        .main-tab-button:hover {
+            background: rgba(255,255,255,0.18);
+            transform: translateY(-1px);
+            color: white;
         }
 
         .main-tab-button.active {
-            background: #1d4ed8;
+            background: white;
+            color: var(--primary-dark);
             transform: translateY(-2px);
-            box-shadow: 0 4px 8px -1px rgba(0,0,0,0.25);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+            border-color: transparent;
         }
 
         .sub-tab-button {
             transition: all 0.3s ease;
-            padding: 5px 12px;
-            font-size: 0.75rem;
-            border-radius: 6px;
+            padding: 7px 16px;
+            font-size: 0.78rem;
+            border-radius: 8px;
             font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 5px;
-            min-width: 90px;
+            gap: 6px;
+            min-width: 110px;
             justify-content: center;
+            background: rgba(255,255,255,0.08);
+            color: rgba(255,255,255,0.85);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sub-tab-button:hover {
+            background: rgba(255,255,255,0.15);
+            transform: translateY(-1px);
         }
 
         .sub-tab-button.active {
-            background: #2563eb;
+            background: rgba(255,255,255,0.25);
+            color: white;
             transform: translateY(-1px);
-            box-shadow: 0 3px 6px -1px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            border-color: transparent;
         }
 
-        .tab-content {
-            display: none;
-            animation: fadeIn 0.4s ease;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @media print {
-            @page { size: A4; margin: 0.5cm; }
-            header, .no-print, #loader, .suggestions-list, .tab-buttons { display: none !important; }
-            .table-container { 
-                box-shadow: none !important; 
-                border: 1px solid #000 !important;
-                margin-bottom: 20px !important;
-                break-inside: avoid;
+        /* تأثيرات الظهور */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
             }
-            table { width: 100%; border-collapse: collapse; }
-            th { background-color: #ddd !important; color: black !important; border: 1px solid #000 !important; }
-            td { border: 1px solid #000 !important; color: black !important; }
-            .section-title { background: #ccc !important; color: black !important; -webkit-print-color-adjust: exact; }
-            .account-section { break-inside: avoid; }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
-        .header-content {
+        .fade-in {
+            animation: fadeInUp 0.4s ease-out;
+        }
+
+        /* قائمة الاقتراحات */
+        .suggestions-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 2px solid rgba(226, 232, 240, 0.9);
+            border-radius: 0 0 10px 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 50;
+            display: none;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+            backdrop-filter: blur(10px);
+        }
+
+        .suggestion-item {
+            padding: 10px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid rgba(241, 245, 249, 0.8);
+            font-size: 0.8rem;
+            color: var(--dark);
+            text-align: right;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+
+        .suggestion-item:hover { 
+            background: linear-gradient(90deg, rgba(37, 99, 235, 0.08), rgba(37, 99, 235, 0.04));
+            color: var(--primary);
+            padding-right: 20px;
+        }
+
+        .suggestion-item.active {
+            background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+            color: white;
+        }
+
+        /* الشعار */
+        .logo-container {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-        
-        .title-section {
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-        }
-        
-        .main-tabs-section {
-            display: flex;
-            gap: 0.4rem;
-            flex-grow: 1;
-            justify-content: center;
-        }
-        
-        .sub-tabs-section {
-            display: flex;
-            gap: 0.3rem;
-            justify-content: center;
-            margin-top: 8px;
-            padding: 4px;
+            gap: 12px;
             background: rgba(255,255,255,0.1);
-            border-radius: 8px;
-        }
-        
-        .controls-section {
-            display: flex;
-            gap: 0.6rem;
-            align-items: center;
+            padding: 8px 16px;
+            border-radius: 10px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.15);
         }
 
-        .print-settings-btn {
+        .logo-icon {
+            background: linear-gradient(135deg, white, #e2e8f0);
+            color: var(--primary);
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        /* المحتوى الرئيسي */
+        .main-content {
+            margin-top: 15px;
+            padding: 20px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 16px;
+            box-shadow: 0 6px 25px rgba(0,0,0,0.08);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.3);
+            min-height: 450px;
+        }
+
+        /* قيمة الأرقام */
+        .positive-value {
+            color: var(--success);
+            font-weight: 700;
             position: relative;
         }
 
-        .positive-value {
-            color: #059669;
-            font-weight: 700;
-            text-shadow: 0 1px 1px rgba(5, 150, 105, 0.1);
+        .positive-value::before {
+            content: '↑';
+            position: absolute;
+            right: -15px;
+            font-size: 0.7rem;
         }
 
         .negative-value {
-            color: #dc2626;
+            color: var(--danger);
             font-weight: 700;
-            text-shadow: 0 1px 1px rgba(220, 38, 38, 0.1);
+            position: relative;
         }
 
+        .negative-value::before {
+            content: '↓';
+            position: absolute;
+            right: -15px;
+            font-size: 0.7rem;
+        }
+
+        /* شارات القيم */
+        .value-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 14px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            margin: 0 2px;
+            transition: all 0.2s ease;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .badge-positive {
+            background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+            color: #065f46;
+            border: 1px solid rgba(5, 150, 105, 0.2);
+        }
+
+        .badge-negative {
+            background: linear-gradient(135deg, #fee2e2, #fecaca);
+            color: #991b1b;
+            border: 1px solid rgba(220, 38, 38, 0.2);
+        }
+
+        .badge-neutral {
+            background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+            color: #4b5563;
+            border: 1px solid rgba(107, 114, 128, 0.2);
+        }
+
+        .badge-zero {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            color: #92400e;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        /* التحميل */
         #loader {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            background: linear-gradient(135deg, var(--light), #e2e8f0);
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -323,107 +451,177 @@
             display: none !important;
         }
 
-        .logo-container {
+        /* الهيكل */
+        .header-content {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 10px;
-            background: rgba(255,255,255,0.15);
-            padding: 6px 12px;
-            border-radius: 8px;
+            flex-wrap: wrap;
+            gap: 1.2rem;
         }
-
-        .logo-icon {
-            background: white;
-            color: #3b82f6;
-            width: 28px;
-            height: 28px;
-            border-radius: 6px;
+        
+        .title-section {
             display: flex;
             align-items: center;
+            gap: 1rem;
+        }
+        
+        .main-tabs-section {
+            display: flex;
+            gap: 0.8rem;
+            flex-grow: 1;
             justify-content: center;
-            font-size: 14px;
         }
-
-        .main-content {
+        
+        .sub-tabs-section {
+            display: flex;
+            gap: 0.6rem;
+            justify-content: center;
             margin-top: 10px;
-            padding: 15px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.06);
-            min-height: 400px;
+            padding: 6px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 10px;
+            backdrop-filter: blur(5px);
+        }
+        
+        .controls-section {
+            display: flex;
+            gap: 0.8rem;
+            align-items: center;
         }
 
+        /* زر الطباعة */
+        .print-btn {
+            background: linear-gradient(135deg, var(--success), #10b981);
+            color: white;
+            padding: 9px 18px;
+            border-radius: 10px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+        }
+
+        .print-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(5, 150, 105, 0.4);
+            background: linear-gradient(135deg, #10b981, var(--success));
+        }
+
+        /* فوتر */
         .footer {
             text-align: center;
-            padding: 12px;
-            color: #6b7280;
-            font-size: 0.75rem;
-            margin-top: 20px;
-            border-top: 1px solid #e5e7eb;
-        }
-
-        .value-badge {
-            display: inline-block;
-            padding: 3px 8px;
+            padding: 15px;
+            color: #64748b;
+            font-size: 0.78rem;
+            margin-top: 25px;
+            border-top: 1px solid rgba(229, 231, 235, 0.6);
+            background: rgba(255,255,255,0.5);
             border-radius: 12px;
-            font-size: 0.75rem;
+            backdrop-filter: blur(5px);
+        }
+
+        /* تحسين الطباعة */
+        @media print {
+            @page { size: A4; margin: 0.5cm; }
+            header, .no-print, #loader, .suggestions-list { display: none !important; }
+            .table-container { 
+                box-shadow: none !important; 
+                border: 1px solid #000 !important;
+                margin-bottom: 15px !important;
+                break-inside: avoid;
+            }
+            table { width: 100%; border-collapse: collapse; }
+            th { 
+                background: #e5e7eb !important; 
+                color: black !important; 
+                border: 1px solid #000 !important;
+                padding: 8px 6px !important;
+            }
+            td { 
+                border: 1px solid #000 !important; 
+                color: black !important;
+                padding: 8px 6px !important;
+            }
+            .section-title { 
+                background: #d1d5db !important; 
+                color: black !important; 
+                -webkit-print-color-adjust: exact;
+            }
+            .account-section { break-inside: avoid; }
+            .value-badge {
+                border: 1px solid #000 !important;
+                background: white !important;
+                color: black !important;
+            }
+        }
+
+        /* أعمدة محددة */
+        .account-name {
+            font-weight: 700;
+            color: var(--dark);
+            text-align: right;
+            padding-right: 15px !important;
+        }
+
+        .currency-usd {
             font-weight: 600;
-            margin: 0 2px;
+            color: var(--primary);
         }
 
-        .badge-positive {
-            background: #d1fae5;
-            color: #065f46;
+        .currency-syp {
+            font-weight: 600;
+            color: var(--warning);
         }
 
-        .badge-negative {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        .badge-neutral {
-            background: #e5e7eb;
-            color: #4b5563;
+        .highlight-cell {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(245, 158, 11, 0.04));
+            font-weight: 700;
         }
     </style>
 </head>
 <body>
 
     <div id="loader" class="fixed inset-0 bg-gradient-to-br from-blue-50 to-gray-100 z-[1000] flex flex-col items-center justify-center">
-        <div class="animate-spin rounded-full h-14 w-14 border-4 border-blue-600 border-t-transparent mb-4"></div>
-        <p class="text-gray-700 text-sm font-bold">جاري تحميل النظام المحاسبي...</p>
-        <p class="text-gray-500 text-xs mt-2">معرض ال.جي</p>
+        <div class="relative">
+            <div class="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent mb-4"></div>
+            <div class="absolute inset-0 flex items-center justify-center">
+                <i class="fas fa-calculator text-blue-500 text-lg"></i>
+            </div>
+        </div>
+        <p class="text-gray-700 text-sm font-bold mt-2">جاري تحميل النظام المحاسبي...</p>
+        <p class="text-gray-500 text-xs mt-1">معرض ال.جي - المحاسبة المتقدمة</p>
     </div>
 
-    <header class="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-700 text-white shadow-xl mb-4 sticky top-0 z-30 no-print">
-        <div class="container mx-auto px-3">
+    <header class="bg-gradient-to-r from-gray-900 via-gray-800 to-blue-900 text-white shadow-2xl mb-4 sticky top-0 z-30 no-print">
+        <div class="container mx-auto px-4">
             <div class="header-content mb-2">
                 <div class="title-section">
                     <div class="logo-container">
                         <div class="logo-icon">
-                            <i class="fas fa-calculator"></i>
+                            <i class="fas fa-chart-line"></i>
                         </div>
-                        <h1 class="text-lg font-bold tracking-tight">النظام المحاسبي</h1>
+                        <div>
+                            <h1 class="text-lg font-bold tracking-tight text-white">النظام المحاسبي</h1>
+                            <p class="text-xs text-blue-200 mt-0.5">معرض ال.جي - المحاسبة الاحترافية</p>
+                        </div>
                     </div>
                 </div>
                 
                 <div class="main-tabs-section">
-                    <button onclick="switchMainTab('accounting')" class="main-tab-button active bg-blue-700 hover:bg-blue-600 text-white px-3 py-2">
+                    <button class="main-tab-button active">
                         <i class="fas fa-book"></i>
                         <span>Accounting</span>
-                    </button>
-                    <button onclick="switchMainTab('reports')" class="main-tab-button bg-blue-700/70 hover:bg-blue-600 text-white px-3 py-2">
-                        <i class="fas fa-chart-line"></i>
-                        <span>التقارير</span>
-                    </button>
-                    <button onclick="switchMainTab('settings')" class="main-tab-button bg-blue-700/70 hover:bg-blue-600 text-white px-3 py-2">
-                        <i class="fas fa-cog"></i>
-                        <span>الإعدادات</span>
                     </button>
                 </div>
                 
                 <div class="controls-section">
-                    <button onclick="window.print()" class="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 px-3 py-2 rounded text-sm font-bold border border-green-500 flex items-center gap-2 shadow-md">
+                    <button onclick="window.print()" class="print-btn">
                         <i class="fas fa-print"></i>
                         <span>طباعة</span>
                     </button>
@@ -432,11 +630,11 @@
 
             <!-- التبويبات الفرعية لـ Accounting -->
             <div id="accountingSubTabs" class="sub-tabs-section">
-                <button onclick="switchSubTab('trialBalance')" class="sub-tab-button active bg-blue-600/80 hover:bg-blue-500 text-white">
+                <button onclick="switchSubTab('trialBalance')" class="sub-tab-button active">
                     <i class="fas fa-balance-scale-left text-xs"></i>
                     <span>ميزان المراجعة</span>
                 </button>
-                <button onclick="switchSubTab('balances')" class="sub-tab-button bg-blue-600/70 hover:bg-blue-500 text-white">
+                <button onclick="switchSubTab('balances')" class="sub-tab-button">
                     <i class="fas fa-file-invoice-dollar text-xs"></i>
                     <span>الأرصدة</span>
                 </button>
@@ -444,28 +642,28 @@
 
             <!-- بحث ميزان المراجعة -->
             <div id="trialBalanceSearch" class="tab-content active">
-                <div class="grid grid-cols-4 gap-3 pb-2 pt-1">
+                <div class="grid grid-cols-4 gap-3 pb-2 pt-2">
                     <div class="search-wrapper">
-                        <input type="text" id="searchTrialAccount" placeholder="🔍 اسم الحساب" class="input-glass trial-search-input" autocomplete="off">
+                        <input type="text" id="searchTrialAccount" placeholder="🔍 ابحث باسم الحساب" class="input-glass trial-search-input" autocomplete="off">
                         <div id="suggestTrialAccount" class="suggestions-list"></div>
                     </div>
                     <div class="search-wrapper">
-                        <input type="text" id="searchTrialUSD" placeholder="💵 قيمة الدولار" class="input-glass trial-search-input" autocomplete="off">
+                        <input type="text" id="searchTrialUSD" placeholder="💵 بحث بالقيمة الدولارية" class="input-glass trial-search-input" autocomplete="off">
                     </div>
                     <div class="search-wrapper">
-                        <input type="text" id="searchTrialSYP" placeholder="💰 قيمة السوري" class="input-glass trial-search-input" autocomplete="off">
+                        <input type="text" id="searchTrialSYP" placeholder="💰 بحث بالقيمة السورية" class="input-glass trial-search-input" autocomplete="off">
                     </div>
                     <div class="search-wrapper">
-                        <input type="text" id="searchTrialTotal" placeholder="📊 الإجمالي" class="input-glass trial-search-input" autocomplete="off">
+                        <input type="text" id="searchTrialTotal" placeholder="📊 بحث بالإجمالي" class="input-glass trial-search-input" autocomplete="off">
                     </div>
                 </div>
             </div>
 
             <!-- بحث الأرصدة -->
             <div id="balancesSearch" class="tab-content">
-                <div class="grid grid-cols-4 gap-3 pb-2 pt-1">
+                <div class="grid grid-cols-4 gap-3 pb-2 pt-2">
                     <div class="search-wrapper">
-                        <input type="text" id="searchBalancesAccount" placeholder="🔍 اسم الحساب" class="input-glass balances-search-input" autocomplete="off">
+                        <input type="text" id="searchBalancesAccount" placeholder="🔍 ابحث باسم الحساب" class="input-glass balances-search-input" autocomplete="off">
                         <div id="suggestBalancesAccount" class="suggestions-list"></div>
                     </div>
                     <div class="col-span-3"></div>
@@ -474,9 +672,9 @@
         </div>
     </header>
 
-    <main class="container mx-auto px-4">
+    <main class="container mx-auto px-4 pb-8">
         <!-- محتوى Accounting -->
-        <div id="accountingContent" class="main-tab-content main-content active">
+        <div id="accountingContent" class="main-content fade-in">
             <!-- تبويب ميزان المراجعة -->
             <div id="trialBalanceTable" class="sub-tab-content active">
                 <div id="trialBalanceContent">
@@ -486,20 +684,20 @@
 
             <!-- تبويب الأرصدة -->
             <div id="balancesTable" class="sub-tab-content">
-                <div class="table-container">
+                <div class="table-container fade-in">
                     <div class="section-title">كشف الأرصدة التفصيلي</div>
                     <table id="balancesTableContent">
                         <thead>
                             <tr>
-                                <th>الحساب</th>
+                                <th class="w-40">الحساب</th>
                                 <th>مبيعات $</th>
                                 <th>مبيعات ل.س</th>
                                 <th>مشتريات $</th>
                                 <th>مشتريات ل.س</th>
                                 <th>المدفوع $</th>
                                 <th>المدفوع ل.س</th>
-                                <th>الرصيد $</th>
-                                <th>الرصيد ل.س</th>
+                                <th class="highlight-cell">الرصيد $</th>
+                                <th class="highlight-cell">الرصيد ل.س</th>
                             </tr>
                         </thead>
                         <tbody id="balancesTableBody">
@@ -509,29 +707,21 @@
                 </div>
             </div>
         </div>
-
-        <!-- محتوى التقارير -->
-        <div id="reportsContent" class="main-tab-content main-content">
-            <div class="text-center py-12">
-                <i class="fas fa-chart-bar text-4xl text-blue-500 mb-4"></i>
-                <h2 class="text-xl font-bold text-gray-700 mb-2">التقارير والإحصائيات</h2>
-                <p class="text-gray-600">قريباً... سيتم إضافة التقارير المالية والإحصائيات هنا</p>
-            </div>
-        </div>
-
-        <!-- محتوى الإعدادات -->
-        <div id="settingsContent" class="main-tab-content main-content">
-            <div class="text-center py-12">
-                <i class="fas fa-cogs text-4xl text-blue-500 mb-4"></i>
-                <h2 class="text-xl font-bold text-gray-700 mb-2">إعدادات النظام</h2>
-                <p class="text-gray-600">قريباً... سيتم إضافة خيارات الإعدادات والتخصيص هنا</p>
-            </div>
-        </div>
     </main>
 
     <div class="footer no-print">
-        <p>معرض ال.جي © 2024 - النظام المحاسبي المتقدم</p>
-        <p class="text-xs mt-1 text-gray-500">آخر تحديث: ${new Date().toLocaleDateString('ar-SA')}</p>
+        <div class="flex justify-between items-center">
+            <div class="text-right">
+                <p class="font-bold text-blue-600">معرض ال.جي © 2024</p>
+                <p class="text-xs text-gray-500">النظام المحاسبي المتقدم</p>
+            </div>
+            <div class="text-left">
+                <p class="text-xs text-gray-500">
+                    <i class="fas fa-clock mr-1"></i>
+                    آخر تحديث: <span id="currentDate"></span>
+                </p>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -644,7 +834,6 @@
             }
         ];
 
-        let currentMainTab = 'accounting';
         let currentSubTab = 'trialBalance';
         let currentFocusIndex = -1;
         let currentSuggestItems = [];
@@ -655,11 +844,21 @@
             renderBalances();
             setupDropdowns();
             
-            // إخفاء الloader مباشرة بعد تحميل البيانات
-            document.getElementById('loader').classList.add('hidden');
+            // تحديث التاريخ الحالي
+            document.getElementById('currentDate').textContent = new Date().toLocaleDateString('ar-SA', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            
+            // إخفاء الloader بعد تأخير قصير للتأثير البصري
+            setTimeout(() => {
+                document.getElementById('loader').classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }, 500);
         }
 
-        // عرض ميزان المراجعة بنفس تنسيق الـ PDF
+        // عرض ميزان المراجعة
         function renderTrialBalance() {
             const container = document.getElementById('trialBalanceContent');
             const searchAccount = document.getElementById('searchTrialAccount').value.toLowerCase();
@@ -669,8 +868,9 @@
             
             container.innerHTML = '';
             
+            let hasResults = false;
+            
             trialBalanceSections.forEach((section, sectionIndex) => {
-                // تصفية الحسابات داخل القسم
                 const filteredAccounts = section.accounts.filter(account => {
                     const accountMatch = !searchAccount || account.name.toLowerCase().includes(searchAccount);
                     const usdMatch = !searchUSD || account.usd.toLowerCase().includes(searchUSD);
@@ -678,30 +878,30 @@
                     return accountMatch && usdMatch && sypMatch;
                 });
                 
-                // التحقق من مطابقة الإجمالي
                 const totalMatch = !searchTotal || 
                     section.total.usd.toLowerCase().includes(searchTotal) || 
                     section.total.syp.toLowerCase().includes(searchTotal);
                 
-                // إذا لم يكن هناك حسابات مطابقة ولا إجمالي مطابق، تخطي القسم
                 if (filteredAccounts.length === 0 && !totalMatch) return;
                 
-                // إنشاء قسم
-                const sectionDiv = document.createElement('div');
-                sectionDiv.className = 'account-section';
+                hasResults = true;
                 
-                // إضافة العنوان
+                const sectionDiv = document.createElement('div');
+                sectionDiv.className = 'account-section fade-in';
+                
                 const titleDiv = document.createElement('div');
                 titleDiv.className = 'section-title';
-                titleDiv.textContent = section.title;
+                titleDiv.innerHTML = `
+                    <i class="fas fa-folder-open ml-2"></i>
+                    ${section.title}
+                `;
                 sectionDiv.appendChild(titleDiv);
                 
-                // إنشاء الجدول
                 const table = document.createElement('table');
                 table.innerHTML = `
                     <thead>
                         <tr>
-                            <th>الحساب</th>
+                            <th class="w-48">الحساب</th>
                             <th>دولار ($)</th>
                             <th>ليرة سورية (ل.س)</th>
                         </tr>
@@ -709,20 +909,25 @@
                     <tbody>
                         ${filteredAccounts.map((account, index) => `
                             <tr>
-                                <td class="text-right font-bold text-gray-800">${account.name}</td>
-                                <td class="${getValueClass(account.usd)}">${formatValueWithBadge(account.usd)}</td>
-                                <td class="${getValueClass(account.syp)}">${formatValueWithBadge(account.syp)}</td>
+                                <td class="account-name">
+                                    <i class="fas fa-file-invoice-dollar text-blue-500 ml-2"></i>
+                                    ${account.name}
+                                </td>
+                                <td class="currency-usd">${formatValueWithBadge(account.usd)}</td>
+                                <td class="currency-syp">${formatValueWithBadge(account.syp)}</td>
                             </tr>
                         `).join('')}
                         <tr class="total-row">
-                            <td class="text-right font-bold text-gray-900">الإجمالي</td>
-                            <td class="${getValueClass(section.total.usd)} font-bold">${formatValueWithBadge(section.total.usd, true)}</td>
-                            <td class="${getValueClass(section.total.syp)} font-bold">${formatValueWithBadge(section.total.syp, true)}</td>
+                            <td class="account-name">
+                                <i class="fas fa-calculator text-green-600 ml-2"></i>
+                                <strong>الإجمالي</strong>
+                            </td>
+                            <td class="${getValueClass(section.total.usd)}">${formatValueWithBadge(section.total.usd, true)}</td>
+                            <td class="${getValueClass(section.total.syp)}">${formatValueWithBadge(section.total.syp, true)}</td>
                         </tr>
                     </tbody>
                 `;
                 
-                // إضافة الجدول داخل حاوية
                 const tableContainer = document.createElement('div');
                 tableContainer.className = 'table-container';
                 tableContainer.appendChild(table);
@@ -731,13 +936,14 @@
                 container.appendChild(sectionDiv);
             });
             
-            // إذا لم توجد نتائج
-            if (container.innerHTML === '') {
+            if (!hasResults) {
                 container.innerHTML = `
-                    <div class="text-center py-12 text-gray-500">
-                        <i class="fas fa-search text-3xl mb-3 text-blue-400"></i>
-                        <p class="font-bold text-lg mb-1">لا توجد حسابات تطابق معايير البحث</p>
-                        <p class="text-sm">حاول تغيير كلمات البحث أو استخدم تصفية مختلفة</p>
+                    <div class="text-center py-16 text-gray-500 fade-in">
+                        <div class="inline-block p-4 bg-blue-50 rounded-full mb-4">
+                            <i class="fas fa-search text-3xl text-blue-400"></i>
+                        </div>
+                        <h3 class="font-bold text-lg mb-2 text-gray-700">لا توجد نتائج للبحث</h3>
+                        <p class="text-sm text-gray-500">حاول استخدام كلمات بحث مختلفة أو قم بتعديل الفلاتر</p>
                     </div>
                 `;
             }
@@ -759,17 +965,22 @@
                 const rowClass = isTotalRow ? 'total-row' : '';
                 
                 const tr = document.createElement('tr');
-                tr.className = rowClass;
+                tr.className = `${rowClass} fade-in`;
+                tr.style.animationDelay = `${i * 0.05}s`;
+                
                 tr.innerHTML = `
-                    <td class="text-right font-bold text-gray-800">${row.account}</td>
+                    <td class="account-name">
+                        <i class="fas ${isTotalRow ? 'fa-total' : 'fa-user'} ${isTotalRow ? 'text-green-600' : 'text-blue-500'} ml-2"></i>
+                        ${row.account}
+                    </td>
                     <td>${formatValueWithBadge(row.sales_usd)}</td>
                     <td>${formatValueWithBadge(row.sales_syp)}</td>
                     <td>${formatValueWithBadge(row.purchases_usd)}</td>
                     <td>${formatValueWithBadge(row.purchases_syp)}</td>
                     <td class="${getValueClass(row.paid_usd)}">${formatValueWithBadge(row.paid_usd)}</td>
                     <td class="${getValueClass(row.paid_syp)}">${formatValueWithBadge(row.paid_syp)}</td>
-                    <td class="${getValueClass(row.balance_usd)} font-bold">${formatValueWithBadge(row.balance_usd, true)}</td>
-                    <td class="${getValueClass(row.balance_syp)} font-bold">${formatValueWithBadge(row.balance_syp, true)}</td>
+                    <td class="highlight-cell ${getValueClass(row.balance_usd)}">${formatValueWithBadge(row.balance_usd, true)}</td>
+                    <td class="highlight-cell ${getValueClass(row.balance_syp)}">${formatValueWithBadge(row.balance_syp, true)}</td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -778,31 +989,36 @@
         // تنسيق القيمة مع شارة ملونة
         function formatValueWithBadge(value, isTotal = false) {
             if (!value || value === "0.00" || value === "0") {
-                return `<span class="value-badge badge-neutral">${value}</span>`;
+                return `<span class="value-badge badge-zero">${value}</span>`;
             }
             
             const numValue = parseFloat(value.replace(/[^\d.-]/g, '').replace(/,/g, ''));
-            const badgeClass = numValue > 0 ? 'badge-positive' : 
-                              numValue < 0 ? 'badge-negative' : 'badge-neutral';
+            let badgeClass;
+            
+            if (isTotal) {
+                badgeClass = numValue > 0 ? 'badge-positive' : 
+                            numValue < 0 ? 'badge-negative' : 'badge-zero';
+            } else {
+                badgeClass = numValue > 0 ? 'badge-positive' : 
+                            numValue < 0 ? 'badge-negative' : 'badge-neutral';
+            }
             
             return `<span class="value-badge ${badgeClass}">${value}</span>`;
         }
 
-        // تحديد لون القيمة بناءً على إشارتها
+        // تحديد لون القيمة
         function getValueClass(value) {
             if (!value) return '';
-            if (value.toString().includes('-')) return 'negative-value';
             const num = parseFloat(value.replace(/[^\d.-]/g, '').replace(/,/g, ''));
+            if (value.includes('-')) return 'negative-value';
             return num > 0 ? 'positive-value' : '';
         }
 
         // إعداد القوائم المنسدلة
         function setupDropdowns() {
-            // ميزان المراجعة
             const trialInput = document.getElementById('searchTrialAccount');
             const trialList = document.getElementById('suggestTrialAccount');
             
-            // جمع جميع أسماء الحسابات الفريدة
             const allAccounts = [];
             trialBalanceSections.forEach(section => {
                 section.accounts.forEach(account => {
@@ -811,87 +1027,89 @@
             });
             const uniqueAccounts = [...new Set(allAccounts)];
             
-            trialInput.onfocus = function() {
-                hideAllSuggestLists();
-                updateList(this.value, trialList, uniqueAccounts, renderTrialBalance);
-            };
+            setupSearchInput(trialInput, trialList, uniqueAccounts, renderTrialBalance);
             
-            trialInput.oninput = function() {
-                updateList(this.value, trialList, uniqueAccounts, renderTrialBalance);
-                renderTrialBalance();
-            };
-            
-            // الأرصدة
             const balancesInput = document.getElementById('searchBalancesAccount');
             const balancesList = document.getElementById('suggestBalancesAccount');
-            
             const balanceAccounts = balancesData.map(row => row.account);
             
-            balancesInput.onfocus = function() {
-                hideAllSuggestLists();
-                updateList(this.value, balancesList, balanceAccounts, renderBalances);
-            };
+            setupSearchInput(balancesInput, balancesList, balanceAccounts, renderBalances);
             
-            balancesInput.oninput = function() {
-                updateList(this.value, balancesList, balanceAccounts, renderBalances);
-                renderBalances();
-            };
-            
-            // دالة مشتركة لتحديث القائمة
-            function updateList(value, listElement, sourceArray, renderFunction) {
-                const val = value.toLowerCase();
-                const filteredValues = sourceArray
-                    .filter(v => v && v.toLowerCase().includes(val))
-                    .slice(0, 15);
-
-                listElement.innerHTML = '';
-                currentSuggestItems = [];
-                
-                if (filteredValues.length > 0) {
-                    filteredValues.forEach(v => {
-                        const div = document.createElement('div');
-                        div.className = 'suggestion-item';
-                        div.textContent = v;
-                        div.onclick = () => {
-                            event.target.value = v;
-                            hideAllSuggestLists();
-                            renderFunction();
-                        };
-                        listElement.appendChild(div);
-                        currentSuggestItems.push(div);
-                    });
-                    listElement.style.display = 'block';
-                    currentFocusIndex = -1;
-                } else {
-                    listElement.style.display = 'none';
-                    currentFocusIndex = -1;
-                    currentSuggestItems = [];
-                }
-            }
-            
-            // إدارة الأزرار
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'ArrowDown') {
-                    e.preventDefault();
-                    if (currentSuggestItems.length > 0) {
-                        currentFocusIndex = Math.min(currentFocusIndex + 1, currentSuggestItems.length - 1);
-                        updateActiveItem();
-                    }
-                } else if (e.key === 'ArrowUp') {
-                    e.preventDefault();
-                    if (currentSuggestItems.length > 0) {
-                        currentFocusIndex = Math.max(currentFocusIndex - 1, 0);
-                        updateActiveItem();
-                    }
-                } else if (e.key === 'Enter') {
-                    e.preventDefault();
-                    if (currentFocusIndex >= 0 && currentSuggestItems[currentFocusIndex]) {
-                        currentSuggestItems[currentFocusIndex].click();
-                    }
-                } else if (e.key === 'Escape') {
-                    hideAllSuggestLists();
-                }
+            // البحث الفوري
+            document.querySelectorAll('.trial-search-input').forEach(el => {
+                el.addEventListener('input', debounce(renderTrialBalance, 300));
             });
+            
+            document.getElementById('searchBalancesAccount').addEventListener('input', debounce(renderBalances, 300));
+        }
+
+        function setupSearchInput(input, list, sourceArray, renderFunction) {
+            input.onfocus = function() {
+                hideAllSuggestLists();
+                updateSuggestions(this.value, list, sourceArray, renderFunction);
+            };
+            
+            input.oninput = function() {
+                updateSuggestions(this.value, list, sourceArray, renderFunction);
+            };
+            
+            input.onkeydown = function(e) {
+                handleSearchNavigation(e, list, renderFunction);
+            };
+        }
+
+        function updateSuggestions(value, listElement, sourceArray, renderFunction) {
+            const val = value.toLowerCase();
+            const filteredValues = sourceArray
+                .filter(v => v && v.toLowerCase().includes(val))
+                .slice(0, 12);
+
+            listElement.innerHTML = '';
+            currentSuggestItems = [];
+            
+            if (filteredValues.length > 0) {
+                filteredValues.forEach(v => {
+                    const div = document.createElement('div');
+                    div.className = 'suggestion-item';
+                    div.textContent = v;
+                    div.onclick = () => {
+                        event.target.value = v;
+                        hideAllSuggestLists();
+                        renderFunction();
+                    };
+                    listElement.appendChild(div);
+                    currentSuggestItems.push(div);
+                });
+                listElement.style.display = 'block';
+                currentFocusIndex = -1;
+            } else {
+                listElement.style.display = 'none';
+            }
+        }
+
+        function handleSearchNavigation(e, list, renderFunction) {
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (currentSuggestItems.length > 0) {
+                    currentFocusIndex = Math.min(currentFocusIndex + 1, currentSuggestItems.length - 1);
+                    updateActiveItem();
+                }
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (currentSuggestItems.length > 0) {
+                    currentFocusIndex = Math.max(currentFocusIndex - 1, 0);
+                    updateActiveItem();
+                }
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (currentFocusIndex >= 0 && currentSuggestItems[currentFocusIndex]) {
+                    currentSuggestItems[currentFocusIndex].click();
+                } else {
+                    renderFunction();
+                }
+            } else if (e.key === 'Escape') {
+                hideAllSuggestLists();
+            }
         }
 
         function updateActiveItem() {
@@ -913,45 +1131,22 @@
             currentSuggestItems = [];
         }
 
-        // تبديل التبويبات الرئيسية
-        function switchMainTab(tabName) {
-            currentMainTab = tabName;
-            
-            // تحديث أزرار التبويبات الرئيسية
-            document.querySelectorAll('.main-tab-button').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            document.querySelectorAll('.main-tab-content').forEach(content => {
-                content.classList.remove('active');
-            });
-            
-            // تفعيل التبويب الرئيسي المختار
-            document.getElementById(`${tabName}Content`).classList.add('active');
-            document.querySelector(`[onclick="switchMainTab('${tabName}')"]`).classList.add('active');
-            
-            // إظهار أو إخفاء التبويبات الفرعية
-            const subTabs = document.getElementById('accountingSubTabs');
-            if (tabName === 'accounting') {
-                subTabs.style.display = 'flex';
-                // إظهار البحث المناسب
-                switchSubTab(currentSubTab);
-            } else {
-                subTabs.style.display = 'none';
-                // إخفاء جميع أقسام البحث
-                document.querySelectorAll('#trialBalanceSearch, #balancesSearch').forEach(el => {
-                    el.classList.remove('active');
-                });
-            }
-            
-            // إخفاء جميع القوائم المنسدلة
-            hideAllSuggestLists();
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
         }
 
         // تبديل التبويبات الفرعية
         function switchSubTab(tabName) {
             currentSubTab = tabName;
             
-            // تحديث أزرار التبويبات الفرعية
             document.querySelectorAll('.sub-tab-button').forEach(btn => {
                 btn.classList.remove('active');
             });
@@ -959,35 +1154,38 @@
                 content.classList.remove('active');
             });
             
-            // تفعيل التبويب الفرعي المختار
             document.getElementById(`${tabName}Table`).classList.add('active');
             document.querySelector(`[onclick="switchSubTab('${tabName}')"]`).classList.add('active');
             
-            // إظهار البحث المناسب
             document.querySelectorAll('#trialBalanceSearch, #balancesSearch').forEach(el => {
                 el.classList.remove('active');
             });
             document.getElementById(`${tabName}Search`).classList.add('active');
             
-            // إخفاء جميع القوائم المنسدلة
             hideAllSuggestLists();
+            
+            // تطبيق تأثير الظهور
+            document.querySelectorAll('.fade-in').forEach(el => {
+                el.style.animation = 'none';
+                setTimeout(() => {
+                    el.style.animation = 'fadeInUp 0.4s ease-out';
+                }, 10);
+            });
         }
 
-        // إضافة مستمعات الأحداث
-        document.querySelectorAll('.trial-search-input').forEach(el => {
-            el.addEventListener('input', function() {
-                renderTrialBalance();
-            });
-        });
-        
-        document.getElementById('searchBalancesAccount').addEventListener('input', function() {
-            renderBalances();
-        });
-
-        // التحميل الأولي - يتم تنفيذه فور تحميل الصفحة
+        // التحميل الأولي
         window.onload = function() {
             loadData();
         };
+        
+        // النقر خارج قوائم البحث لإخفائها
+        document.addEventListener('click', function(e) {
+            if (!e.target.classList.contains('trial-search-input') && 
+                !e.target.classList.contains('balances-search-input') &&
+                !e.target.classList.contains('suggestion-item')) {
+                hideAllSuggestLists();
+            }
+        });
     </script>
 </body>
 </html>
