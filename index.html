@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>معرض 2ال.جي</title>
+    <title>معرض ال.جي</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -360,7 +360,7 @@
                     </button>
                     <div class="flex items-center gap-2 bg-blue-700/40 p-1.5 rounded-lg border border-blue-400/30">
                         <span class="text-[11px]">سعر الصرف:</span>
-                        <input type="number" id="exchangeRate" value="14000" class="bg-transparent border-none text-white text-center font-bold text-xs focus:ring-0" style="width: 3.5rem;">
+                        <input type="number" id="exchangeRate" value="0" class="bg-transparent border-none text-white text-center font-bold text-xs focus:ring-0" style="width: 3.5rem;">
                     </div>
                 </div>
             </div>
@@ -533,11 +533,11 @@
             <div class="totals-container mb-3 no-print">
                 <div class="grid grid-cols-2 gap-3">
                     <div class="total-card usd-total">
-                        <div class="text-[11px] text-gray-600">إجمالي الرصيد $</div>
+                        <div class="text-[11px] text-gray-600">إجمالي $</div>
                         <div class="text-sm" id="balancesTotalUsd">0.00 $</div>
                     </div>
                     <div class="total-card syp-total">
-                        <div class="text-[11px] text-gray-600">إجمالي الرصيد ل.س</div>
+                        <div class="text-[11px] text-gray-600">إجمالي ل.س</div>
                         <div class="text-sm" id="balancesTotalSyp">0 ل.س</div>
                     </div>
                 </div>
@@ -1422,7 +1422,7 @@
         // عرض بيانات الأصناف
         function renderItems() {
             const tbody = document.getElementById('tableBody');
-            const rate = parseFloat(document.getElementById('exchangeRate').value) || 14000;
+            const rate = parseFloat(document.getElementById('exchangeRate').value) || 1;
             const filters = {
                 cat: document.getElementById('searchCat').value.toLowerCase(),
                 supp: document.getElementById('searchSupplier').value.toLowerCase(),
@@ -1498,7 +1498,7 @@
             });
         }
 
-        // عرض بيانات الأرصدة - تم التصحيح
+        // عرض بيانات الأرصدة
         function renderBalances() {
             const tbody = document.getElementById('balancesTableBody');
             const filters = {
@@ -1517,20 +1517,13 @@
                 const hasNonZeroBalance = balanceUsd !== 0 || balanceSyp !== 0;
                 
                 // تطبيق البحث
-                const matchesSearch = !filters.account || account.toLowerCase().includes(filters.account.toLowerCase());
+                const matchesSearch = !filters.account || account.toLowerCase() === filters.account.toLowerCase();
                 
                 return hasNonZeroBalance && matchesSearch;
             });
             
-            // حساب الإجماليات بشكل صحيح - جمع قيم الأعمدة الفعلية
-            let totalBalanceUsd = 0;
-            let totalBalanceSyp = 0;
-            let totalSalesUsd = 0;
-            let totalSalesSyp = 0;
-            let totalPurchasesUsd = 0;
-            let totalPurchasesSyp = 0;
-            let totalDebitUsd = 0;
-            let totalDebitSyp = 0;
+            let totalUsd = 0;
+            let totalSyp = 0;
             
             filteredData.forEach((row, i) => {
                 const salesUsd = parseNumber(row['مبيعات دولار']);
@@ -1543,14 +1536,8 @@
                 const balanceSyp = parseNumber(row['الرصيد سوري']);
                 
                 // جمع الإجماليات
-                totalBalanceUsd += balanceUsd;
-                totalBalanceSyp += balanceSyp;
-                totalSalesUsd += salesUsd;
-                totalSalesSyp += salesSyp;
-                totalPurchasesUsd += purchasesUsd;
-                totalPurchasesSyp += purchasesSyp;
-                totalDebitUsd += debitUsd;
-                totalDebitSyp += debitSyp;
+                totalUsd += balanceUsd;
+                totalSyp += balanceSyp;
                 
                 // تحديد التنسيق بناءً على إشارة الرصيد (خلفية بيضاء فقط)
                 const balanceUsdClass = balanceUsd >= 0 ? 'balance-usd-positive' : 'balance-usd-negative';
@@ -1572,12 +1559,12 @@
                 tbody.appendChild(tr);
             });
             
-            // تحديث الإجماليات - فقط إجمالي الرصيد
-            document.getElementById('balancesTotalUsd').textContent = `${totalBalanceUsd.toFixed(2)} $`;
-            document.getElementById('balancesTotalSyp').textContent = `${Math.round(totalBalanceSyp).toLocaleString()} ل.س`;
+            // تحديث الإجماليات
+            document.getElementById('balancesTotalUsd').textContent = `${totalUsd.toFixed(2)} $`;
+            document.getElementById('balancesTotalSyp').textContent = `${Math.round(totalSyp).toLocaleString()} ل.س`;
         }
 
-        // عرض كشف الحساب - تم التصحيح
+        // عرض كشف الحساب - الإصدار المصحح
         function renderStatement() {
             const accountName = document.getElementById('searchStatementAccount').value.trim();
             const tbody = document.getElementById('statementTableBody');
@@ -1611,10 +1598,7 @@
             // إضافة صنف يومية إذا لم يكن هناك بحث في الصنف أو الفاتورة
             const includeJournal = !hasItemSearch && !hasInvoiceSearch;
             
-            // الحصول على سعر الصرف
-            const exchangeRate = parseFloat(document.getElementById('exchangeRate').value) || 14000;
-            
-            // 1. بيانات المبيعات
+            // 1. بيانات المبيعات - لديها سعر بالدولار وسعر بالليرة السورية
             const salesFiltered = allSalesData.filter(row => {
                 const matchesAccount = !accountName || String(row['العميل'] || '').trim() === accountName;
                 const matchesDate = isDateInRange(row['التاريخ'], fromDate, toDate);
@@ -1628,8 +1612,11 @@
             salesFiltered.forEach(row => {
                 const date = row['التاريخ'] || '';
                 const quantity = parseNumber(row['الكمية']);
+                
+                // سعر المبيعات: يوجد كلا العمودين
                 const priceUsd = parseNumber(row['السعر دولار']);
-                const priceSyp = parseNumber(row['السعر سوري']) || priceUsd * exchangeRate;
+                const priceSyp = parseNumber(row['السعر سوري']);
+                
                 const totalUsdRow = priceUsd * quantity;
                 const totalSypRow = priceSyp * quantity;
                 
@@ -1655,7 +1642,7 @@
                 });
             });
             
-            // 2. بيانات المشتريات - التصحيح: استخدام السعر من البيانات كما هو
+            // 2. بيانات المشتريات - لديها سعر بالدولار فقط، والسعر بالليرة السورية = 0
             const purchasesFiltered = allPurchasesData.filter(row => {
                 const matchesAccount = !accountName || String(row['المورد'] || '').trim() === accountName;
                 const matchesDate = isDateInRange(row['التاريخ'], fromDate, toDate);
@@ -1669,20 +1656,16 @@
             purchasesFiltered.forEach(row => {
                 const date = row['التاريخ'] || '';
                 const quantity = parseNumber(row['الكمية']);
+                
+                // سعر المشتريات: يوجد سعر بالدولار فقط
                 const priceUsd = parseNumber(row['السعر']);
                 const discount = parseNumber(row['الحسم']);
                 const afterDiscountUsd = priceUsd - (priceUsd * discount / 100);
-                
-                // البحث عن السعر بالليرة السورية في البيانات
-                let priceSyp = parseNumber(row['السعر سوري']);
-                
-                // إذا لم يوجد سعر بالليرة في البيانات، نستخدم سعر الصرف
-                if (!priceSyp || priceSyp === 0) {
-                    priceSyp = afterDiscountUsd * exchangeRate;
-                }
-                
                 const totalUsdRow = afterDiscountUsd * quantity;
-                const totalSypRow = priceSyp * quantity;
+                
+                // السعر بالليرة السورية = 0 (كما تريد)
+                const priceSyp = 0;
+                const totalSypRow = 0;
                 
                 totalPurchasesUsd += totalUsdRow;
                 totalPurchasesSyp += totalSypRow;
