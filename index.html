@@ -3,167 +3,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام المحاسبة - معرض ال.جي</title>
+    <title>Accounting System - معرض ال.جي</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap');
-        body { font-family: 'Cairo', sans-serif; background: #f8fafc; color: #334155; font-size: 0.85rem; }
-        .table-container { max-height: 70vh; overflow-y: auto; background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-        th { position: sticky; top: 0; background: #f1f5f9; z-index: 10; shadow: 0 2px 2px -1px rgba(0,0,0,0.1); }
-        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); display: none; justify-content: center; align-items: center; z-index: 9999; }
+        body { font-family: 'Cairo', sans-serif; background: #f1f5f9; color: #1e293b; }
+        .table-container { max-height: 65vh; overflow-y: auto; background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+        th { position: sticky; top: 0; background: #f8fafc; z-index: 10; border-bottom: 2px solid #e2e8f0; }
+        .loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.9); display: none; justify-content: center; align-items: center; z-index: 9999; flex-direction: column; gap: 1rem; }
     </style>
 </head>
-<body class="bg-slate-50">
+<body>
 
-    <div id="loading" class="loading-overlay"><i class="fas fa-spinner fa-spin fa-3x text-blue-600"></i></div>
+    <div id="loading" class="loading-overlay">
+        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-600"></div>
+        <p class="font-bold text-blue-800">جاري جلب البيانات المحدثة...</p>
+    </div>
 
-    <header class="bg-white border-b sticky top-0 z-50 p-4 shadow-sm">
-        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+    <header class="bg-white shadow-sm border-b p-4 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-3">
-                <div class="bg-blue-600 p-2 rounded-lg text-white"><i class="fas fa-calculator fa-lg"></i></div>
-                <h1 class="text-xl font-bold text-slate-800">Accounting <span class="text-blue-600">المحاسبة</span></h1>
+                <div class="bg-blue-600 p-2 rounded-lg text-white"><i class="fas fa-chart-line"></i></div>
+                <h1 class="text-xl font-black">Accounting <span class="text-blue-600 text-sm font-bold">كشف الحساب</span></h1>
             </div>
-            <div class="flex items-center gap-4">
-                <div class="text-left">
-                    <p class="text-xs text-slate-500">آخر تحديث</p>
-                    <p id="lastUpdate" class="font-semibold text-sm">-</p>
-                </div>
-                <button onclick="fetchAllData()" class="bg-blue-50 text-blue-600 p-2 rounded-full hover:bg-blue-100 transition-colors">
-                    <i class="fas fa-sync-alt" id="refreshIcon"></i>
-                </button>
-            </div>
+            <button onclick="fetchAllData()" class="flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-full hover:bg-blue-100 transition-all font-bold">
+                <i class="fas fa-sync-alt" id="refreshIcon"></i> تحديث البيانات
+            </button>
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto p-4">
-        <div class="flex gap-2 mb-6 bg-white p-1 rounded-xl shadow-sm border inline-flex">
-            <button class="px-6 py-2 rounded-lg bg-blue-600 text-white font-bold transition-all">
-                <i class="fas fa-file-invoice-dollar ml-2"></i>كشف الحساب
-            </button>
-        </div>
-
-        <div class="bg-white p-4 rounded-xl shadow-sm border mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-                <label class="block text-xs font-bold mb-1">الحساب</label>
-                <input type="text" id="searchStatementAccount" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none statement-search-input" placeholder="اسم الحساب...">
+    <main class="max-w-7xl mx-auto p-4 md:p-6">
+        
+        <div class="bg-white p-6 rounded-2xl shadow-sm border mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                    <label class="block text-sm font-bold text-slate-600 mb-2">اسم الحساب</label>
+                    <input type="text" id="searchAccount" class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="مثال: نقدي، مورد، زبون...">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-slate-600 mb-2">من تاريخ</label>
+                    <input type="date" id="dateFrom" class="w-full p-3 border rounded-xl outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-slate-600 mb-2">إلى تاريخ</label>
+                    <input type="date" id="dateTo" class="w-full p-3 border rounded-xl outline-none">
+                </div>
             </div>
-            <div>
-                <label class="block text-xs font-bold mb-1">من تاريخ</label>
-                <input type="date" id="searchStatementDateFrom" class="w-full p-2 border rounded-lg statement-search-input">
-            </div>
-            <div>
-                <label class="block text-xs font-bold mb-1">إلى تاريخ</label>
-                <input type="date" id="searchStatementDateTo" class="w-full p-2 border rounded-lg statement-search-input">
-            </div>
-            <div class="flex items-end">
-                <button onclick="renderStatement()" class="w-full bg-slate-800 text-white p-2 rounded-lg hover:bg-slate-700 transition-colors">
-                    <i class="fas fa-filter ml-2"></i>تطبيق الفلتر
-                </button>
+            <div class="mt-4 flex gap-2">
+                <button onclick="renderTable()" class="flex-1 bg-slate-800 text-white py-3 rounded-xl font-bold hover:bg-slate-700 transition-all">بحث وتصفية</button>
+                <button onclick="resetFilters()" class="px-6 bg-slate-100 text-slate-600 py-3 rounded-xl font-bold hover:bg-slate-200">إعادة تعيين</button>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div class="bg-emerald-50 border border-emerald-100 p-4 rounded-xl">
-                <p class="text-emerald-600 text-xs font-bold mb-1">إجمالي المدين</p>
-                <p id="totalDebit" class="text-2xl font-black text-emerald-700">0</p>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 text-center">
+            <div class="bg-white border-b-4 border-emerald-500 p-4 rounded-xl shadow-sm">
+                <p class="text-slate-500 text-xs font-bold mb-1">إجمالي المدين</p>
+                <p id="totalDebit" class="text-2xl font-black text-emerald-600">0.00</p>
             </div>
-            <div class="bg-rose-50 border border-rose-100 p-4 rounded-xl">
-                <p class="text-rose-600 text-xs font-bold mb-1">إجمالي الدائن</p>
-                <p id="totalCredit" class="text-2xl font-black text-rose-700">0</p>
+            <div class="bg-white border-b-4 border-rose-500 p-4 rounded-xl shadow-sm">
+                <p class="text-slate-500 text-xs font-bold mb-1">إجمالي الدائن</p>
+                <p id="totalCredit" class="text-2xl font-black text-rose-600">0.00</p>
             </div>
-            <div class="bg-blue-50 border border-blue-100 p-4 rounded-xl">
-                <p class="text-blue-600 text-xs font-bold mb-1">الرصيد النهائي</p>
-                <p id="finalBalance" class="text-2xl font-black text-blue-700">0</p>
+            <div class="bg-white border-b-4 border-blue-600 p-4 rounded-xl shadow-sm">
+                <p class="text-slate-500 text-xs font-bold mb-1">صافي الرصيد</p>
+                <p id="finalBalance" class="text-2xl font-black text-blue-700">0.00</p>
             </div>
         </div>
 
-        <div class="table-container border">
+        <div class="table-container">
             <table class="w-full text-right border-collapse">
                 <thead>
-                    <tr class="text-slate-600 border-b">
-                        <th class="p-3">التاريخ</th>
-                        <th class="p-3">البيان</th>
-                        <th class="p-3">مدين</th>
-                        <th class="p-3">دائن</th>
-                        <th class="p-3">الرصيد</th>
+                    <tr class="text-slate-500 text-sm">
+                        <th class="p-4">التاريخ</th>
+                        <th class="p-4">البيان / التفاصيل</th>
+                        <th class="p-4">مدين (+)</th>
+                        <th class="p-4">دائن (-)</th>
+                        <th class="p-4 bg-slate-100">الرصيد التراكمي</th>
                     </tr>
                 </thead>
-                <tbody id="statementTableBody" class="divide-y">
-                    </tbody>
+                <tbody id="dataTableBody" class="divide-y text-sm">
+                    <tr><td colspan="5" class="p-10 text-center text-slate-400">يرجى الضغط على تحديث لجلب البيانات</td></tr>
+                </tbody>
             </table>
         </div>
     </main>
 
     <script>
-        // روابط البيانات المحدثة
-        const SHEET_URLS = {
-            journal: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS2QXsIxQchkIgs6bY9lHOXqyLUBklNAx8-R1ej04yTxAiBWCIhMxA4rHFxVmfOi1y2AzZPOmhvigpZ/pub?gid=210521495&single=true&output=csv',
-            sales: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS2QXsIxQchkIgs6bY9lHOXqyLUBklNAx8-R1ej04yTxAiBWCIhMxA4rHFxVmfOi1y2AzZPOmhvigpZ/pub?gid=1183647784&single=true&output=csv',
-            purchases: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS2QXsIxQchkIgs6bY9lHOXqyLUBklNAx8-R1ej04yTxAiBWCIhMxA4rHFxVmfOi1y2AzZPOmhvigpZ/pub?gid=515286016&single=true&output=csv',
-            accounts: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS2QXsIxQchkIgs6bY9lHOXqyLUBklNAx8-R1ej04yTxAiBWCIhMxA4rHFxVmfOi1y2AzZPOmhvigpZ/pub?gid=1244180750&single=true&output=csv'
-        };
+        // الروابط الأصلية
+        const JOURNAL_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS2QXsIxQchkIgs6bY9lHOXqyLUBklNAx8-R1ej04yTxAiBWCIhMxA4rHFxVmfOi1y2AzZPOmhvigpZ/pub?gid=210521495&single=true&output=csv';
+        
+        // استخدام بروكسي لتخطي مشاكل الـ CORS في المتصفحات
+        const PROXY_URL = 'https://api.allorigins.win/raw?url=';
 
-        let dataStore = { journal: [] };
+        let journalData = [];
 
         async function fetchAllData() {
-            document.getElementById('loading').style.display = 'flex';
-            document.getElementById('refreshIcon').classList.add('fa-spin');
+            const loading = document.getElementById('loading');
+            const icon = document.getElementById('refreshIcon');
             
+            loading.style.display = 'flex';
+            icon.classList.add('fa-spin');
+
             try {
-                const response = await fetch(SHEET_URLS.journal);
+                // محاولة جلب البيانات عبر البروكسي
+                const response = await fetch(PROXY_URL + encodeURIComponent(JOURNAL_URL));
+                
+                if (!response.ok) throw new Error('فشل الوصول إلى سيرفر جوجل');
+
                 const csvText = await response.text();
+                
                 Papa.parse(csvText, {
                     header: true,
                     skipEmptyLines: true,
                     complete: (results) => {
-                        dataStore.journal = results.data;
-                        renderStatement();
-                        document.getElementById('lastUpdate').innerText = new Date().toLocaleTimeString('ar-EG');
+                        journalData = results.data;
+                        renderTable();
+                    },
+                    error: (err) => {
+                        alert("خطأ في قراءة ملف CSV: " + err.message);
                     }
                 });
             } catch (error) {
-                console.error("خطأ في جلب البيانات:", error);
-                alert("حدث خطأ أثناء تحميل البيانات");
+                console.error(error);
+                alert("حدث خطأ في جلب البيانات. تأكد من أن الملف 'منشور على الويب' بصيغة CSV في جوجل شيت.");
             } finally {
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('refreshIcon').classList.remove('fa-spin');
+                loading.style.display = 'none';
+                icon.classList.remove('fa-spin');
             }
         }
 
-        function renderStatement() {
-            const tbody = document.getElementById('statementTableBody');
-            const accountFilter = document.getElementById('searchStatementAccount').value.toLowerCase();
-            const dateFrom = document.getElementById('searchStatementDateFrom').value;
-            const dateTo = document.getElementById('searchStatementDateTo').value;
+        function renderTable() {
+            const tbody = document.getElementById('dataTableBody');
+            const accountFilter = document.getElementById('searchAccount').value.trim().toLowerCase();
+            const dateFrom = document.getElementById('dateFrom').value;
+            const dateTo = document.getElementById('dateTo').value;
 
-            let filtered = dataStore.journal.filter(row => {
+            // تصفية البيانات
+            let filtered = journalData.filter(row => {
                 const rowDate = row['التاريخ'] ? new Date(row['التاريخ']).toISOString().split('T')[0] : '';
-                const matchesAccount = row['اسم الحساب']?.toLowerCase().includes(accountFilter);
+                const rowAccount = (row['اسم الحساب'] || '').toLowerCase();
+                
+                const matchesAccount = !accountFilter || rowAccount.includes(accountFilter);
                 const matchesDateFrom = !dateFrom || rowDate >= dateFrom;
                 const matchesDateTo = !dateTo || rowDate <= dateTo;
+                
                 return matchesAccount && matchesDateFrom && matchesDateTo;
             });
 
             let totalDebit = 0, totalCredit = 0, runningBalance = 0;
             tbody.innerHTML = '';
 
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="p-10 text-center text-slate-400">لا توجد بيانات تطابق البحث</td></tr>';
+            }
+
             filtered.forEach(row => {
-                const debit = parseFloat(row['مدين'] || 0);
-                const credit = parseFloat(row['دائن'] || 0);
+                const debit = parseFloat(String(row['مدين']).replace(/,/g, '')) || 0;
+                const credit = parseFloat(String(row['دائن']).replace(/,/g, '')) || 0;
+                
                 totalDebit += debit;
                 totalCredit += credit;
-                runningBalance = debit - credit + runningBalance; // حسب منطق المحاسبة المعتاد
+                runningBalance += (debit - credit);
 
                 tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition-colors">
-                        <td class="p-3 text-slate-500">${row['التاريخ'] || '-'}</td>
-                        <td class="p-3 font-semibold">${row['البيان'] || '-'}</td>
-                        <td class="p-3 text-emerald-600 font-bold">${debit.toLocaleString()}</td>
-                        <td class="p-3 text-rose-600 font-bold">${credit.toLocaleString()}</td>
-                        <td class="p-3 font-bold ${runningBalance >= 0 ? 'text-blue-600' : 'text-rose-700'}">
-                            ${runningBalance.toLocaleString()}
+                    <tr class="hover:bg-blue-50 transition-colors">
+                        <td class="p-4 text-slate-500">${row['التاريخ'] || '-'}</td>
+                        <td class="p-4 font-bold text-slate-700">${row['البيان'] || row['ملاحظات'] || '-'}</td>
+                        <td class="p-4 text-emerald-600 font-bold">${debit.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                        <td class="p-4 text-rose-600 font-bold">${credit.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                        <td class="p-4 font-black ${runningBalance >= 0 ? 'text-blue-700' : 'text-rose-800'} bg-slate-50">
+                            ${runningBalance.toLocaleString(undefined, {minimumFractionDigits: 2})}
                         </td>
                     </tr>
                 `;
@@ -171,15 +182,17 @@
 
             document.getElementById('totalDebit').innerText = totalDebit.toLocaleString();
             document.getElementById('totalCredit').innerText = totalCredit.toLocaleString();
-            document.getElementById('finalBalance').innerText = (totalDebit - totalCredit).toLocaleString();
+            document.getElementById('finalBalance').innerText = runningBalance.toLocaleString();
         }
 
-        // التحميل الأولي
-        window.onload = () => {
-            fetchAllData();
-            // تحديث تلقائي كل 5 دقائق
-            setInterval(fetchAllData, 300000);
-        };
+        function resetFilters() {
+            document.getElementById('searchAccount').value = '';
+            document.getElementById('dateFrom').value = '';
+            document.getElementById('dateTo').value = '';
+            renderTable();
+        }
+
+        window.onload = fetchAllData;
     </script>
 </body>
 </html>
