@@ -12,9 +12,9 @@
         
         body { 
             font-family: 'Cairo', sans-serif; 
-            background: #f8fafc; 
+            background: #ffffff; 
             margin: 0; 
-            color: #334155;
+            color: #1e293b;
             font-size: 0.8rem; 
         }
 
@@ -22,8 +22,8 @@
             max-height: 75vh; 
             overflow-y: auto; 
             background: white; 
-            border-radius: 12px; 
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border-radius: 8px; 
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
             border: 1px solid #e2e8f0;
             margin-bottom: 1rem;
         }
@@ -32,12 +32,13 @@
 
         thead th { 
             position: sticky; top: 0; z-index: 20; 
-            background-color: #3b82f6; color: white; 
-            padding: 12px 8px; font-weight: 700;
-            font-size: 0.85rem;
+            background-color: #2563eb; color: white; 
+            padding: 10px 6px; font-weight: 700;
+            font-size: 0.8rem;
+            border-bottom: 2px solid #1d4ed8;
         }
 
-        td { padding: 8px 4px; border-bottom: 1px solid #f1f5f9; text-align: center; }
+        td { padding: 6px 4px; border-bottom: 1px solid #f1f5f9; text-align: center; font-size: 0.75rem; }
 
         .search-wrapper { position: relative; width: 100%; }
 
@@ -47,9 +48,10 @@
             color: #1e293b !important;
             border-radius: 6px;
             padding: 6px 10px;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             width: 100%;
             font-weight: 600;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
 
         .suggestions-list {
@@ -67,10 +69,10 @@
         }
 
         .suggestion-item {
-            padding: 8px 10px;
+            padding: 6px 8px;
             cursor: pointer;
             border-bottom: 1px solid #f1f5f9;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: #000000 !important;
             text-align: right;
         }
@@ -78,20 +80,20 @@
         .suggestion-item:hover { background: #eff6ff; color: #2563eb !important; }
 
         .suggestion-item.active {
-            background: #3b82f6 !important;
+            background: #2563eb !important;
             color: white !important;
         }
 
-        header { padding: 1rem !important; }
+        header { padding: 0.75rem !important; background: #ffffff; border-bottom: 1px solid #e2e8f0; }
 
         .main-tab-button {
             transition: all 0.3s ease;
         }
 
         .main-tab-button.active {
-            background: #1d4ed8;
+            background: #2563eb;
             transform: translateY(-2px);
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);
         }
 
         .sub-tab-button {
@@ -99,9 +101,9 @@
         }
 
         .sub-tab-button.active {
-            background: #2563eb;
+            background: #3b82f6;
             transform: translateY(-2px);
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
         }
 
         .tab-content {
@@ -127,8 +129,8 @@
             display: none;
             position: absolute;
             top: 70px; left: 20px;
-            background: white; padding: 15px;
-            border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            background: white; padding: 12px;
+            border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
             z-index: 100; border: 1px solid #cbd5e1;
         }
 
@@ -137,13 +139,13 @@
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 1rem;
+            gap: 0.75rem;
         }
         
         .title-section {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 0.75rem;
         }
         
         .main-tabs-section {
@@ -163,7 +165,7 @@
         
         .controls-section {
             display: flex;
-            gap: 0.75rem;
+            gap: 0.5rem;
             align-items: center;
         }
         
@@ -174,13 +176,13 @@
             left: 20px;
             background: #10b981;
             color: white;
-            padding: 8px 16px;
+            padding: 6px 12px;
             border-radius: 20px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 600;
             display: none;
             z-index: 1000;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
             animation: pulse 2s infinite;
         }
         
@@ -192,7 +194,7 @@
         
         /* كشف الحساب - تنسيقات خاصة */
         .statement-header {
-            background: #1e3a8a;
+            background: #1e40af;
             color: white;
             padding: 0.75rem;
             border-radius: 8px;
@@ -202,7 +204,7 @@
         
         .statement-summary {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
             gap: 0.5rem;
             margin-bottom: 0.75rem;
         }
@@ -211,22 +213,23 @@
             background: white;
             padding: 0.5rem;
             border-radius: 6px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
             text-align: center;
-            min-height: 70px;
+            min-height: 60px;
             display: flex;
             flex-direction: column;
             justify-content: center;
+            border: 1px solid #e2e8f0;
         }
         
         .summary-title {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             color: #6b7280;
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.2rem;
         }
         
         .summary-value {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             font-weight: bold;
         }
         
@@ -239,12 +242,12 @@
         }
         
         .statement-type {
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 0.65rem;
             font-weight: bold;
             display: inline-block;
-            margin: 0 2px;
+            margin: 0 1px;
         }
         
         .type-sales { background: #dbeafe; color: #1e40af; }
@@ -274,9 +277,64 @@
             color: #166534 !important;
             font-weight: 600;
         }
+        
+        /* تحسينات للجدول */
+        tr:hover td {
+            background-color: #f8fafc;
+        }
+        
+        .bg-blue-50 {
+            background-color: #eff6ff;
+        }
+        
+        .bg-green-50 {
+            background-color: #f0fdf4;
+        }
+        
+        /* زر الطباعة */
+        .print-btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            border: none;
+            transition: all 0.3s ease;
+        }
+        
+        .print-btn:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);
+        }
+        
+        /* زر التحديث */
+        .refresh-btn {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            border: none;
+            transition: all 0.3s ease;
+        }
+        
+        .refresh-btn:hover {
+            background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(245, 158, 11, 0.3);
+        }
+        
+        /* زر الخيارات */
+        .settings-btn {
+            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+            color: white;
+            border: none;
+            transition: all 0.3s ease;
+        }
+        
+        .settings-btn:hover {
+            background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(107, 114, 128, 0.3);
+        }
     </style>
 </head>
-<body>
+<body class="bg-gray-50">
 
     <div id="loader" class="fixed inset-0 bg-white/90 z-[100] flex flex-col items-center justify-center">
         <div class="animate-spin rounded-full h-10 w-10 border-4 border-blue-600 border-t-transparent"></div>
@@ -288,11 +346,11 @@
         <i class="fas fa-sync-alt mr-2"></i> جاري تحديث البيانات...
     </div>
 
-    <header class="bg-blue-600 text-white shadow-lg mb-4 sticky top-0 z-30 no-print">
+    <header class="shadow-sm mb-3 sticky top-0 z-30 no-print">
         <div class="container mx-auto">
-            <div class="header-content mb-3">
+            <div class="header-content mb-2">
                 <div class="title-section">
-                    <h1 class="text-xl font-bold">نظام المحاسبة</h1>
+                    <h1 class="text-xl font-bold text-blue-700">نظام المحاسبة</h1>
                 </div>
                 
                 <div class="main-tabs-section">
@@ -302,15 +360,13 @@
                 </div>
                 
                 <div class="controls-section">
-                    <div class="print-settings-btn">
-                        <button onclick="togglePrintSettings()" class="bg-blue-500 hover:bg-blue-400 px-2 py-1 rounded text-xs font-bold border border-blue-400 flex items-center gap-1">
-                            <i class="fas fa-print text-[10px]"></i> خيارات الطباعة
-                        </button>
-                    </div>
-                    <button onclick="preparePrint()" class="bg-green-600 hover:bg-green-500 px-2 py-1 rounded text-xs font-bold border border-green-500 flex items-center gap-1">
+                    <button onclick="togglePrintSettings()" class="settings-btn px-2 py-1 rounded text-xs font-bold flex items-center gap-1">
+                        <i class="fas fa-cog text-[10px]"></i> خيارات
+                    </button>
+                    <button onclick="preparePrint()" class="print-btn px-2 py-1 rounded text-xs font-bold flex items-center gap-1">
                         <i class="fas fa-print text-[10px]"></i> طباعة
                     </button>
-                    <button onclick="fetchAllData(true)" class="bg-yellow-600 hover:bg-yellow-500 px-2 py-1 rounded text-xs font-bold border border-yellow-500 flex items-center gap-1">
+                    <button onclick="fetchAllData(true)" class="refresh-btn px-2 py-1 rounded text-xs font-bold flex items-center gap-1">
                         <i class="fas fa-sync-alt text-[10px]"></i> تحديث
                     </button>
                 </div>
@@ -325,7 +381,7 @@
 
             <!-- بحث كشف الحساب -->
             <div id="statementSearch" class="tab-content active">
-                <div class="grid grid-cols-6 gap-3 pb-2">
+                <div class="grid grid-cols-6 gap-2 pb-2">
                     <div class="search-wrapper">
                         <input type="text" id="searchStatementAccount" placeholder="اسم العميل/المورد" class="input-glass statement-search-input" autocomplete="off">
                         <div id="suggestStatementAccount" class="suggestions-list"></div>
@@ -355,23 +411,23 @@
 
     <!-- خيارات الطباعة -->
     <div id="printOptions" class="no-print">
-        <p class="font-bold text-xs mb-2">أعمدة الطباعة:</p>
+        <p class="font-bold text-xs mb-2 text-blue-700">أعمدة الطباعة:</p>
         <div class="grid grid-cols-2 gap-x-6 gap-y-2 text-xs" id="columnCheckboxes"></div>
-        <div class="flex gap-2 mt-4">
-            <button onclick="savePrintSettings()" class="w-full bg-blue-600 text-white py-1.5 rounded text-xs font-bold">حفظ الإعدادات</button>
-            <button onclick="hidePrintOptions()" class="w-full bg-gray-300 text-gray-800 py-1.5 rounded text-xs font-bold">إغلاق</button>
+        <div class="flex gap-2 mt-3">
+            <button onclick="savePrintSettings()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-1.5 rounded text-xs font-bold">حفظ الإعدادات</button>
+            <button onclick="hidePrintOptions()" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 py-1.5 rounded text-xs font-bold">إغلاق</button>
         </div>
     </div>
 
-    <main class="container mx-auto px-4">
+    <main class="container mx-auto px-3">
         <!-- محتوى تبويب Accounting -->
         <div id="accountingContent" class="tab-content active">
             <!-- تبويب كشف الحساب -->
             <div id="statementTable" class="tab-content active">
                 <!-- رأس كشف الحساب -->
                 <div id="statementHeader" class="statement-header mb-3" style="display: none;">
-                    <h2 class="text-lg font-bold mb-2" id="statementAccountName"></h2>
-                    <div class="text-sm" id="statementPeriod"></div>
+                    <h2 class="text-lg font-bold mb-1" id="statementAccountName"></h2>
+                    <div class="text-xs" id="statementPeriod"></div>
                 </div>
 
                 <!-- ملخص كشف الحساب -->
@@ -403,7 +459,7 @@
                     <table id="statementTableContent">
                         <thead>
                             <tr>
-                                <th data-col="index" class="w-12">#</th>
+                                <th data-col="index" class="w-10">#</th>
                                 <th data-col="date">التاريخ</th>
                                 <th data-col="type">النوع</th>
                                 <th data-col="invoice">الفاتورة</th>
@@ -412,13 +468,11 @@
                                 <th data-col="qty">الكمية</th>
                                 <th data-col="price_usd">السعر $</th>
                                 <th data-col="price_syp">السعر ل.س</th>
-                                <th data-col="total_usd">الإجمالي $</th>
-                                <th data-col="total_syp">الإجمالي ل.س</th>
                                 <th data-col="debit_usd">مدين $</th>
-                                <th data-col="debit_syp">مدين ل.س</th>
                                 <th data-col="credit_usd">دائن $</th>
-                                <th data-col="credit_syp">دائن ل.س</th>
                                 <th data-col="balance_usd">الرصيد $</th>
+                                <th data-col="debit_syp">مدين ل.س</th>
+                                <th data-col="credit_syp">دائن ل.س</th>
                                 <th data-col="balance_syp">الرصيد ل.س</th>
                             </tr>
                         </thead>
@@ -455,7 +509,7 @@
         let currentFocusIndex = -1;
         let currentSuggestItems = [];
 
-        // تعريف أعمدة كشف الحساب مع العملة السورية
+        // تعريف أعمدة كشف الحساب مع العملة السورية (تم إزالة عمود الإجمالي)
         const statementColumns = [
             {id:'index',label:'#'},
             {id:'date',label:'التاريخ'},
@@ -466,13 +520,11 @@
             {id:'qty',label:'الكمية'},
             {id:'price_usd',label:'السعر $'},
             {id:'price_syp',label:'السعر ل.س'},
-            {id:'total_usd',label:'الإجمالي $'},
-            {id:'total_syp',label:'الإجمالي ل.س'},
             {id:'debit_usd',label:'مدين $'},
-            {id:'debit_syp',label:'مدين ل.س'},
             {id:'credit_usd',label:'دائن $'},
-            {id:'credit_syp',label:'دائن ل.س'},
             {id:'balance_usd',label:'الرصيد $'},
+            {id:'debit_syp',label:'مدين ل.س'},
+            {id:'credit_syp',label:'دائن ل.س'},
             {id:'balance_syp',label:'الرصيد ل.س'}
         ];
 
@@ -492,10 +544,13 @@
                 Papa.parse(journalCsvText, {
                     header: true, skipEmptyLines: true,
                     complete: (res) => {
-                        allJournalData = res.data;
-                        // إزالة الصفوف الفارغة فقط
+                        allJournalData = res.data || [];
+                        // تنظيف بيانات اليومية
                         allJournalData = allJournalData.filter(row => {
-                            return Object.values(row).some(value => value && value.toString().trim() !== '');
+                            const hasData = Object.values(row).some(value => 
+                                value && value.toString().trim() !== '' && value.toString().trim() !== 'FALSE'
+                            );
+                            return hasData && row['التاريخ'] && row['التاريخ'].trim() !== '';
                         });
                         setupStatementDropdowns();
                     }
@@ -508,10 +563,13 @@
                 Papa.parse(salesCsvText, {
                     header: true, skipEmptyLines: true,
                     complete: (res) => {
-                        allSalesData = res.data;
-                        // إزالة الصفوف الفارغة فقط
+                        allSalesData = res.data || [];
+                        // تنظيف بيانات المبيعات
                         allSalesData = allSalesData.filter(row => {
-                            return Object.values(row).some(value => value && value.toString().trim() !== '');
+                            const hasData = Object.values(row).some(value => 
+                                value && value.toString().trim() !== '' && value.toString().trim() !== 'FALSE'
+                            );
+                            return hasData && row['التاريخ'] && row['التاريخ'].trim() !== '';
                         });
                         setupStatementDropdowns();
                     }
@@ -524,10 +582,13 @@
                 Papa.parse(purchasesCsvText, {
                     header: true, skipEmptyLines: true,
                     complete: (res) => {
-                        allPurchasesData = res.data;
-                        // إزالة الصفوف الفارغة فقط
+                        allPurchasesData = res.data || [];
+                        // تنظيف بيانات المشتريات
                         allPurchasesData = allPurchasesData.filter(row => {
-                            return Object.values(row).some(value => value && value.toString().trim() !== '');
+                            const hasData = Object.values(row).some(value => 
+                                value && value.toString().trim() !== '' && value.toString().trim() !== 'FALSE'
+                            );
+                            return hasData && row['التاريخ'] && row['التاريخ'].trim() !== '';
                         });
                         setupStatementDropdowns();
                     }
@@ -540,10 +601,13 @@
                 Papa.parse(accountsCsvText, {
                     header: true, skipEmptyLines: true,
                     complete: (res) => {
-                        allAccountsData = res.data;
-                        // إزالة الصفوف الفارغة فقط
+                        allAccountsData = res.data || [];
+                        // تنظيف بيانات الحسابات
                         allAccountsData = allAccountsData.filter(row => {
-                            return Object.values(row).some(value => value && value.toString().trim() !== '');
+                            const hasData = Object.values(row).some(value => 
+                                value && value.toString().trim() !== '' && value.toString().trim() !== 'FALSE'
+                            );
+                            return hasData && row['الحساب'] && row['الحساب'].trim() !== '';
                         });
                         
                         // إخفاء الloader بعد تحميل كل البيانات
@@ -759,7 +823,8 @@
         function parseNumber(value) {
             if (!value) return 0;
             const cleaned = String(value).replace(/[^\d.-]/g, '').replace(/,/g, '');
-            return parseFloat(cleaned) || 0;
+            const num = parseFloat(cleaned);
+            return isNaN(num) ? 0 : num;
         }
 
         // دالة محسنة لتحويل التاريخ إلى صيغة قابلة للمقارنة
@@ -842,7 +907,7 @@
             return { usd: 0, syp: 0 };
         }
 
-        // عرض كشف الحساب
+        // عرض كشف الحساب - الإصدار المصحح
         function renderStatement() {
             const accountName = document.getElementById('searchStatementAccount').value.trim();
             const tbody = document.getElementById('statementTableBody');
@@ -883,13 +948,11 @@
             salesFiltered.forEach(row => {
                 const date = row['التاريخ'] || '';
                 const quantity = parseNumber(row['الكمية']);
-                const priceUsd = parseNumber(row['السعر دولار'] || row['السعر'] || 0);
-                const priceSyp = parseNumber(row['السعر سوري'] || row['السعر سوري'] || 0);
-                const totalUsd = quantity * priceUsd;
-                const totalSyp = quantity * priceSyp;
+                const priceUsd = parseNumber(row['السعر دولار'] || 0);
+                const priceSyp = parseNumber(row['السعر سوري'] || 0);
                 
-                totalSalesUsd += totalUsd;
-                totalSalesSyp += totalSyp;
+                totalSalesUsd += priceUsd;
+                totalSalesSyp += priceSyp;
                 
                 statementData.push({
                     date: date,
@@ -901,10 +964,8 @@
                     qty: quantity,
                     price_usd: priceUsd,
                     price_syp: priceSyp,
-                    total_usd: totalUsd,
-                    total_syp: totalSyp,
-                    debit_usd: totalUsd,
-                    debit_syp: totalSyp,
+                    debit_usd: priceUsd,
+                    debit_syp: priceSyp,
                     credit_usd: 0,
                     credit_syp: 0,
                     rawDate: parseDate(date),
@@ -926,13 +987,11 @@
             purchasesFiltered.forEach(row => {
                 const date = row['التاريخ'] || '';
                 const quantity = parseNumber(row['الكمية']);
-                const priceUsd = parseNumber(row['السعر دولار'] || row['السعر'] || 0);
-                const priceSyp = parseNumber(row['السعر سوري'] || row['السعر سوري'] || 0);
-                const totalUsd = quantity * priceUsd;
-                const totalSyp = quantity * priceSyp;
+                const priceUsd = parseNumber(row['السعر دولار'] || 0);
+                const priceSyp = parseNumber(row['السعر سوري'] || 0);
                 
-                totalPurchasesUsd += totalUsd;
-                totalPurchasesSyp += totalSyp;
+                totalPurchasesUsd += priceUsd;
+                totalPurchasesSyp += priceSyp;
                 
                 statementData.push({
                     date: date,
@@ -944,12 +1003,10 @@
                     qty: quantity,
                     price_usd: priceUsd,
                     price_syp: priceSyp,
-                    total_usd: totalUsd,
-                    total_syp: totalSyp,
                     debit_usd: 0,
                     debit_syp: 0,
-                    credit_usd: totalUsd,
-                    credit_syp: totalSyp,
+                    credit_usd: priceUsd,
+                    credit_syp: priceSyp,
                     rawDate: parseDate(date),
                     source: 'purchases'
                 });
@@ -997,8 +1054,6 @@
                             qty: 1,
                             price_usd: amountUsd,
                             price_syp: amountSyp,
-                            total_usd: amountUsd,
-                            total_syp: amountSyp,
                             debit_usd: 0,
                             debit_syp: 0,
                             credit_usd: amountUsd,
@@ -1026,8 +1081,6 @@
                             qty: 1,
                             price_usd: amountUsd,
                             price_syp: amountSyp,
-                            total_usd: amountUsd,
-                            total_syp: amountSyp,
                             debit_usd: amountUsd,
                             debit_syp: amountSyp,
                             credit_usd: 0,
@@ -1081,26 +1134,24 @@
                 // إضافة سطر الرصيد الافتتاحي في بداية الجدول فقط إذا كان هناك رصيد
                 if (openingBalance.usd !== 0 || openingBalance.syp !== 0) {
                     const openingRow = document.createElement('tr');
-                    openingRow.className = 'bg-gray-100 font-bold';
+                    openingRow.className = 'bg-blue-50 font-bold';
                     openingRow.innerHTML = `
                         <td class="text-gray-500 text-[10px]">-</td>
                         <td class="text-[11px] text-gray-700">رصيد افتتاحي</td>
                         <td><span class="statement-type type-journal">افتتاحي</span></td>
                         <td class="font-bold">-</td>
                         <td class="text-right">الرصيد الافتتاحي</td>
-                        <td class="text-right font-bold">${accountName}</td>
+                        <td class="text-right font-bold text-blue-700">${accountName}</td>
                         <td>-</td>
                         <td class="usd-amount">${openingBalance.usd !== 0 ? openingBalance.usd.toFixed(2) : ''}</td>
                         <td class="syp-amount">${openingBalance.syp !== 0 ? Math.round(openingBalance.syp).toLocaleString() : ''}</td>
-                        <td class="usd-amount">${openingBalance.usd !== 0 ? openingBalance.usd.toFixed(2) : ''}</td>
-                        <td class="syp-amount">${openingBalance.syp !== 0 ? Math.round(openingBalance.syp).toLocaleString() : ''}</td>
                         <td class="${openingBalance.usd >= 0 ? 'debit-cell' : ''}">${openingBalance.usd >= 0 ? openingBalance.usd.toFixed(2) : ''}</td>
-                        <td class="${openingBalance.syp >= 0 ? 'debit-cell' : ''}">${openingBalance.syp >= 0 ? Math.round(openingBalance.syp).toLocaleString() : ''}</td>
                         <td class="${openingBalance.usd < 0 ? 'credit-cell' : ''}">${openingBalance.usd < 0 ? Math.abs(openingBalance.usd).toFixed(2) : ''}</td>
-                        <td class="${openingBalance.syp < 0 ? 'credit-cell' : ''}">${openingBalance.syp < 0 ? Math.round(Math.abs(openingBalance.syp)).toLocaleString() : ''}</td>
                         <td class="font-bold ${runningBalanceUsd >= 0 ? 'text-green-600' : 'text-red-600'}">
                             ${runningBalanceUsd.toFixed(2)}
                         </td>
+                        <td class="${openingBalance.syp >= 0 ? 'debit-cell' : ''}">${openingBalance.syp >= 0 ? Math.round(openingBalance.syp).toLocaleString() : ''}</td>
+                        <td class="${openingBalance.syp < 0 ? 'credit-cell' : ''}">${openingBalance.syp < 0 ? Math.round(Math.abs(openingBalance.syp)).toLocaleString() : ''}</td>
                         <td class="font-bold ${runningBalanceSyp >= 0 ? 'text-green-600' : 'text-red-600'}">
                             ${Math.round(runningBalanceSyp).toLocaleString()}
                         </td>
@@ -1124,15 +1175,13 @@
                         <td class="text-center">${item.type === 'مقبوضات' || item.type === 'مدفوعات' ? '-' : item.qty}</td>
                         <td class="usd-amount text-center">${item.type === 'مقبوضات' || item.type === 'مدفوعات' ? '-' : item.price_usd.toFixed(2)}</td>
                         <td class="syp-amount text-center">${item.type === 'مقبوضات' || item.type === 'مدفوعات' ? '-' : Math.round(item.price_syp).toLocaleString()}</td>
-                        <td class="usd-amount text-center">${item.type === 'مقبوضات' || item.type === 'مدفوعات' ? '-' : item.total_usd.toFixed(2)}</td>
-                        <td class="syp-amount text-center">${item.type === 'مقبوضات' || item.type === 'مدفوعات' ? '-' : Math.round(item.total_syp).toLocaleString()}</td>
                         <td class="debit-cell">${item.debit_usd > 0 ? item.debit_usd.toFixed(2) : ''}</td>
-                        <td class="debit-cell">${item.debit_syp > 0 ? Math.round(item.debit_syp).toLocaleString() : ''}</td>
                         <td class="credit-cell">${item.credit_usd > 0 ? item.credit_usd.toFixed(2) : ''}</td>
-                        <td class="credit-cell">${item.credit_syp > 0 ? Math.round(item.credit_syp).toLocaleString() : ''}</td>
                         <td class="font-bold ${runningBalanceUsd >= 0 ? 'text-green-600' : 'text-red-600'}">
                             ${runningBalanceUsd.toFixed(2)}
                         </td>
+                        <td class="debit-cell">${item.debit_syp > 0 ? Math.round(item.debit_syp).toLocaleString() : ''}</td>
+                        <td class="credit-cell">${item.credit_syp > 0 ? Math.round(item.credit_syp).toLocaleString() : ''}</td>
                         <td class="font-bold ${runningBalanceSyp >= 0 ? 'text-green-600' : 'text-red-600'}">
                             ${Math.round(runningBalanceSyp).toLocaleString()}
                         </td>
@@ -1151,19 +1200,19 @@
                     document.getElementById('statementPeriod').textContent = 'لا توجد حركات للحساب';
                 }
                 
-                // إضافة سطر الإجمالي
+                // إضافة سطر الإجمالي المصحح (13 عموداً قبل الرصيد)
                 if (statementData.length > 0 || openingBalance.usd !== 0 || openingBalance.syp !== 0) {
                     const totalRow = document.createElement('tr');
-                    totalRow.className = 'bg-gray-50 font-bold';
+                    totalRow.className = 'bg-green-50 font-bold';
                     totalRow.innerHTML = `
-                        <td colspan="10" class="text-right py-2">الإجمالي</td>
+                        <td colspan="9" class="text-right py-2">الإجمالي</td>
                         <td class="debit-cell py-2">${totalSalesUsd.toFixed(2)}</td>
-                        <td class="debit-cell py-2">${Math.round(totalSalesSyp).toLocaleString()}</td>
                         <td class="credit-cell py-2">${totalPurchasesUsd.toFixed(2)}</td>
-                        <td class="credit-cell py-2">${Math.round(totalPurchasesSyp).toLocaleString()}</td>
                         <td class="font-bold py-2 ${finalBalanceUsd >= 0 ? 'text-green-600' : 'text-red-600'}">
                             ${finalBalanceUsd.toFixed(2)}
                         </td>
+                        <td class="debit-cell py-2">${Math.round(totalSalesSyp).toLocaleString()}</td>
+                        <td class="credit-cell py-2">${Math.round(totalPurchasesSyp).toLocaleString()}</td>
                         <td class="font-bold py-2 ${finalBalanceSyp >= 0 ? 'text-green-600' : 'text-red-600'}">
                             ${Math.round(finalBalanceSyp).toLocaleString()}
                         </td>
@@ -1187,28 +1236,26 @@
                         <td class="text-center">${item.type === 'مقبوضات' || item.type === 'مدفوعات' ? '-' : item.qty}</td>
                         <td class="usd-amount text-center">${item.type === 'مقبوضات' || item.type === 'مدفوعات' ? '-' : item.price_usd.toFixed(2)}</td>
                         <td class="syp-amount text-center">${item.type === 'مقبوضات' || item.type === 'مدفوعات' ? '-' : Math.round(item.price_syp).toLocaleString()}</td>
-                        <td class="usd-amount text-center">${item.type === 'مقبوضات' || item.type === 'مدفوعات' ? '-' : item.total_usd.toFixed(2)}</td>
-                        <td class="syp-amount text-center">${item.type === 'مقبوضات' || item.type === 'مدفوعات' ? '-' : Math.round(item.total_syp).toLocaleString()}</td>
                         <td class="debit-cell">${item.debit_usd > 0 ? item.debit_usd.toFixed(2) : ''}</td>
-                        <td class="debit-cell">${item.debit_syp > 0 ? Math.round(item.debit_syp).toLocaleString() : ''}</td>
                         <td class="credit-cell">${item.credit_usd > 0 ? item.credit_usd.toFixed(2) : ''}</td>
+                        <td class="text-gray-500 text-xs">-</td>
+                        <td class="debit-cell">${item.debit_syp > 0 ? Math.round(item.debit_syp).toLocaleString() : ''}</td>
                         <td class="credit-cell">${item.credit_syp > 0 ? Math.round(item.credit_syp).toLocaleString() : ''}</td>
-                        <td class="text-gray-500 text-sm">-</td>
-                        <td class="text-gray-500 text-sm">-</td>
+                        <td class="text-gray-500 text-xs">-</td>
                     `;
                     tbody.appendChild(tr);
                 });
-            }
-            
-            // إذا لم تكن هناك بيانات
-            if (statementData.length === 0) {
-                const noDataRow = document.createElement('tr');
-                noDataRow.innerHTML = `
-                    <td colspan="17" class="text-center py-4 text-gray-500">
-                        <i class="fas fa-search mr-2"></i> لا توجد حركات تطابق معايير البحث
-                    </td>
-                `;
-                tbody.appendChild(noDataRow);
+                
+                // إذا لم تكن هناك بيانات للبحث العام
+                if (statementData.length === 0) {
+                    const noDataRow = document.createElement('tr');
+                    noDataRow.innerHTML = `
+                        <td colspan="15" class="text-center py-4 text-gray-500">
+                            <i class="fas fa-search mr-2"></i> لا توجد حركات تطابق معايير البحث
+                        </td>
+                    `;
+                    tbody.appendChild(noDataRow);
+                }
             }
         }
 
@@ -1312,7 +1359,7 @@
             const statementChecks = document.querySelectorAll('#columnCheckboxes input');
             statementChecks.forEach(check => {
                 const colId = check.getAttribute('data-col-ref');
-                printSettings.statement[colId] = check.checked;
+                printSettings.statement[col.id] = check.checked;
             });
 
             // حفظ في localStorage
