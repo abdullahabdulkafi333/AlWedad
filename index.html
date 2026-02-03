@@ -98,6 +98,7 @@
 
         .sub-tab-button {
             transition: all 0.3s ease;
+            margin-bottom: 8px; /* زيادة التباعد */
         }
 
         .sub-tab-button.active {
@@ -161,6 +162,7 @@
             flex-grow: 1;
             justify-content: center;
             margin-top: 0.5rem;
+            margin-bottom: 12px; /* زيادة التباعد بين التبويب الفرعي وخيارات البحث */
         }
         
         .controls-section {
@@ -305,20 +307,6 @@
             box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);
         }
         
-        /* زر التحديث */
-        .refresh-btn {
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-            color: white;
-            border: none;
-            transition: all 0.3s ease;
-        }
-        
-        .refresh-btn:hover {
-            background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 6px -1px rgba(245, 158, 11, 0.3);
-        }
-        
         /* زر الخيارات */
         .settings-btn {
             background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
@@ -331,6 +319,11 @@
             background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
             transform: translateY(-1px);
             box-shadow: 0 4px 6px -1px rgba(107, 114, 128, 0.3);
+        }
+        
+        /* مسافة إضافية بين التبويب الفرعي وخيارات البحث */
+        .search-section {
+            margin-top: 8px;
         }
     </style>
 </head>
@@ -366,9 +359,6 @@
                     <button onclick="preparePrint()" class="print-btn px-2 py-1 rounded text-xs font-bold flex items-center gap-1">
                         <i class="fas fa-print text-[10px]"></i> طباعة
                     </button>
-                    <button onclick="fetchAllData(true)" class="refresh-btn px-2 py-1 rounded text-xs font-bold flex items-center gap-1">
-                        <i class="fas fa-sync-alt text-[10px]"></i> تحديث
-                    </button>
                 </div>
             </div>
 
@@ -380,7 +370,7 @@
             </div>
 
             <!-- بحث كشف الحساب -->
-            <div id="statementSearch" class="tab-content active">
+            <div id="statementSearch" class="tab-content active search-section">
                 <div class="grid grid-cols-6 gap-2 pb-2">
                     <div class="search-wrapper">
                         <input type="text" id="searchStatementAccount" placeholder="اسم العميل/المورد" class="input-glass statement-search-input" autocomplete="off">
@@ -509,7 +499,7 @@
         let currentFocusIndex = -1;
         let currentSuggestItems = [];
 
-        // تعريف أعمدة كشف الحساب مع العملة السورية (تم إزالة عمود الإجمالي)
+        // تعريف أعمدة كشف الحساب مع العملة السورية
         const statementColumns = [
             {id:'index',label:'#'},
             {id:'date',label:'التاريخ'},
@@ -528,20 +518,33 @@
             {id:'balance_syp',label:'الرصيد ل.س'}
         ];
 
-        // تحميل جميع البيانات
-        async function fetchAllData(showSyncIndicator = false) {
+        // دالة محسنة لتحميل بيانات اليومية من الصف 2
+        async function loadJournalData() {
             try {
-                if (showSyncIndicator) {
-                    showSyncNotification();
-                }
-                
                 const timestamp = Date.now();
-                
-                // تحميل بيانات اليومية
                 const journalResponse = await fetch(JOURNAL_CSV_URL + '&t=' + timestamp);
                 const journalCsvText = await journalResponse.text();
                 
-                Papa.parse(journalCsvText, {
+                // تقسيم النص إلى أسطر
+                const lines = journalCsvText.split('\n');
+                
+                // البحث عن بداية البيانات (من الصف 2)
+                // نتجاهل السطر الأول (الرؤوس) ونبدأ من السطر الثاني
+                let dataStartIndex = 1; // الصف الثاني (Index 1 بعد الرؤوس)
+                
+                // إذا كان هناك صف فارغ أو رؤوس إضافية، نبحث عن أول صف بيانات حقيقي
+                for (let i = 1; i < Math.min(lines.length, 10); i++) {
+                    const line = lines[i];
+                    if (line && line.trim() && !line.includes('البحث') && !line.includes('الحساب') && line.includes(',')) {
+                        dataStartIndex = i;
+                        break;
+                    }
+                }
+                
+                // أخذ البيانات من الصف dataStartIndex فما بعد
+                const dataLines = lines.slice(dataStartIndex).join('\n');
+                
+                Papa.parse(dataLines, {
                     header: true, skipEmptyLines: true,
                     complete: (res) => {
                         allJournalData = res.data || [];
@@ -552,15 +555,48 @@
                             );
                             return hasData && row['التاريخ'] && row['التاريخ'].trim() !== '';
                         });
+                        console.log('بيانات اليومية المحملة:', allJournalData.length, 'صف');
                         setupStatementDropdowns();
+                    },
+                    error: (err) => {
+                        console.error('خطأ في تحليل بيانات اليومية:', err);
                     }
                 });
+            } catch (e) {
+                console.error('خطأ في تحميل بيانات اليومية:', e);
+            }
+        }
+
+        // تحميل جميع البيانات
+        async function fetchAllData(showSyncIndicator = false) {
+            try {
+                if (showSyncIndicator) {
+                    showSyncNotification();
+                }
+                
+                const timestamp = Date.now();
+                
+                // تحميل بيانات اليومية باستخدام الدالة الجديدة
+                await loadJournalData();
 
                 // تحميل بيانات المبيعات
                 const salesResponse = await fetch(SALES_CSV_URL + '&t=' + timestamp);
                 const salesCsvText = await salesResponse.text();
                 
-                Papa.parse(salesCsvText, {
+                // معالجة بيانات المبيعات (تجاهل الصفوف الأولى)
+                const salesLines = salesCsvText.split('\n');
+                let salesStartIndex = 1;
+                for (let i = 1; i < Math.min(salesLines.length, 10); i++) {
+                    const line = salesLines[i];
+                    if (line && line.trim() && !line.includes('البحث') && line.includes(',')) {
+                        salesStartIndex = i;
+                        break;
+                    }
+                }
+                
+                const salesDataLines = salesLines.slice(salesStartIndex).join('\n');
+                
+                Papa.parse(salesDataLines, {
                     header: true, skipEmptyLines: true,
                     complete: (res) => {
                         allSalesData = res.data || [];
@@ -571,6 +607,7 @@
                             );
                             return hasData && row['التاريخ'] && row['التاريخ'].trim() !== '';
                         });
+                        console.log('بيانات المبيعات المحملة:', allSalesData.length, 'صف');
                         setupStatementDropdowns();
                     }
                 });
@@ -579,7 +616,20 @@
                 const purchasesResponse = await fetch(PURCHASES_CSV_URL + '&t=' + timestamp);
                 const purchasesCsvText = await purchasesResponse.text();
                 
-                Papa.parse(purchasesCsvText, {
+                // معالجة بيانات المشتريات (تجاهل الصفوف الأولى)
+                const purchasesLines = purchasesCsvText.split('\n');
+                let purchasesStartIndex = 1;
+                for (let i = 1; i < Math.min(purchasesLines.length, 10); i++) {
+                    const line = purchasesLines[i];
+                    if (line && line.trim() && !line.includes('البحث') && line.includes(',')) {
+                        purchasesStartIndex = i;
+                        break;
+                    }
+                }
+                
+                const purchasesDataLines = purchasesLines.slice(purchasesStartIndex).join('\n');
+                
+                Papa.parse(purchasesDataLines, {
                     header: true, skipEmptyLines: true,
                     complete: (res) => {
                         allPurchasesData = res.data || [];
@@ -590,6 +640,7 @@
                             );
                             return hasData && row['التاريخ'] && row['التاريخ'].trim() !== '';
                         });
+                        console.log('بيانات المشتريات المحملة:', allPurchasesData.length, 'صف');
                         setupStatementDropdowns();
                     }
                 });
@@ -598,7 +649,20 @@
                 const accountsResponse = await fetch(ACCOUNTS_CSV_URL + '&t=' + timestamp);
                 const accountsCsvText = await accountsResponse.text();
                 
-                Papa.parse(accountsCsvText, {
+                // معالجة بيانات الحسابات (تجاهل الصفوف الأولى)
+                const accountsLines = accountsCsvText.split('\n');
+                let accountsStartIndex = 1;
+                for (let i = 1; i < Math.min(accountsLines.length, 10); i++) {
+                    const line = accountsLines[i];
+                    if (line && line.trim() && !line.includes('البحث') && line.includes(',')) {
+                        accountsStartIndex = i;
+                        break;
+                    }
+                }
+                
+                const accountsDataLines = accountsLines.slice(accountsStartIndex).join('\n');
+                
+                Papa.parse(accountsDataLines, {
                     header: true, skipEmptyLines: true,
                     complete: (res) => {
                         allAccountsData = res.data || [];
@@ -609,6 +673,7 @@
                             );
                             return hasData && row['الحساب'] && row['الحساب'].trim() !== '';
                         });
+                        console.log('بيانات الحسابات المحملة:', allAccountsData.length, 'صف');
                         
                         // إخفاء الloader بعد تحميل كل البيانات
                         document.getElementById('loader').classList.add('hidden');
@@ -642,15 +707,19 @@
             indicator.style.display = 'block';
         }
 
-        // بدء مزامنة تلقائية كل 15 ثانية
+        // بدء مزامنة تلقائية كل 5 ثواني (بدلاً من 15)
         function startAutoSync() {
             if (syncInterval) {
                 clearInterval(syncInterval);
             }
             
+            // أول مزامنة فورية
+            fetchAllData();
+            
+            // ثم المزامنة كل 5 ثواني
             syncInterval = setInterval(() => {
                 fetchAllData(true);
-            }, 15 * 1000);
+            }, 5 * 1000); // 5 ثواني
         }
 
         // إعداد القوائم المنسدلة لكشف الحساب
@@ -1429,8 +1498,7 @@
         // التحميل الأولي
         window.onload = () => { 
             initPrintOptions(); 
-            fetchAllData(); 
-            startAutoSync();
+            startAutoSync(); // بدء المزامنة التلقائية
             
             // تعيين تاريخ اليوم كتاريخ افتراضي للبحث
             const today = new Date().toISOString().split('T')[0];
