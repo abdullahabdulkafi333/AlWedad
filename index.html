@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام المحاسبة</title>
+    <title>Accounting</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -1606,7 +1606,7 @@
             }
         }
 
-        // عرض ميزان المراجعة مع إجمالي كل قسم
+        // عرض ميزان المراجعة بطريقة مبسطة تعمل مع أي تنسيق
         function renderTrialBalance() {
             const tbody = document.getElementById('trialBalanceTableBody');
             const infoElement = document.getElementById('trialBalanceInfo');
@@ -1630,49 +1630,91 @@
             
             console.log('بيانات ميزان المراجعة المحملة:', allTrialBalanceData);
             
-            let currentSection = '';
-            let sectionRows = [];
-            let sectionTotalUsd = 0;
-            let sectionTotalSyp = 0;
+            // متغيرات للتتبع
+            let currentTable = '';
+            let tableRows = [];
+            let tableTotalUsd = 0;
+            let tableTotalSyp = 0;
             
-            // معالجة كل صف في البيانات
-            allTrialBalanceData.forEach((row, index) => {
+            // تصفية الصفوف الفارغة
+            const filteredData = allTrialBalanceData.filter(row => {
                 const account = (row['الحساب'] || '').trim();
                 const usdAmount = (row['دولار'] || '').trim();
                 const sypAmount = (row['سوري'] || '').trim();
                 
-                // التحقق إذا كان هذا صف قسم جديد (تحتوي على كلمة "الحساب" في عمود الحساب)
-                if (account === 'الحساب' && usdAmount && usdAmount.trim() !== '') {
-                    // إذا كان هناك قسم سابق، نعرضه أولاً
-                    if (currentSection !== '' && sectionRows.length > 0) {
-                        displaySectionWithTotal();
+                // نأخذ جميع الصفوف بما فيها الفارغة للحفاظ على التنسيق
+                return true;
+            });
+            
+            // معالجة كل صف في البيانات
+            filteredData.forEach((row, index) => {
+                const account = (row['الحساب'] || '').trim();
+                const usdAmount = (row['دولار'] || '').trim();
+                const sypAmount = (row['سوري'] || '').trim();
+                
+                // إذا كان صف بداية جدول جديد (الحساب فارغ والدولار ليس رقمًا)
+                if (account === '' && usdAmount && usdAmount !== '' && 
+                    !usdAmount.match(/^-?\d+(\.\d+)?$/) && !usdAmount.includes('-')) {
+                    
+                    // عرض الجدول السابق إذا كان موجوداً
+                    if (currentTable !== '' && tableRows.length > 0) {
+                        displayTable();
                     }
                     
-                    // بدء قسم جديد
-                    currentSection = usdAmount.trim();
-                    sectionRows = [];
-                    sectionTotalUsd = 0;
-                    sectionTotalSyp = 0;
+                    // بدء جدول جديد
+                    currentTable = usdAmount;
+                    tableRows = [];
+                    tableTotalUsd = 0;
+                    tableTotalSyp = 0;
                     
-                    // إضافة عنوان القسم
-                    const sectionRow = document.createElement('tr');
-                    sectionRow.className = 'trial-section-header';
-                    sectionRow.innerHTML = `
-                        <td colspan="3" class="text-right font-bold">${currentSection}</td>
+                    // إضافة عنوان الجدول
+                    const tableHeaderRow = document.createElement('tr');
+                    tableHeaderRow.className = 'trial-section-header';
+                    tableHeaderRow.innerHTML = `
+                        <td colspan="3" class="text-right font-bold">${currentTable}</td>
                     `;
-                    tbody.appendChild(sectionRow);
-                } 
-                // إذا كان هذا صف بيانات حسابي (وليس سطر قسم ولا سطر إجمالي)
-                else if (account && account !== '' && account !== 'الحساب') {
+                    tbody.appendChild(tableHeaderRow);
+                }
+                // إذا كان صف إجمالي داخل جدول (الحساب فارغ والدولار رقم)
+                else if (account === '' && usdAmount && usdAmount.match(/^-?\d+(\.\d+)?$/)) {
+                    // إذا كان هناك صفوف في الجدول، نعرضها أولاً
+                    if (tableRows.length > 0) {
+                        displayTableRows();
+                    }
+                    
+                    // عرض سطر الإجمالي
+                    const totalUsdNum = parseNumber(usdAmount);
+                    const totalSypNum = parseNumber(sypAmount);
+                    
+                    const totalRow = document.createElement('tr');
+                    totalRow.className = 'trial-total-row';
+                    totalRow.innerHTML = `
+                        <td class="text-right font-bold">الاجمالي</td>
+                        <td class="text-center font-bold">${totalUsdNum !== 0 ? totalUsdNum.toFixed(2) : ''}</td>
+                        <td class="text-center font-bold">${totalSypNum !== 0 ? Math.round(totalSypNum).toLocaleString() : ''}</td>
+                    `;
+                    tbody.appendChild(totalRow);
+                    
+                    // إضافة سطر فارغ للفصل
+                    const spacerRow = document.createElement('tr');
+                    spacerRow.innerHTML = `<td colspan="3" style="height: 10px;"></td>`;
+                    tbody.appendChild(spacerRow);
+                    
+                    // إعادة تعيين المتغيرات
+                    currentTable = '';
+                    tableRows = [];
+                }
+                // إذا كان صف بيانات حسابي (الحساب ليس فارغاً)
+                else if (account !== '') {
                     const usdNum = parseNumber(usdAmount);
                     const sypNum = parseNumber(sypAmount);
                     
-                    // جمع الإجماليات للقسم
-                    sectionTotalUsd += usdNum;
-                    sectionTotalSyp += sypNum;
+                    // جمع الإجماليات للجدول
+                    tableTotalUsd += usdNum;
+                    tableTotalSyp += sypNum;
                     
-                    // حفظ الصف للعرض لاحقاً
-                    sectionRows.push({
+                    // حفظ الصف
+                    tableRows.push({
                         account: account,
                         usd: usdNum,
                         syp: sypNum,
@@ -1680,14 +1722,13 @@
                         formattedSyp: sypNum !== 0 ? Math.round(sypNum).toLocaleString() : ''
                     });
                 }
-                // إذا كان هذا صف إجمالي نهائي
-                else if (account && account.includes('الاجمالي')) {
-                    // إذا كان هناك قسم سابق، نعرضه أولاً
-                    if (currentSection !== '' && sectionRows.length > 0) {
-                        displaySectionWithTotal();
+                // إذا كان سطر إجمالي نهائي خارج الجداول
+                else if (account.includes('الاجمالي') || account.includes('الإجمالي')) {
+                    // عرض الجدول السابق إذا كان موجوداً
+                    if (currentTable !== '' && tableRows.length > 0) {
+                        displayTable();
                     }
                     
-                    // عرض الإجمالي النهائي
                     const finalUsdNum = parseNumber(usdAmount);
                     const finalSypNum = parseNumber(sypAmount);
                     
@@ -1700,50 +1741,58 @@
                     `;
                     tbody.appendChild(finalRow);
                 }
+                // إذا كان سطر فارغ فقط
+                else if (account === '' && usdAmount === '' && sypAmount === '') {
+                    // إضافة سطر فارغ
+                    const emptyRow = document.createElement('tr');
+                    emptyRow.innerHTML = `
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                    `;
+                    tbody.appendChild(emptyRow);
+                }
             });
             
-            // عرض القسم الأخير إذا كان موجوداً
-            if (currentSection !== '' && sectionRows.length > 0) {
-                displaySectionWithTotal();
+            // عرض الجدول الأخير إذا كان موجوداً
+            if (currentTable !== '' && tableRows.length > 0) {
+                displayTable();
             }
             
-            // دالة مساعدة لعرض القسم مع إجماليه
-            function displaySectionWithTotal() {
-                // عرض صفوف القسم
-                sectionRows.forEach((rowData, i) => {
+            // دالة لعرض صفوف الجدول
+            function displayTableRows() {
+                tableRows.forEach((rowData, i) => {
                     const tr = document.createElement('tr');
                     tr.className = i % 2 === 0 ? 'bg-gray-50' : '';
                     tr.innerHTML = `
-                        <td class="text-right ${rowData.account.includes('اجمالي') ? 'font-bold' : ''}">
-                            ${rowData.account}
-                        </td>
-                        <td class="text-center ${rowData.account.includes('اجمالي') ? 'font-bold' : ''}">
-                            ${rowData.formattedUsd}
-                        </td>
-                        <td class="text-center ${rowData.account.includes('اجمالي') ? 'font-bold' : ''}">
-                            ${rowData.formattedSyp}
-                        </td>
+                        <td class="text-right">${rowData.account}</td>
+                        <td class="text-center">${rowData.formattedUsd}</td>
+                        <td class="text-center">${rowData.formattedSyp}</td>
                     `;
                     tbody.appendChild(tr);
                 });
+            }
+            
+            // دالة لعرض الجدول كاملاً مع إجماليه
+            function displayTable() {
+                // عرض صفوف الجدول
+                displayTableRows();
                 
-                // عرض إجمالي القسم
-                if (sectionTotalUsd !== 0 || sectionTotalSyp !== 0) {
+                // عرض إجمالي الجدول
+                if (tableTotalUsd !== 0 || tableTotalSyp !== 0) {
                     const totalRow = document.createElement('tr');
                     totalRow.className = 'subtotal-row';
                     totalRow.innerHTML = `
-                        <td class="text-right font-bold">إجمالي ${currentSection}</td>
-                        <td class="text-center font-bold">${sectionTotalUsd !== 0 ? sectionTotalUsd.toFixed(2) : ''}</td>
-                        <td class="text-center font-bold">${sectionTotalSyp !== 0 ? Math.round(sectionTotalSyp).toLocaleString() : ''}</td>
+                        <td class="text-right font-bold">الاجمالي</td>
+                        <td class="text-center font-bold">${tableTotalUsd !== 0 ? tableTotalUsd.toFixed(2) : ''}</td>
+                        <td class="text-center font-bold">${tableTotalSyp !== 0 ? Math.round(tableTotalSyp).toLocaleString() : ''}</td>
                     `;
                     tbody.appendChild(totalRow);
                 }
                 
-                // إضافة سطر فارغ للفصل بين الأقسام
+                // إضافة سطر فارغ للفصل
                 const spacerRow = document.createElement('tr');
-                spacerRow.innerHTML = `
-                    <td colspan="3" style="height: 10px;"></td>
-                `;
+                spacerRow.innerHTML = `<td colspan="3" style="height: 10px;"></td>`;
                 tbody.appendChild(spacerRow);
             }
             
