@@ -3,721 +3,182 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ميزان المراجعة</title>
+    <title>نظام المحاسبة - معرض ال.جي</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap');
-        
-        body { 
-            font-family: 'Cairo', sans-serif; 
-            background: #f8fafc; 
-            margin: 0; 
-            color: #1e293b;
-            font-size: 0.8rem; 
-        }
-
-        .table-container { 
-            max-height: 75vh; 
-            overflow-y: auto; 
-            background: white; 
-            border-radius: 6px; 
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            border: 1px solid #e2e8f0;
-            margin-bottom: 0.5rem;
-        }
-
-        table { width: 100%; border-collapse: collapse; }
-
-        thead th { 
-            position: sticky; top: 0; z-index: 20; 
-            background-color: #2563eb; 
-            color: white; 
-            padding: 8px 6px; 
-            font-weight: 700;
-            font-size: 0.75rem;
-            border: none;
-        }
-
-        td { 
-            padding: 6px 4px; 
-            border-bottom: 1px solid #e2e8f0; 
-            text-align: right; 
-            font-weight: 600;
-            font-size: 0.75rem;
-        }
-
-        .tab-button {
-            background: #e2e8f0;
-            color: #475569;
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-left: 4px;
-        }
-
-        .tab-button.active {
-            background: #2563eb;
-            color: white;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-        }
-
-        .tabs-container {
-            display: flex;
-            gap: 4px;
-            margin-bottom: 8px;
-            padding: 4px;
-            background: #f1f5f9;
-            border-radius: 6px;
-        }
-
-        .search-wrapper { position: relative; width: 100%; }
-
-        .input-glass {
-            background: white;
-            border: 1px solid #cbd5e1;
-            color: #1e293b !important;
-            border-radius: 4px;
-            padding: 6px 8px;
-            font-size: 0.75rem;
-            width: 100%;
-            font-weight: 600;
-        }
-
-        .suggestions-list {
-            position: absolute;
-            top: 100%; left: 0; right: 0;
-            background: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 0 0 4px 4px;
-            max-height: 120px;
-            overflow-y: auto;
-            z-index: 50;
-            display: none;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .suggestion-item {
-            padding: 6px 8px;
-            cursor: pointer;
-            border-bottom: 1px solid #f1f5f9;
-            font-size: 0.7rem;
-            color: #1e293b !important;
-            text-align: right;
-        }
-
-        .suggestion-item:hover { background: #f1f5f9; }
-
-        .suggestion-item.active {
-            background: #2563eb !important;
-            color: white !important;
-        }
-
-        header { padding: 8px 12px !important; }
-
-        @media print {
-            @page { size: A4; margin: 0.5cm; }
-            header, .no-print, #loader, #printOptions, .suggestions-list, .tabs-container { display: none !important; }
-            .table-container { max-height: none !important; overflow: visible !important; border: none !important; box-shadow: none !important; margin-bottom: 0 !important; }
-            table { width: 100%; border-collapse: collapse; }
-            th { position: static !important; background-color: #f1f5f9 !important; color: #1e293b !important; border: 1px solid #000 !important; }
-            td { border: 1px solid #000 !important; color: black !important; font-size: 0.7rem !important; padding: 4px !important; }
-            .print-hidden { display: none !important; }
-        }
-
-        #printOptions {
-            display: none;
-            position: absolute;
-            top: 50px; left: 10px;
-            background: white; 
-            padding: 10px;
-            border-radius: 6px; 
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-            z-index: 100; 
-            border: 1px solid #cbd5e1;
-            width: 180px;
-        }
-
-        /* تنسيق للصفوف */
-        .account-row td:first-child {
-            font-weight: 700;
-            color: #1e293b;
-        }
-        
-        .total-row {
-            background-color: #dbeafe !important;
-            font-weight: 800 !important;
-        }
-        
-        .total-row td {
-            border-top: 2px solid #93c5fd;
-            border-bottom: 2px solid #93c5fd;
-        }
-        
-        /* تنسيق للأرقام */
-        .usd-cell {
-            color: #059669;
-            font-weight: 700;
-        }
-        
-        .syp-cell {
-            color: #d97706;
-            font-weight: 700;
-        }
-        
-        .negative-cell {
-            color: #dc2626;
-            font-weight: 700;
-        }
-        
-        .zero-cell {
-            color: #94a3b8;
-            font-weight: 600;
-        }
-        
-        /* تحسينات للترويسة */
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-        
-        .title-section {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .controls-section {
-            display: flex;
-            gap: 6px;
-            align-items: center;
-        }
-        
-        /* شريط التمرير المخصص */
-        .table-container::-webkit-scrollbar {
-            width: 6px;
-        }
-        
-        .table-container::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-        
-        .table-container::-webkit-scrollbar-thumb {
-            background: #94a3b8;
-            border-radius: 3px;
-        }
-        
-        .table-container::-webkit-scrollbar-thumb:hover {
-            background: #64748b;
-        }
+        body { font-family: 'Cairo', sans-serif; background: #f8fafc; color: #334155; font-size: 0.85rem; }
+        .table-container { max-height: 70vh; overflow-y: auto; background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        th { position: sticky; top: 0; background: #f1f5f9; z-index: 10; shadow: 0 2px 2px -1px rgba(0,0,0,0.1); }
+        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); display: none; justify-content: center; align-items: center; z-index: 9999; }
     </style>
 </head>
-<body>
+<body class="bg-slate-50">
 
-    <div id="loader" class="fixed inset-0 bg-white/90 z-[100] flex flex-col items-center justify-center">
-        <div class="animate-spin rounded-full h-8 w-8 border-4 border-blue-600 border-t-transparent"></div>
-        <p class="mt-3 text-gray-600 text-xs">جاري تحميل البيانات...</p>
-    </div>
+    <div id="loading" class="loading-overlay"><i class="fas fa-spinner fa-spin fa-3x text-blue-600"></i></div>
 
-    <header class="bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-sm mb-2 sticky top-0 z-30 no-print">
-        <div class="container mx-auto">
-            <div class="header-content">
-                <div class="title-section">
-                    <div class="bg-white/20 p-2 rounded">
-                        <i class="fas fa-balance-scale text-sm"></i>
-                    </div>
-                    <div>
-                        <h1 class="text-base font-bold">ميزان المراجعة</h1>
-                        <p class="text-blue-100 text-xs">برنامج محاسبة</p>
-                    </div>
+    <header class="bg-white border-b sticky top-0 z-50 p-4 shadow-sm">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-blue-600 p-2 rounded-lg text-white"><i class="fas fa-calculator fa-lg"></i></div>
+                <h1 class="text-xl font-bold text-slate-800">Accounting <span class="text-blue-600">المحاسبة</span></h1>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="text-left">
+                    <p class="text-xs text-slate-500">آخر تحديث</p>
+                    <p id="lastUpdate" class="font-semibold text-sm">-</p>
                 </div>
-                
-                <div class="controls-section">
-                    <div class="print-settings-btn">
-                        <button onclick="togglePrintSettings()" class="bg-white/20 hover:bg-white/30 px-2 py-1 rounded text-xs font-bold border border-white/30 flex items-center gap-1">
-                            <i class="fas fa-print text-xs"></i> خيارات
-                        </button>
-                    </div>
-                    <button onclick="preparePrint()" class="bg-green-500 hover:bg-green-600 px-2 py-1 rounded text-xs font-bold border border-green-400 flex items-center gap-1">
-                        <i class="fas fa-print text-xs"></i> طباعة
-                    </button>
-                    <button onclick="refreshData()" class="bg-cyan-500 hover:bg-cyan-600 px-2 py-1 rounded text-xs font-bold border border-cyan-400 flex items-center gap-1">
-                        <i class="fas fa-sync-alt text-xs"></i> تحديث
-                    </button>
-                </div>
+                <button onclick="fetchAllData()" class="bg-blue-50 text-blue-600 p-2 rounded-full hover:bg-blue-100 transition-colors">
+                    <i class="fas fa-sync-alt" id="refreshIcon"></i>
+                </button>
             </div>
         </div>
     </header>
 
-    <main class="container mx-auto px-3">
-        <!-- تبويبات -->
-        <div class="tabs-container no-print">
-            <button class="tab-button active" onclick="switchTab('trial-balance')">
-                ميزان المراجعة
-            </button>
-            <button class="tab-button" onclick="switchTab('accounts')">
-                الحسابات
-            </button>
-            <button class="tab-button" onclick="switchTab('reports')">
-                التقارير
+    <main class="max-w-7xl mx-auto p-4">
+        <div class="flex gap-2 mb-6 bg-white p-1 rounded-xl shadow-sm border inline-flex">
+            <button class="px-6 py-2 rounded-lg bg-blue-600 text-white font-bold transition-all">
+                <i class="fas fa-file-invoice-dollar ml-2"></i>كشف الحساب
             </button>
         </div>
 
-        <!-- خيارات الطباعة -->
-        <div id="printOptions" class="no-print">
-            <p class="font-bold text-xs mb-2 text-blue-900">أعمدة الطباعة:</p>
-            <div class="grid grid-cols-1 gap-y-1 text-xs" id="columnCheckboxes"></div>
-            <div class="flex gap-2 mt-3">
-                <button onclick="savePrintSettings()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-1.5 rounded text-xs font-bold">حفظ</button>
-                <button onclick="hideAllPrintOptions()" class="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 py-1.5 rounded text-xs font-bold">إغلاق</button>
+        <div class="bg-white p-4 rounded-xl shadow-sm border mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+                <label class="block text-xs font-bold mb-1">الحساب</label>
+                <input type="text" id="searchStatementAccount" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none statement-search-input" placeholder="اسم الحساب...">
+            </div>
+            <div>
+                <label class="block text-xs font-bold mb-1">من تاريخ</label>
+                <input type="date" id="searchStatementDateFrom" class="w-full p-2 border rounded-lg statement-search-input">
+            </div>
+            <div>
+                <label class="block text-xs font-bold mb-1">إلى تاريخ</label>
+                <input type="date" id="searchStatementDateTo" class="w-full p-2 border rounded-lg statement-search-input">
+            </div>
+            <div class="flex items-end">
+                <button onclick="renderStatement()" class="w-full bg-slate-800 text-white p-2 rounded-lg hover:bg-slate-700 transition-colors">
+                    <i class="fas fa-filter ml-2"></i>تطبيق الفلتر
+                </button>
             </div>
         </div>
 
-        <!-- محتوى تبويب ميزان المراجعة -->
-        <div id="trial-balance-content" class="tab-content">
-            <!-- شريط البحث -->
-            <div class="grid grid-cols-3 gap-2 mb-3 no-print">
-                <div class="search-wrapper">
-                    <input type="text" id="searchAccount" placeholder="بحث في الحساب" class="input-glass search-input" autocomplete="off">
-                    <div id="suggestAccount" class="suggestions-list"></div>
-                </div>
-                <div class="search-wrapper">
-                    <input type="text" id="searchUsd" placeholder="بحث في المبلغ ($)" class="input-glass search-input" autocomplete="off">
-                    <div id="suggestUsd" class="suggestions-list"></div>
-                </div>
-                <div class="search-wrapper">
-                    <input type="text" id="searchSyp" placeholder="بحث في المبلغ (ل.س)" class="input-glass search-input" autocomplete="off">
-                    <div id="suggestSyp" class="suggestions-list"></div>
-                </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="bg-emerald-50 border border-emerald-100 p-4 rounded-xl">
+                <p class="text-emerald-600 text-xs font-bold mb-1">إجمالي المدين</p>
+                <p id="totalDebit" class="text-2xl font-black text-emerald-700">0</p>
             </div>
-
-            <!-- جدول ميزان المراجعة -->
-            <div class="table-container">
-                <table id="mainTable" class="main-table">
-                    <thead>
-                        <tr>
-                            <th data-col="index" class="w-8 text-center">#</th>
-                            <th data-col="account">الحساب</th>
-                            <th data-col="usd">دولار</th>
-                            <th data-col="syp">سوري</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody">
-                        <!-- سيتم ملء البيانات من خلال JavaScript -->
-                        <tr class="empty-row">
-                            <td colspan="4">
-                                <div class="flex flex-col items-center justify-center py-4">
-                                    <div class="animate-spin rounded-full h-6 w-6 border-3 border-blue-600 border-t-transparent mb-2"></div>
-                                    <p class="text-blue-700 font-bold text-xs">جاري تحميل البيانات...</p>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="bg-rose-50 border border-rose-100 p-4 rounded-xl">
+                <p class="text-rose-600 text-xs font-bold mb-1">إجمالي الدائن</p>
+                <p id="totalCredit" class="text-2xl font-black text-rose-700">0</p>
+            </div>
+            <div class="bg-blue-50 border border-blue-100 p-4 rounded-xl">
+                <p class="text-blue-600 text-xs font-bold mb-1">الرصيد النهائي</p>
+                <p id="finalBalance" class="text-2xl font-black text-blue-700">0</p>
             </div>
         </div>
 
-        <!-- محتوى تبويب الحسابات -->
-        <div id="accounts-content" class="tab-content" style="display: none;">
-            <div class="table-container">
-                <table class="main-table">
-                    <thead>
-                        <tr>
-                            <th class="w-8 text-center">#</th>
-                            <th>اسم الحساب</th>
-                            <th>النوع</th>
-                            <th>الرصيد</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="empty-row">
-                            <td colspan="4" class="text-center py-4">
-                                <i class="fas fa-info-circle text-blue-400 mb-2"></i>
-                                <p class="text-blue-800 font-bold text-xs">قسم الحسابات قيد التطوير</p>
-                            </td>
-                        </tr>
+        <div class="table-container border">
+            <table class="w-full text-right border-collapse">
+                <thead>
+                    <tr class="text-slate-600 border-b">
+                        <th class="p-3">التاريخ</th>
+                        <th class="p-3">البيان</th>
+                        <th class="p-3">مدين</th>
+                        <th class="p-3">دائن</th>
+                        <th class="p-3">الرصيد</th>
+                    </tr>
+                </thead>
+                <tbody id="statementTableBody" class="divide-y">
                     </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- محتوى تبويب التقارير -->
-        <div id="reports-content" class="tab-content" style="display: none;">
-            <div class="table-container">
-                <table class="main-table">
-                    <thead>
-                        <tr>
-                            <th class="w-8 text-center">#</th>
-                            <th>اسم التقرير</th>
-                            <th>الفترة</th>
-                            <th>الحالة</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="empty-row">
-                            <td colspan="4" class="text-center py-4">
-                                <i class="fas fa-chart-pie text-blue-400 mb-2"></i>
-                                <p class="text-blue-800 font-bold text-xs">قسم التقارير قيد التطوير</p>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+            </table>
         </div>
     </main>
 
-    <footer class="container mx-auto px-3 mt-4 mb-3 text-center text-gray-600 text-xs no-print">
-        <div class="border-t border-gray-200 pt-2">
-            <p>نظام ميزان المراجعة © 2023</p>
-        </div>
-    </footer>
-
     <script>
-        // بيانات ميزان المراجعة
-        const trialBalanceData = [
-            {account: "الصندوق", usd: "0.00", syp: "390"},
-            {account: "صندوق كاش", usd: "0.00", syp: "460"},
-            {account: "صندوق الافتراضية", usd: "0.00", syp: "0"},
-            {account: "المكتب", usd: "0.00", syp: "0"},
-            {account: "", usd: "0.00", syp: "850", isTotal: true},
-            {account: "كاش", usd: "0.00", syp: "9,404"},
-            {account: "الافتراضية", usd: "0.00", syp: "0"},
-            {account: "شام كاش", usd: "0.00", syp: "0"},
-            {account: "الهرم", usd: "0.00", syp: "0"},
-            {account: "", usd: "0.00", syp: "9,404", isTotal: true},
-            {account: "الارصدة", usd: "2,000.00", syp: "2,793"},
-            {account: "", usd: "2,000.00", syp: "2,793", isTotal: true},
-            {account: "المحل", usd: "300.00", syp: "0"},
-            {account: "كاش", usd: "0.00", syp: "-4,000"},
-            {account: "الافتراضية", usd: "0.00", syp: "0"},
-            {account: "حسم المشتريات", usd: "0.00", syp: "0"},
-            {account: "ايرادات اخرى", usd: "0.00", syp: "0"},
-            {account: "", usd: "300.00", syp: "-4,000", isTotal: true},
-            {account: "البيت", usd: "0.00", syp: "0"},
-            {account: "صدقة", usd: "7.80", syp: "0"},
-            {account: "رصيد", usd: "0.00", syp: "0"},
-            {account: "حسم المبيعات", usd: "0.00", syp: "0"},
-            {account: "مصاريف اخرى", usd: "0.00", syp: "0"},
-            {account: "", usd: "7.80", syp: "0", isTotal: true},
-            {account: "عبدالله", usd: "205.00", syp: "0"},
-            {account: "", usd: "87.20", syp: "-4,000", isTotal: true},
-            {account: "الايرادات", usd: "300.00", syp: "-4,000"},
-            {account: "المصاريف", usd: "7.80", syp: "0"},
-            {account: "", usd: "292.20", syp: "-4,000", isTotal: true},
-            {account: "راس المال العامل", usd: "2,000.00", syp: "13,047"},
-            {account: "راس المال", usd: "2,000.00", syp: "0"},
-            {account: "الصافي", usd: "0.00", syp: "13,047"}
-        ];
+        // روابط البيانات المحدثة
+        const SHEET_URLS = {
+            journal: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS2QXsIxQchkIgs6bY9lHOXqyLUBklNAx8-R1ej04yTxAiBWCIhMxA4rHFxVmfOi1y2AzZPOmhvigpZ/pub?gid=210521495&single=true&output=csv',
+            sales: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS2QXsIxQchkIgs6bY9lHOXqyLUBklNAx8-R1ej04yTxAiBWCIhMxA4rHFxVmfOi1y2AzZPOmhvigpZ/pub?gid=1183647784&single=true&output=csv',
+            purchases: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS2QXsIxQchkIgs6bY9lHOXqyLUBklNAx8-R1ej04yTxAiBWCIhMxA4rHFxVmfOi1y2AzZPOmhvigpZ/pub?gid=515286016&single=true&output=csv',
+            accounts: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS2QXsIxQchkIgs6bY9lHOXqyLUBklNAx8-R1ej04yTxAiBWCIhMxA4rHFxVmfOi1y2AzZPOmhvigpZ/pub?gid=1244180750&single=true&output=csv'
+        };
 
-        // تعريف أعمدة الجدول
-        const tableColumns = [
-            {id:'index', label:'#', defaultChecked: true},
-            {id:'account', label:'الحساب', defaultChecked: true},
-            {id:'usd', label:'دولار', defaultChecked: true},
-            {id:'syp', label:'سوري', defaultChecked: true}
-        ];
+        let dataStore = { journal: [] };
 
-        // إعدادات الطباعة المحفوظة
-        let printSettings = {};
-        let currentTab = 'trial-balance';
-
-        // دالة لتحميل البيانات
-        function loadData() {
-            // إخفاء الloader
-            setTimeout(() => {
-                document.getElementById('loader').classList.add('hidden');
-                renderTable();
-                setupSearchDropdowns();
-            }, 500);
-        }
-
-        // دالة لتحويل النصوص إلى أرقام مع التعامل مع الفاصلة
-        function parseNumber(value) {
-            if (!value || value.trim() === '') return 0;
-            const cleaned = String(value).replace(/[^\d.-]/g, '').replace(/,/g, '');
-            return parseFloat(cleaned) || 0;
-        }
-
-        // دالة لعرض الجدول
-        function renderTable() {
-            const tbody = document.getElementById('tableBody');
-            const filters = {
-                account: document.getElementById('searchAccount').value.toLowerCase(),
-                usd: document.getElementById('searchUsd').value.toLowerCase(),
-                syp: document.getElementById('searchSyp').value.toLowerCase()
-            };
+        async function fetchAllData() {
+            document.getElementById('loading').style.display = 'flex';
+            document.getElementById('refreshIcon').classList.add('fa-spin');
             
+            try {
+                const response = await fetch(SHEET_URLS.journal);
+                const csvText = await response.text();
+                Papa.parse(csvText, {
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: (results) => {
+                        dataStore.journal = results.data;
+                        renderStatement();
+                        document.getElementById('lastUpdate').innerText = new Date().toLocaleTimeString('ar-EG');
+                    }
+                });
+            } catch (error) {
+                console.error("خطأ في جلب البيانات:", error);
+                alert("حدث خطأ أثناء تحميل البيانات");
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('refreshIcon').classList.remove('fa-spin');
+            }
+        }
+
+        function renderStatement() {
+            const tbody = document.getElementById('statementTableBody');
+            const accountFilter = document.getElementById('searchStatementAccount').value.toLowerCase();
+            const dateFrom = document.getElementById('searchStatementDateFrom').value;
+            const dateTo = document.getElementById('searchStatementDateTo').value;
+
+            let filtered = dataStore.journal.filter(row => {
+                const rowDate = row['التاريخ'] ? new Date(row['التاريخ']).toISOString().split('T')[0] : '';
+                const matchesAccount = row['اسم الحساب']?.toLowerCase().includes(accountFilter);
+                const matchesDateFrom = !dateFrom || rowDate >= dateFrom;
+                const matchesDateTo = !dateTo || rowDate <= dateTo;
+                return matchesAccount && matchesDateFrom && matchesDateTo;
+            });
+
+            let totalDebit = 0, totalCredit = 0, runningBalance = 0;
             tbody.innerHTML = '';
-            
-            // فلترة البيانات
-            const filteredData = trialBalanceData.filter(row => {
-                const accountMatch = !filters.account || 
-                    String(row.account || '').toLowerCase().includes(filters.account);
-                const usdMatch = !filters.usd || 
-                    String(row.usd || '').toLowerCase().includes(filters.usd);
-                const sypMatch = !filters.syp || 
-                    String(row.syp || '').toLowerCase().includes(filters.syp);
-                
-                return accountMatch && usdMatch && sypMatch;
-            });
-            
-            // عرض البيانات المصفاة
-            filteredData.forEach((row, i) => {
-                const usdNum = parseNumber(row.usd);
-                const sypNum = parseNumber(row.syp);
-                
-                // تحديد تنسيق الصف
-                let rowClass = 'account-row';
-                if (row.isTotal) {
-                    rowClass = 'total-row';
-                } else if (!row.account || row.account.trim() === '') {
-                    rowClass = '';
-                }
-                
-                // تحديد تنسيق الخلايا
-                let accountText = row.account || (row.isTotal ? 'المجموع' : '');
-                let usdClass = 'usd-cell';
-                let sypClass = 'syp-cell';
-                
-                if (usdNum < 0) usdClass = 'negative-cell';
-                if (sypNum < 0) sypClass = 'negative-cell';
-                if (usdNum === 0) usdClass = 'zero-cell';
-                if (sypNum === 0) sypClass = 'zero-cell';
-                
-                const tr = document.createElement('tr');
-                if (rowClass) tr.className = rowClass;
-                
-                // تنسيق عرض الأرقام
-                const displayUsd = usdNum !== 0 ? usdNum.toFixed(2) : '0.00';
-                const displaySyp = sypNum !== 0 ? sypNum.toLocaleString() : '0';
-                
-                tr.innerHTML = `
-                    <td class="text-center text-gray-500 font-bold">${i + 1}</td>
-                    <td class="font-bold text-gray-800">${accountText}</td>
-                    <td class="${usdClass}">${displayUsd}</td>
-                    <td class="${sypClass}">${displaySyp}</td>
+
+            filtered.forEach(row => {
+                const debit = parseFloat(row['مدين'] || 0);
+                const credit = parseFloat(row['دائن'] || 0);
+                totalDebit += debit;
+                totalCredit += credit;
+                runningBalance = debit - credit + runningBalance; // حسب منطق المحاسبة المعتاد
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="p-3 text-slate-500">${row['التاريخ'] || '-'}</td>
+                        <td class="p-3 font-semibold">${row['البيان'] || '-'}</td>
+                        <td class="p-3 text-emerald-600 font-bold">${debit.toLocaleString()}</td>
+                        <td class="p-3 text-rose-600 font-bold">${credit.toLocaleString()}</td>
+                        <td class="p-3 font-bold ${runningBalance >= 0 ? 'text-blue-600' : 'text-rose-700'}">
+                            ${runningBalance.toLocaleString()}
+                        </td>
+                    </tr>
                 `;
-                tbody.appendChild(tr);
-            });
-            
-            // إذا لم تكن هناك بيانات
-            if (filteredData.length === 0) {
-                const noDataRow = document.createElement('tr');
-                noDataRow.className = 'empty-row';
-                noDataRow.innerHTML = `
-                    <td colspan="4" class="text-center py-3">
-                        <i class="fas fa-search text-blue-400 mb-1"></i>
-                        <p class="text-blue-800 font-bold text-xs">لا توجد بيانات تطابق معايير البحث</p>
-                    </td>
-                `;
-                tbody.appendChild(noDataRow);
-            }
-        }
-
-        // إعداد القوائم المنسدلة للبحث
-        function setupSearchDropdowns() {
-            const configs = [
-                { id: 'searchAccount', suggestId: 'suggestAccount', key: 'account' },
-                { id: 'searchUsd', suggestId: 'suggestUsd', key: 'usd' },
-                { id: 'searchSyp', suggestId: 'suggestSyp', key: 'syp' }
-            ];
-
-            configs.forEach(config => {
-                const input = document.getElementById(config.id);
-                const list = document.getElementById(config.suggestId);
-
-                if (!input || !list) return;
-
-                const updateList = () => {
-                    const val = input.value.toLowerCase();
-                    
-                    // جمع القيم الفريدة
-                    const uniqueValues = [...new Set(trialBalanceData
-                        .map(row => String(row[config.key] || ''))
-                        .filter(v => v && v.trim() !== ''))]
-                        .filter(v => v.toLowerCase().includes(val))
-                        .slice(0, 10);
-
-                    list.innerHTML = '';
-                    
-                    if (uniqueValues.length > 0) {
-                        uniqueValues.forEach(v => {
-                            const div = document.createElement('div');
-                            div.className = 'suggestion-item';
-                            div.textContent = v;
-                            div.onclick = () => {
-                                input.value = v;
-                                list.style.display = 'none';
-                                renderTable();
-                            };
-                            list.appendChild(div);
-                        });
-                        list.style.display = 'block';
-                    } else {
-                        list.style.display = 'none';
-                    }
-                };
-
-                input.onfocus = function() {
-                    document.querySelectorAll('.suggestions-list').forEach(l => {
-                        l.style.display = 'none';
-                    });
-                    updateList();
-                };
-                
-                input.oninput = function() {
-                    updateList();
-                    clearTimeout(this.searchTimeout);
-                    this.searchTimeout = setTimeout(() => {
-                        renderTable();
-                    }, 300);
-                };
-                
-                // إخفاء القوائم عند النقر خارجها
-                document.addEventListener('click', (e) => {
-                    if (!e.target.classList.contains('search-input') && 
-                        !e.target.classList.contains('suggestion-item')) {
-                        list.style.display = 'none';
-                    }
-                });
-            });
-        }
-
-        // تبديل التبويبات
-        function switchTab(tabName) {
-            currentTab = tabName;
-            
-            // تحديث أزرار التبويبات
-            document.querySelectorAll('.tab-button').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            // إخفاء جميع المحتويات
-            document.getElementById('trial-balance-content').style.display = 'none';
-            document.getElementById('accounts-content').style.display = 'none';
-            document.getElementById('reports-content').style.display = 'none';
-            
-            // إظهار المحتوى المحدد
-            document.getElementById(tabName + '-content').style.display = 'block';
-            
-            // تفعيل زر التبويب
-            document.querySelector(`[onclick="switchTab('${tabName}')"]`).classList.add('active');
-        }
-
-        // تحديث البيانات
-        function refreshData() {
-            renderTable();
-        }
-
-        // تهيئة خيارات الطباعة
-        function initPrintOptions() {
-            // تحميل إعدادات الطباعة المحفوظة
-            loadPrintSettings();
-            
-            // خيارات الطباعة
-            const container = document.getElementById('columnCheckboxes');
-            container.innerHTML = '';
-            
-            tableColumns.forEach(col => {
-                const label = document.createElement('label');
-                label.className = 'flex items-center gap-2 cursor-pointer py-1';
-                const isChecked = printSettings[col.id] !== false;
-                label.innerHTML = `
-                    <input type="checkbox" ${isChecked ? 'checked' : ''} data-col-ref="${col.id}" class="h-4 w-4 text-blue-600">
-                    <span class="text-blue-800 font-bold">${col.label}</span>
-                `;
-                container.appendChild(label);
-            });
-        }
-
-        // تحميل إعدادات الطباعة من localStorage
-        function loadPrintSettings() {
-            const savedSettings = localStorage.getItem('printSettings');
-            if (savedSettings) {
-                printSettings = JSON.parse(savedSettings);
-            } else {
-                // إعدادات افتراضية
-                tableColumns.forEach(col => {
-                    printSettings[col.id] = col.defaultChecked !== false;
-                });
-            }
-        }
-
-        // حفظ إعدادات الطباعة إلى localStorage
-        function savePrintSettings() {
-            // حفظ إعدادات
-            const checks = document.querySelectorAll('#columnCheckboxes input');
-            checks.forEach(check => {
-                const colId = check.getAttribute('data-col-ref');
-                printSettings[colId] = check.checked;
             });
 
-            // حفظ في localStorage
-            localStorage.setItem('printSettings', JSON.stringify(printSettings));
-            
-            // إخفاء خيارات الطباعة
-            hideAllPrintOptions();
-            
-            // إظهار رسالة تأكيد
-            alert('تم حفظ إعدادات الطباعة');
+            document.getElementById('totalDebit').innerText = totalDebit.toLocaleString();
+            document.getElementById('totalCredit').innerText = totalCredit.toLocaleString();
+            document.getElementById('finalBalance').innerText = (totalDebit - totalCredit).toLocaleString();
         }
 
-        // عرض/إخفاء خيارات الطباعة
-        function togglePrintSettings() {
-            const div = document.getElementById('printOptions');
-            div.style.display = div.style.display === 'block' ? 'none' : 'block';
-        }
-
-        function hideAllPrintOptions() {
-            document.getElementById('printOptions').style.display = 'none';
-        }
-
-        // إعداد الطباعة
-        function preparePrint() {
-            // إخفاء جميع الأعمدة أولاً
-            document.querySelectorAll('#mainTable th, #mainTable td').forEach(el => {
-                el.classList.remove('print-hidden');
-            });
-            
-            // إخفاء الأعمدة غير المحددة في الإعدادات المحفوظة
-            Object.keys(printSettings).forEach(colId => {
-                if (!printSettings[colId]) {
-                    const th = document.querySelector(`#mainTable th[data-col="${colId}"]`);
-                    if (th) {
-                        const colIndex = Array.from(th.parentNode.children).indexOf(th) + 1;
-                        th.classList.add('print-hidden');
-                        document.querySelectorAll(`#mainTable tbody tr td:nth-child(${colIndex})`).forEach(td => {
-                            td.classList.add('print-hidden');
-                        });
-                    }
-                }
-            });
-            
-            // تنفيذ الطباعة
-            window.print();
-            
-            // إعادة عرض جميع الأعمدة بعد الطباعة
-            setTimeout(() => {
-                document.querySelectorAll('#mainTable th, #mainTable td').forEach(el => {
-                    el.classList.remove('print-hidden');
-                });
-            }, 100);
-        }
-
-        // إضافة مستمعات الأحداث
-        document.querySelectorAll('.search-input').forEach(el => el.addEventListener('input', renderTable));
-        
         // التحميل الأولي
-        window.onload = () => { 
-            initPrintOptions(); 
-            loadData();
+        window.onload = () => {
+            fetchAllData();
+            // تحديث تلقائي كل 5 دقائق
+            setInterval(fetchAllData, 300000);
         };
     </script>
 </body>
