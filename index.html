@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Accounting</title>
+    <title>نظام المحاسبة</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -806,13 +806,7 @@
                     header: true, skipEmptyLines: true,
                     complete: (res) => {
                         allTrialBalanceData = res.data || [];
-                        // تنظيف بيانات ميزان المراجعة
-                        allTrialBalanceData = allTrialBalanceData.filter(row => {
-                            const hasData = Object.values(row).some(value => 
-                                value && value.toString().trim() !== '' && value.toString().trim() !== 'FALSE'
-                            );
-                            return hasData;
-                        });
+                        console.log('بيانات ميزان المراجعة المحملة:', allTrialBalanceData);
                         
                         // عرض بيانات ميزان المراجعة
                         renderTrialBalance();
@@ -1613,14 +1607,14 @@
             }
         }
 
-        // عرض ميزان المراجعة بنفس تصميم الملف المرفق
+        // عرض ميزان المراجعة بنفس تصميم الملف المرفق - الإصدار المصحح
         function renderTrialBalance() {
             const tbody = document.getElementById('trialBalanceTableBody');
             const infoElement = document.getElementById('trialBalanceInfo');
             
             tbody.innerHTML = '';
             
-            if (allTrialBalanceData.length === 0) {
+            if (!allTrialBalanceData || allTrialBalanceData.length === 0) {
                 const noDataRow = document.createElement('tr');
                 noDataRow.innerHTML = `
                     <td colspan="3" class="text-center py-4 text-gray-500">
@@ -1638,23 +1632,23 @@
             let rowIndex = 0;
             let currentSection = '';
             let sectionStartRow = null;
+            let sectionHasData = false;
             
-            // تحديد إذا كنا في قسم جديد
-            const isNewSection = (row) => {
-                return row['الحساب'] === 'الحساب';
-            };
+            console.log('عرض بيانات ميزان المراجعة:', allTrialBalanceData);
             
-            // معالجة البيانات
+            // معالجة البيانات - عرض جميع الصفوف كما هي من CSV
             allTrialBalanceData.forEach(row => {
                 const account = row['الحساب'] || '';
                 const usdAmount = row['دولار'] || '';
                 const sypAmount = row['سوري'] || '';
                 
-                // إذا كان هذا سطر قسم جديد
-                if (isNewSection(row)) {
+                console.log('معالجة سطر:', { account, usdAmount, sypAmount });
+                
+                // إذا كان سطر قسم جديد (الحساب = "الحساب" والدولار يحتوي على اسم القسم)
+                if (account.trim() === 'الحساب' && usdAmount && usdAmount.trim() !== '') {
                     // إغلاق القسم السابق إذا كان موجوداً
-                    if (sectionStartRow !== null && currentSection !== '') {
-                        // إضافة سطر الإجمالي للقسم السابق
+                    if (currentSection !== '' && sectionHasData) {
+                        // إضافة سطر إجمالي القسم
                         const totalRow = document.createElement('tr');
                         totalRow.className = 'trial-total-row';
                         totalRow.innerHTML = `
@@ -1667,8 +1661,8 @@
                     }
                     
                     // بدء قسم جديد
-                    currentSection = usdAmount || 'قسم غير معروف';
-                    sectionStartRow = rowIndex;
+                    currentSection = usdAmount.trim();
+                    sectionHasData = false;
                     
                     // إضافة عنوان القسم
                     const sectionRow = document.createElement('tr');
@@ -1679,37 +1673,58 @@
                     tbody.appendChild(sectionRow);
                     rowIndex++;
                 } 
-                // إذا كان سطر بيانات عادي
-                else if (account.trim() !== '' && !isNewSection(row)) {
+                // إذا كان سطر بيانات عادي (وليس سطر قسم)
+                else if (account.trim() !== '' && account.trim() !== 'الحساب') {
+                    sectionHasData = true;
+                    rowIndex++;
+                    
                     const tr = document.createElement('tr');
                     tr.className = rowIndex % 2 === 0 ? 'bg-gray-50' : '';
                     
                     // تنسيق الأرقام
-                    let formattedUsd = '';
-                    let formattedSyp = '';
+                    let formattedUsd = usdAmount;
+                    let formattedSyp = sypAmount;
                     
-                    if (usdAmount && usdAmount.trim() !== '') {
-                        const usdNum = parseNumber(usdAmount);
-                        formattedUsd = usdNum.toFixed(2);
+                    // محاولة تنسيق الأرقام إذا كانت قابلة للتحويل
+                    try {
+                        if (usdAmount && usdAmount.trim() !== '' && !isNaN(parseNumber(usdAmount))) {
+                            const usdNum = parseNumber(usdAmount);
+                            formattedUsd = usdNum.toFixed(2);
+                        }
+                        
+                        if (sypAmount && sypAmount.trim() !== '' && !isNaN(parseNumber(sypAmount))) {
+                            const sypNum = parseNumber(sypAmount);
+                            formattedSyp = Math.round(sypNum).toLocaleString();
+                        }
+                    } catch (e) {
+                        // ابق على القيم الأصلية إذا كان هناك خطأ
                     }
                     
-                    if (sypAmount && sypAmount.trim() !== '') {
-                        const sypNum = parseNumber(sypAmount);
-                        formattedSyp = Math.round(sypNum).toLocaleString();
-                    }
+                    // تحديد إذا كان سطر إجمالي
+                    const isTotalRow = account.includes('الاجمالي') || account.trim() === '';
                     
                     tr.innerHTML = `
-                        <td class="text-right ${account.includes('الاجمالي') ? 'font-bold' : ''}">${account}</td>
-                        <td class="text-center ${account.includes('الاجمالي') ? 'font-bold' : ''}">${formattedUsd}</td>
-                        <td class="text-center ${account.includes('الاجمالي') ? 'font-bold' : ''}">${formattedSyp}</td>
+                        <td class="text-right ${isTotalRow ? 'font-bold' : ''}">${account}</td>
+                        <td class="text-center ${isTotalRow ? 'font-bold' : ''}">${formattedUsd}</td>
+                        <td class="text-center ${isTotalRow ? 'font-bold' : ''}">${formattedSyp}</td>
                     `;
                     tbody.appendChild(tr);
+                }
+                // إذا كان سطر فارغ (مهم للحفاظ على التنسيق)
+                else if (account.trim() === '' && usdAmount.trim() === '' && sypAmount.trim() === '') {
+                    const emptyRow = document.createElement('tr');
+                    emptyRow.innerHTML = `
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                    `;
+                    tbody.appendChild(emptyRow);
                     rowIndex++;
                 }
             });
             
             // إغلاق القسم الأخير إذا كان موجوداً
-            if (sectionStartRow !== null && currentSection !== '') {
+            if (currentSection !== '' && sectionHasData) {
                 const totalRow = document.createElement('tr');
                 totalRow.className = 'trial-total-row';
                 totalRow.innerHTML = `
@@ -1722,11 +1737,11 @@
             
             // تحديث معلومات التحديث
             if (lastUpdateTime) {
-                infoElement.textContent = `آخر تحديث: ${lastUpdateTime.toLocaleString('ar-EG')} | عدد الأسطر: ${rowIndex}`;
+                infoElement.textContent = `آخر تحديث: ${lastUpdateTime.toLocaleString('ar-EG')}`;
             }
         }
 
-        // عرض الأرصدة بدون صف الإجمالي النهائي
+        // عرض الأرصدة مع صف الإجمالي فقط (بدون الإجمالي النهائي)
         function renderBalances() {
             const tbody = document.getElementById('balancesTableBody');
             const infoElement = document.getElementById('balancesInfo');
@@ -1766,11 +1781,20 @@
             let totalBalanceUsd = 0;
             let totalBalanceSyp = 0;
             
+            // متغيرات لتخزين صف الإجمالي من البيانات الأصلية
+            let totalRowFromData = null;
+            
             const filteredData = allBalancesData.filter(row => {
                 const account = row['الحساب'] || '';
                 
-                // استبعاد سطور الإجمالي
-                if (account.includes('الاجمالي') || account.trim() === '') {
+                // حفظ صف الإجمالي من البيانات الأصلية
+                if (account.includes('الاجمالي')) {
+                    totalRowFromData = row;
+                    return true; // نرجع true لإدراجه في العرض
+                }
+                
+                // استبعاد الصفوف الفارغة
+                if (account.trim() === '') {
                     return false;
                 }
                 
@@ -1836,24 +1860,34 @@
                 const balanceUsd = parseNumber(row['الرصيد دولار']);
                 const balanceSyp = parseNumber(row['الرصيد سوري']);
                 
-                // تحديث الإجماليات
-                totalSalesUsd += salesUsd;
-                totalSalesSyp += salesSyp;
-                totalPurchasesUsd += purchasesUsd;
-                totalPurchasesSyp += purchasesSyp;
-                totalPaymentsUsd += paymentUsd;
-                totalPaymentsSyp += paymentSyp;
-                totalBalanceUsd += balanceUsd;
-                totalBalanceSyp += balanceSyp;
+                // تحديد إذا كان هذا سطر الإجمالي
+                const isTotalRow = account.includes('الاجمالي');
+                
+                if (!isTotalRow) {
+                    // تحديث الإجماليات فقط للصفوف غير الإجمالية
+                    totalSalesUsd += salesUsd;
+                    totalSalesSyp += salesSyp;
+                    totalPurchasesUsd += purchasesUsd;
+                    totalPurchasesSyp += purchasesSyp;
+                    totalPaymentsUsd += paymentUsd;
+                    totalPaymentsSyp += paymentSyp;
+                    totalBalanceUsd += balanceUsd;
+                    totalBalanceSyp += balanceSyp;
+                }
                 
                 rowIndex++;
                 
                 const tr = document.createElement('tr');
-                tr.className = rowIndex % 2 === 0 ? 'bg-gray-50' : '';
+                
+                if (isTotalRow) {
+                    tr.className = 'total-row';
+                } else {
+                    tr.className = rowIndex % 2 === 0 ? 'bg-gray-50' : '';
+                }
                 
                 tr.innerHTML = `
                     <td class="text-gray-400 text-[10px]">${rowIndex}</td>
-                    <td class="text-right font-bold text-blue-700">${account || 'غير محدد'}</td>
+                    <td class="text-right font-bold ${isTotalRow ? 'text-green-800' : 'text-blue-700'}">${account || 'غير محدد'}</td>
                     <td class="${salesUsd >= 0 ? 'positive-balance' : 'negative-balance'}">${salesUsd !== 0 ? salesUsd.toFixed(2) : ''}</td>
                     <td class="${salesSyp >= 0 ? 'positive-balance' : 'negative-balance'}">${salesSyp !== 0 ? Math.round(salesSyp).toLocaleString() : ''}</td>
                     <td class="${purchasesUsd >= 0 ? 'positive-balance' : 'negative-balance'}">${purchasesUsd !== 0 ? purchasesUsd.toFixed(2) : ''}</td>
@@ -1866,6 +1900,25 @@
                 tbody.appendChild(tr);
             });
             
+            // إذا لم يكن هناك صف إجمالي في البيانات الأصلية، نضيف واحداً يدوياً
+            if (!totalRowFromData && filteredData.length > 0) {
+                const totalRow = document.createElement('tr');
+                totalRow.className = 'total-row';
+                totalRow.innerHTML = `
+                    <td class="text-gray-400 text-[10px]">${rowIndex + 1}</td>
+                    <td class="text-right font-bold text-green-800">الاجمالي</td>
+                    <td class="${totalSalesUsd >= 0 ? 'positive-balance' : 'negative-balance'} font-bold">${totalSalesUsd.toFixed(2)}</td>
+                    <td class="${totalSalesSyp >= 0 ? 'positive-balance' : 'negative-balance'} font-bold">${Math.round(totalSalesSyp).toLocaleString()}</td>
+                    <td class="${totalPurchasesUsd >= 0 ? 'positive-balance' : 'negative-balance'} font-bold">${totalPurchasesUsd.toFixed(2)}</td>
+                    <td class="${totalPurchasesSyp >= 0 ? 'positive-balance' : 'negative-balance'} font-bold">${Math.round(totalPurchasesSyp).toLocaleString()}</td>
+                    <td class="${totalPaymentsUsd >= 0 ? 'positive-balance' : 'negative-balance'} font-bold">${totalPaymentsUsd.toFixed(2)}</td>
+                    <td class="${totalPaymentsSyp >= 0 ? 'positive-balance' : 'negative-balance'} font-bold">${Math.round(totalPaymentsSyp).toLocaleString()}</td>
+                    <td class="${totalBalanceUsd >= 0 ? 'positive-balance' : 'negative-balance'} font-bold">${totalBalanceUsd.toFixed(2)}</td>
+                    <td class="${totalBalanceSyp >= 0 ? 'positive-balance' : 'negative-balance'} font-bold">${Math.round(totalBalanceSyp).toLocaleString()}</td>
+                `;
+                tbody.appendChild(totalRow);
+            }
+            
             // تحديث ملخص الأرصدة
             document.getElementById('summaryTotalSalesUsd').textContent = `${totalSalesUsd.toFixed(2)} $`;
             document.getElementById('summaryTotalPurchasesUsd').textContent = `${totalPurchasesUsd.toFixed(2)} $`;
@@ -1877,7 +1930,7 @@
             
             // تحديث معلومات التحديث
             if (lastUpdateTime) {
-                infoElement.textContent = `آخر تحديث: ${lastUpdateTime.toLocaleString('ar-EG')} | عدد الحسابات: ${rowIndex}`;
+                infoElement.textContent = `آخر تحديث: ${lastUpdateTime.toLocaleString('ar-EG')} | عدد الحسابات: ${filteredData.length}`;
             }
             
             // إذا لم تكن هناك بيانات بعد الفلترة
