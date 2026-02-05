@@ -493,7 +493,7 @@
                 </button>
             </div>
 
-            <!-- بحث كشف الحساب -->
+            <!-- بحث كشف الحساب - فقط في تبويب كشف الحساب -->
             <div id="statementSearch" class="tab-content">
                 <div class="grid grid-cols-6 gap-2 pb-2 mt-2">
                     <div class="search-wrapper">
@@ -525,33 +525,9 @@
                 <!-- لا يوجد حقل بحث لميزان المراجعة كما طلبت -->
             </div>
             
-            <!-- بحث الأرصدة -->
+            <!-- لا يوجد بحث للأرصدة -->
             <div id="balancesSearch" class="tab-content">
-                <div class="grid grid-cols-4 gap-2 pb-2 mt-2">
-                    <div class="search-wrapper">
-                        <input type="text" id="searchBalanceAccount" placeholder="اسم الحساب" class="input-glass balances-search-input" autocomplete="off">
-                        <div id="suggestBalanceAccount" class="suggestions-list"></div>
-                    </div>
-                    <div class="search-wrapper">
-                        <select id="searchBalanceType" class="input-glass balances-search-input">
-                            <option value="">جميع الأنواع</option>
-                            <option value="sales">مبيعات</option>
-                            <option value="purchases">مشتريات</option>
-                            <option value="payments">مدفوعات</option>
-                            <option value="balance">أرصدة</option>
-                        </select>
-                    </div>
-                    <div class="search-wrapper">
-                        <select id="searchBalanceCurrency" class="input-glass balances-search-input">
-                            <option value="">جميع العملات</option>
-                            <option value="usd">دولار</option>
-                            <option value="syp">ليرة سورية</option>
-                        </select>
-                    </div>
-                    <div class="search-wrapper">
-                        <input type="number" id="searchMinAmount" placeholder="الحد الأدنى للمبلغ" class="input-glass balances-search-input" autocomplete="off">
-                    </div>
-                </div>
+                <!-- تم إزالة خيارات البحث من الأرصدة -->
             </div>
         </div>
     </header>
@@ -1058,129 +1034,25 @@
             });
         }
 
-        // إعداد القوائم المنسدلة للأرصدة
+        // إعداد القوائم المنسدلة للأرصدة - تم إزالتها
         function setupBalancesDropdowns() {
-            const input = document.getElementById('searchBalanceAccount');
-            const list = document.getElementById('suggestBalanceAccount');
-            const typeSelect = document.getElementById('searchBalanceType');
-            const currencySelect = document.getElementById('searchBalanceCurrency');
-            const minAmountInput = document.getElementById('searchMinAmount');
-
-            if (input && list) {
-                input.onfocus = function() {
-                    hideAllSuggestLists();
-                    updateBalanceSuggestions();
-                };
-                
-                input.oninput = function() {
-                    updateBalanceSuggestions();
-                    clearTimeout(this.searchTimeout);
-                    this.searchTimeout = setTimeout(() => {
-                        renderBalances();
-                    }, 500);
-                };
-                
-                input.onkeydown = function(e) {
-                    handleSearchInput(e, input, list);
-                };
-            }
-
-            if (typeSelect) {
-                typeSelect.addEventListener('change', function() {
-                    renderBalances();
-                });
-            }
-
-            if (currencySelect) {
-                currencySelect.addEventListener('change', function() {
-                    renderBalances();
-                });
-            }
-
-            if (minAmountInput) {
-                minAmountInput.addEventListener('input', function() {
-                    clearTimeout(this.searchTimeout);
-                    this.searchTimeout = setTimeout(() => {
-                        renderBalances();
-                    }, 500);
-                });
-            }
+            // تم إزالة البحث من الأرصدة
+            // لا يوجد شيء هنا الآن
         }
 
         function updateBalanceSuggestions() {
-            const input = document.getElementById('searchBalanceAccount');
-            const list = document.getElementById('suggestBalanceAccount');
-            const val = input.value.toLowerCase();
-            
-            let uniqueValues = [];
-            if (allBalancesData.length > 0) {
-                uniqueValues = [...new Set(allBalancesData.map(row => String(row['الحساب'] || '')))].filter(name => name && name.trim() !== '');
-            }
-            
-            const filteredValues = uniqueValues
-                .filter(v => v.toLowerCase().includes(val))
-                .slice(0, 15);
-            
-            updateSuggestionsList(list, filteredValues, input);
+            // تم إزالة البحث من الأرصدة
+            // لا يوجد شيء هنا الآن
         }
 
         function updateSuggestionsList(list, filteredValues, input) {
-            list.innerHTML = '';
-            currentSuggestItems = [];
-            
-            if (filteredValues.length > 0) {
-                filteredValues.forEach(v => {
-                    const div = document.createElement('div');
-                    div.className = 'suggestion-item';
-                    div.textContent = v;
-                    div.onclick = () => {
-                        input.value = v;
-                        hideAllSuggestLists();
-                        setTimeout(() => {
-                            if (input.id === 'searchBalanceAccount') {
-                                renderBalances();
-                            }
-                        }, 100);
-                    };
-                    list.appendChild(div);
-                    currentSuggestItems.push(div);
-                });
-                list.style.display = 'block';
-                currentFocusIndex = -1;
-            } else {
-                list.style.display = 'none';
-                currentFocusIndex = -1;
-                currentSuggestItems = [];
-            }
+            // تم إزالة البحث من الأرصدة
+            // لا يوجد شيء هنا الآن
         }
 
         function handleSearchInput(e, input, list) {
-            if (e.key === 'ArrowDown') {
-                e.preventDefault();
-                if (currentSuggestItems.length > 0) {
-                    currentFocusIndex = Math.min(currentFocusIndex + 1, currentSuggestItems.length - 1);
-                    updateActiveItem();
-                }
-            } else if (e.key === 'ArrowUp') {
-                e.preventDefault();
-                if (currentSuggestItems.length > 0) {
-                    currentFocusIndex = Math.max(currentFocusIndex - 1, 0);
-                    updateActiveItem();
-                }
-            } else if (e.key === 'Enter') {
-                e.preventDefault();
-                if (currentFocusIndex >= 0 && currentSuggestItems[currentFocusIndex]) {
-                    currentSuggestItems[currentFocusIndex].click();
-                } else if (currentSuggestItems.length > 0 && currentSuggestItems[0]) {
-                    currentSuggestItems[0].click();
-                } else {
-                    if (input.id === 'searchBalanceAccount') {
-                        renderBalances();
-                    }
-                }
-            } else if (e.key === 'Escape') {
-                hideAllSuggestLists();
-            }
+            // تم إزالة البحث من الأرصدة
+            // لا يوجد شيء هنا الآن
         }
 
         function updateActiveItem() {
@@ -1777,12 +1649,6 @@
             const infoElement = document.getElementById('balancesInfo');
             const summaryElement = document.getElementById('balancesSummary');
             
-            // جمع معايير البحث
-            const accountFilter = document.getElementById('searchBalanceAccount').value.toLowerCase();
-            const typeFilter = document.getElementById('searchBalanceType').value;
-            const currencyFilter = document.getElementById('searchBalanceCurrency').value;
-            const minAmount = parseNumber(document.getElementById('searchMinAmount').value);
-            
             tbody.innerHTML = '';
             
             if (allBalancesData.length === 0) {
@@ -1825,54 +1691,7 @@
                     return false;
                 }
                 
-                // تطبيق الفلتر على اسم الحساب
-                const matchesAccount = !accountFilter || partialSearchFilter(account, accountFilter);
-                
-                // تطبيق الفلتر على النوع
-                let matchesType = true;
-                if (typeFilter) {
-                    if (typeFilter === 'sales') {
-                        matchesType = parseNumber(row['مبيعات دولار']) !== 0 || parseNumber(row['مبيعات سوري']) !== 0;
-                    } else if (typeFilter === 'purchases') {
-                        matchesType = parseNumber(row['مشتريات دولار']) !== 0 || parseNumber(row['مشتريات سوري']) !== 0;
-                    } else if (typeFilter === 'payments') {
-                        matchesType = parseNumber(row['المدفوع دولار']) !== 0 || parseNumber(row['المدفوع سوري']) !== 0;
-                    } else if (typeFilter === 'balance') {
-                        matchesType = parseNumber(row['الرصيد دولار']) !== 0 || parseNumber(row['الرصيد سوري']) !== 0;
-                    }
-                }
-                
-                // تطبيق الفلتر على العملة
-                let matchesCurrency = true;
-                if (currencyFilter === 'usd') {
-                    matchesCurrency = parseNumber(row['مبيعات دولار']) !== 0 || 
-                                      parseNumber(row['مشتريات دولار']) !== 0 || 
-                                      parseNumber(row['المدفوع دولار']) !== 0 || 
-                                      parseNumber(row['الرصيد دولار']) !== 0;
-                } else if (currencyFilter === 'syp') {
-                    matchesCurrency = parseNumber(row['مبيعات سوري']) !== 0 || 
-                                      parseNumber(row['مشتريات سوري']) !== 0 || 
-                                      parseNumber(row['المدفوع سوري']) !== 0 || 
-                                      parseNumber(row['الرصيد سوري']) !== 0;
-                }
-                
-                // تطبيق الفلتر على الحد الأدنى للمبلغ
-                let matchesMinAmount = true;
-                if (minAmount > 0) {
-                    const maxAmount = Math.max(
-                        Math.abs(parseNumber(row['مبيعات دولار'])),
-                        Math.abs(parseNumber(row['مبيعات سوري'])),
-                        Math.abs(parseNumber(row['مشتريات دولار'])),
-                        Math.abs(parseNumber(row['مشتريات سوري'])),
-                        Math.abs(parseNumber(row['المدفوع دولار'])),
-                        Math.abs(parseNumber(row['المدفوع سوري'])),
-                        Math.abs(parseNumber(row['الرصيد دولار'])),
-                        Math.abs(parseNumber(row['الرصيد سوري']))
-                    );
-                    matchesMinAmount = maxAmount >= minAmount;
-                }
-                
-                return matchesAccount && matchesType && matchesCurrency && matchesMinAmount;
+                return true; // لا يوجد بحث في الأرصدة الآن
             });
             
             // عرض البيانات المصفاة أولاً
@@ -1955,7 +1774,7 @@
                 const noDataRow = document.createElement('tr');
                 noDataRow.innerHTML = `
                     <td colspan="10" class="text-center py-4 text-gray-500">
-                        <i class="fas fa-search mr-2"></i> لا توجد أرصدة تطابق معايير البحث
+                        <i class="fas fa-database mr-2"></i> لا توجد بيانات للأرصدة
                     </td>
                 `;
                 tbody.appendChild(noDataRow);
