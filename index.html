@@ -321,7 +321,7 @@
             box-shadow: 0 4px 6px -1px rgba(107, 114, 128, 0.3);
         }
         
-        /* تنسيقات ميزان المراجعة */
+        /* ميزان المراجعة - تنسيق بسيط */
         .trial-balance-header {
             background: #7c3aed;
             color: white;
@@ -329,91 +329,6 @@
             border-radius: 8px;
             margin-bottom: 1rem;
             text-align: center;
-        }
-        
-        /* ===== تنسيقات ميزان المراجعة المطابقة للملف ===== */
-        .ritz .waffle {
-            font-family: "Times New Roman", serif;
-        }
-        
-        .ritz .waffle a {
-            color: inherit;
-        }
-        
-        .ritz .waffle table {
-            border-collapse: collapse;
-            width: 100%;
-        }
-        
-        /* تنسيق خلايا ميزان المراجعة */
-        .trial-cell-header {
-            border-bottom: 1px solid #38416a;
-            border-left: 1px solid #38416a;
-            background-color: #4a568d;
-            text-align: center;
-            color: #ffffff;
-            font-family: "Times New Roman", serif;
-            font-size: 12pt;
-            vertical-align: middle;
-            white-space: nowrap;
-            overflow: hidden;
-            direction: rtl;
-            padding: 2px 3px;
-        }
-        
-        .trial-cell-white {
-            border-bottom: 1px solid #d9d9d9;
-            border-left: 1px solid #d9d9d9;
-            background-color: #ffffff;
-            text-align: center;
-            color: #434343;
-            font-family: "Times New Roman", serif;
-            font-size: 12pt;
-            vertical-align: middle;
-            white-space: nowrap;
-            overflow: hidden;
-            direction: rtl;
-            padding: 2px 3px;
-        }
-        
-        .trial-cell-gray {
-            border-bottom: 1px solid #d9d9d9;
-            border-left: 1px solid #d9d9d9;
-            background-color: #f6f8f9;
-            text-align: center;
-            color: #434343;
-            font-family: "Times New Roman", serif;
-            font-size: 12pt;
-            vertical-align: middle;
-            white-space: nowrap;
-            overflow: hidden;
-            direction: rtl;
-            padding: 2px 3px;
-        }
-        
-        .trial-cell-total {
-            border-bottom: 1px solid #38416a;
-            border-left: 1px solid #38416a;
-            background-color: #d2d5e3;
-            text-align: center;
-            font-weight: bold;
-            color: #434343;
-            font-family: "Times New Roman", serif;
-            font-size: 12pt;
-            vertical-align: middle;
-            white-space: nowrap;
-            overflow: hidden;
-            direction: rtl;
-            padding: 2px 3px;
-        }
-        
-        /* تنسيقات خاصة لحدود الخلايا */
-        .trial-cell-left-dark {
-            border-left: 1px solid #38416a !important;
-        }
-        
-        .trial-cell-bottom-dark {
-            border-bottom: 1px solid #38416a !important;
         }
         
         /* تنسيقات الأرصدة */
@@ -446,31 +361,54 @@
             font-weight: bold;
         }
         
-        /* تنسيق محتوى ميزان المراجعة */
-        .trial-balance-content {
-            direction: rtl;
-            font-family: "Times New Roman", serif;
-            font-size: 12pt;
+        /* تنسيقات خاصة بميزان المراجعة */
+        .account-header {
+            background: #4f46e5;
+            color: white;
+            font-weight: bold;
         }
         
-        .trial-balance-content table {
-            border-collapse: collapse;
-            width: 100%;
+        .account-total {
+            background: #f3f4f6;
+            font-weight: bold;
+            border-top: 2px solid #d1d5db;
         }
         
-        /* إضافة أيقونة الدولار كما في الملف الأصلي */
-        .usd-icon {
-            display: flex;
-            vertical-align: middle;
+        .account-subitem {
+            padding-right: 20px !important;
+            font-size: 0.75rem;
         }
         
-        .usd-icon svg {
-            display: inline;
-            padding-right: max(6px, 0.25em);
+        .negative {
+            color: #dc2626;
         }
         
-        .usd-icon path {
-            fill: #ffffff;
+        .positive {
+            color: #059669;
+        }
+        
+        .section-divider {
+            border-bottom: 2px solid #d1d5db;
+        }
+        
+        /* تنسيقات المجموعات الجديدة */
+        .group-title {
+            background: #e5e7eb;
+            font-weight: bold;
+            color: #374151;
+            padding: 8px 12px !important;
+        }
+        
+        .group-total {
+            background: #f3f4f6;
+            font-weight: bold;
+            border-top: 1px solid #d1d5db;
+        }
+        
+        .capital-total {
+            background: #dbeafe;
+            font-weight: bold;
+            border-top: 2px solid #93c5fd;
         }
     </style>
 </head>
@@ -605,14 +543,14 @@
                     <div class="text-xs" id="trialBalanceInfo">آخر تحديث: قيد التحميل...</div>
                 </div>
                 
-                <!-- ميزان المراجعة - مطابق للملف المرفق -->
-                <div class="table-container trial-balance-content" dir="rtl">
-                    <table class="waffle no-grid" cellspacing="0" cellpadding="0">
+                <!-- ميزان المراجعة - تصميم بسيط -->
+                <div class="table-container">
+                    <table>
                         <thead>
                             <tr>
-                                <th style="width:489px;">A</th>
-                                <th style="width:489px;">B</th>
-                                <th style="width:489px;">C</th>
+                                <th width="40%">الحساب</th>
+                                <th width="30%">دولار</th>
+                                <th width="30%">سوري</th>
                             </tr>
                         </thead>
                         <tbody id="trialBalanceTableBody">
@@ -890,7 +828,7 @@
                         allTrialBalanceData = res.data || [];
                         
                         // عرض بيانات ميزان المراجعة
-                        renderTrialBalanceFromCSV();
+                        renderTrialBalance();
                     }
                 });
 
@@ -1688,229 +1626,111 @@
             }
         }
 
-        // عرض ميزان المراجعة مطابق تماماً للملف المرفق
-        function renderTrialBalanceFromCSV() {
+        // عرض ميزان المراجعة بالشكل المطلوب
+        function renderTrialBalance() {
             const tbody = document.getElementById('trialBalanceTableBody');
             const infoElement = document.getElementById('trialBalanceInfo');
             
             tbody.innerHTML = '';
             
-            // إذا لم توجد بيانات، عرض رسالة فارغة
-            if (!allTrialBalanceData || allTrialBalanceData.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="3" class="text-center py-4 text-gray-500">
-                            <i class="fas fa-database mr-2"></i> لا توجد بيانات لميزان المراجعة
-                        </td>
-                    </tr>
-                `;
-                return;
-            }
+            // البيانات الهيكلية لميزان المراجعة كما طلبت
+            const trialBalanceRows = [
+                // 1. الصناديق
+                { account: 'الصناديق', usd: '', syp: '', type: 'group-title' },
+                { account: 'الصندوق', usd: '0.00', syp: '1,880', type: 'item' },
+                { account: 'صندوق كاش', usd: '15.00', syp: '-1,135', type: 'subitem' },
+                { account: 'صندوق الافتراضية', usd: '0.00', syp: '0', type: 'subitem' },
+                { account: 'المكتب', usd: '0.00', syp: '0', type: 'subitem' },
+                { account: 'إجمالي الصناديق', usd: '15.00', syp: '745', type: 'group-total' },
+                
+                // 2. البنوك
+                { account: 'البنوك', usd: '', syp: '', type: 'group-title' },
+                { account: 'كاش', usd: '0.00', syp: '3,283', type: 'item' },
+                { account: 'الافتراضية', usd: '0.00', syp: '0', type: 'subitem' },
+                { account: 'شام كاش', usd: '0.00', syp: '0', type: 'subitem' },
+                { account: 'الهرم', usd: '0.00', syp: '0', type: 'subitem' },
+                { account: 'إجمالي البنوك', usd: '0.00', syp: '3,283', type: 'group-total' },
+                
+                // 3. الارصدة
+                { account: 'الارصدة', usd: '', syp: '', type: 'group-title' },
+                { account: 'الارصدة', usd: '2,000.00', syp: '9,517', type: 'item' },
+                { account: 'إجمالي الارصدة', usd: '2,000.00', syp: '9,517', type: 'group-total' },
+                
+                // 4. الايرادات
+                { account: 'الايرادات', usd: '', syp: '', type: 'group-title' },
+                { account: 'المحل', usd: '360.00', syp: '0', type: 'item' },
+                { account: 'كاش', usd: '0.00', syp: '-4,000', type: 'subitem' },
+                { account: 'الافتراضية', usd: '0.00', syp: '0', type: 'subitem' },
+                { account: 'حسم المشتريات', usd: '0.00', syp: '0', type: 'subitem' },
+                { account: 'ايرادات اخرى', usd: '0.00', syp: '0', type: 'subitem' },
+                { account: 'إجمالي الايرادات', usd: '360.00', syp: '-4,000', type: 'group-total' },
+                
+                // 5. المصاريف
+                { account: 'المصاريف', usd: '', syp: '', type: 'group-title' },
+                { account: 'صدقة', usd: '7.80', syp: '750', type: 'item' },
+                { account: 'حسم المبيعات', usd: '0.00', syp: '0', type: 'subitem' },
+                { account: 'مصاريف اخرى', usd: '0.00', syp: '0', type: 'subitem' },
+                { account: 'إجمالي المصاريف', usd: '7.80', syp: '750', type: 'group-total' },
+                
+                // 6. المسحوبات
+                { account: 'المسحوبات', usd: '', syp: '', type: 'group-title' },
+                { account: 'عبدالله', usd: '245.00', syp: '0', type: 'item' },
+                { account: 'إجمالي المسحوبات', usd: '245.00', syp: '0', type: 'group-total' },
+                
+                // 7. قائمة الدخل
+                { account: 'قائمة الدخل', usd: '', syp: '', type: 'group-title' },
+                { account: 'الايرادات', usd: '360.00', syp: '-4,000', type: 'item' },
+                { account: 'المصاريف', usd: '7.80', syp: '750', type: 'item' },
+                { account: 'صافي الدخل', usd: '352.20', syp: '-4,750', type: 'group-total' },
+                
+                // 8. رأس المال
+                { account: 'رأس المال', usd: '', syp: '', type: 'group-title' },
+                { account: 'راس المال العامل', usd: '', syp: '13,545', type: 'item' },
+                { account: 'راس المال', usd: '2,000.00', syp: '0', type: 'item' },
+                { account: 'الصافي', usd: '-2,000.00', syp: '13,545', type: 'capital-total' }
+            ];
             
-            // بيانات ميزان المراجعة المرفقة في HTML المقدم
-            const trialBalanceHTML = `
-                <tr style="height: 27px">
-                    <td class="trial-cell-header" dir="rtl">الحساب</td>
-                    <td class="trial-cell-header" dir="rtl">دولار</td>
-                    <td class="trial-cell-header" dir="rtl">سوري</td>
-                </tr>
-                <tr style="height: 27px">
-                    <td class="trial-cell-white trial-cell-left-dark" dir="rtl">الصندوق</td>
-                    <td class="trial-cell-white" dir="rtl">0.00</td>
-                    <td class="trial-cell-white trial-cell-left-dark" dir="rtl">1,880</td>
-                </tr>
-                <tr style="height: 27px">
-                    <td class="trial-cell-gray" dir="rtl">صندوق كاش</td>
-                    <td class="trial-cell-gray" dir="rtl">15.00</td>
-                    <td class="trial-cell-gray trial-cell-left-dark" dir="rtl">-1,135</td>
-                </tr>
-                <tr style="height: 27px">
-                    <td class="trial-cell-white" dir="rtl">صندوق الافتراضية</td>
-                    <td class="trial-cell-white" dir="rtl">0.00</td>
-                    <td class="trial-cell-white trial-cell-left-dark" dir="rtl">0</td>
-                </tr>
-                <tr style="height: 27px">
-                    <td class="trial-cell-gray trial-cell-left-dark" dir="rtl">المكتب</td>
-                    <td class="trial-cell-gray" dir="rtl">0.00</td>
-                    <td class="trial-cell-gray trial-cell-left-dark trial-cell-bottom-dark" dir="rtl">0</td>
-                </tr>
-                <tr style="height: 27px">
-                    <td class="trial-cell-total" dir="rtl"></td>
-                    <td class="trial-cell-total" dir="rtl">15.00</td>
-                    <td class="trial-cell-total trial-cell-bottom-dark" dir="rtl">745</td>
-                </tr>
-                <tr style="height: 27px">
-                    <td class="trial-cell-header" dir="rtl">الحساب</td>
-                    <td class="trial-cell-header" dir="rtl">دولار</td>
-                    <td class="trial-cell-header" dir="rtl">سوري</td>
-                </tr>
-                <tr style="height: 27px">
-                    <td class="trial-cell-white trial-cell-left-dark" dir="rtl">كاش</td>
-                    <td class="trial-cell-white" dir="rtl">0.00</td>
-                    <td class="trial-cell-white trial-cell-left-dark" dir="rtl">3,283</td>
-                </tr>
-                <tr style="height: 27px">
-                    <td class="trial-cell-gray" dir="rtl">الافتراضية</td>
-                    <td class="trial-cell-gray" dir="rtl">0.00</td>
-                    <td class="trial-cell-gray trial-cell-left-dark" dir="rtl">0</td>
-                </tr>
-                <tr style="height: 27px">
-                    <td class="trial-cell-white" dir="rtl">شام كاش</td>
-                    <td class="trial-cell-white" dir="rtl">0.00</td>
-                    <td class="trial-cell-white trial-cell-left-dark" dir="rtl">0</td>
-                </tr>
-                <tr style="height: 27px">
-                    <td class="trial-cell-gray trial-cell-left-dark" dir="rtl">الهرم</td>
-                    <td class="trial-cell-gray" dir="rtl">0.00</td>
-                    <td class="trial-cell-gray trial-cell-left-dark trial-cell-bottom-dark" dir="rtl">0</td>
-                </tr>
-                <tr style="height: 27px">
-                    <td class="trial-cell-total" dir="rtl"></td>
-                    <td class="trial-cell-total" dir="rtl">0.00</td>
-                    <td class="trial-cell-total trial-cell-bottom-dark" dir="rtl">3,283</td>
-                </tr>
-                <tr style="height: 27px">
-                    <td class="trial-cell-header" dir="rtl">الحساب</td>
-                    <td class="trial-cell-header" dir="rtl">دولار</td>
-                    <td class="trial-cell-header" dir="rtl">سوري</td>
-                </tr>
-                <tr style="height: 27px">
-                    <td class="trial-cell-white trial-cell-left-dark trial-cell-bottom-dark" dir="rtl">الارصدة</td>
-                    <td class="trial-cell-white trial-cell-bottom-dark" dir="rtl">2,000.00</td>
-                    <td class="trial-cell-white trial-cell-left-dark trial-cell-bottom-dark" dir="rtl">9,517</td>
-                </tr>
-                <tr style="height: 27px">
-                    <td class="trial-cell-total" dir="rtl"></td>
-                    <td class="trial-cell-total" dir="rtl">2,000.00</td>
-                    <td class="trial-cell-total trial-cell-bottom-dark" dir="rtl">9,517</td>
-                </tr>
-                <tr style="height: 27px">
-                    <td class="trial-cell-header" dir="rtl">الحساب</td>
-                    <td class="trial-cell-header" dir="rtl">دولار</td>
-                    <td class="trial-cell-header" dir="rtl">سوري</td>
-                </tr>
-                <tr style="height: 27px">
-                    <td class="trial-cell-white trial-cell-left-dark" dir="rtl">المحل</td>
-                    <td class="trial-cell-white" dir="rtl">360.00</td>
-                    <td class="trial-cell-white trial-cell-left-dark" dir="rtl">0</td>
-                </tr>
-                <tr style="height: 27px">
-                    <td class="trial-cell-gray" dir="rtl">كاش</td>
-                    <td class="trial-cell-gray" dir="rtl">0.00</td>
-                    <td class="trial-cell-gray trial-cell-left-dark" dir="rtl">-4,000</td>
-                </tr>
-                <tr style="height: 27px">
-                    <td class="trial-cell-white" dir="rtl">الافتراضية</td>
-                    <td class="trial-cell-white" dir="rtl">0.00</td>
-                    <td class="trial-cell-white trial-cell-left-dark" dir="rtl">0</td>
-                </tr>
-                <tr style="height: 27px">
-                    <td class="trial-cell-gray" dir="rtl">حسم المشتريات</td>
-                    <td class="trial-cell-gray" dir="rtl">0.00</td>
-                    <td class="trial-cell-gray trial-cell-left-dark" dir="rtl">0</td>
-                </tr>
-                <tr style="height: 27px">
-                    <td class="trial-cell-white trial-cell-left-dark trial-cell-bottom-dark" dir="rtl">ايرادات اخرى</td>
-                    <td class="trial-cell-white trial-cell-bottom-dark" dir="rtl">0.00</td>
-                    <td class="trial-cell-white trial-cell-left-dark trial-cell-bottom-dark" dir="rtl">0</td>
-                </tr>
-                <tr style="height: 27px">
-                    <td class="trial-cell-total" dir="rtl"></td>
-                    <td class="trial-cell-total" dir="rtl">360.00</td>
-                    <td class="trial-cell-total trial-cell-bottom-dark" dir="rtl">-4,000</td>
-                </tr>
-                <tr style="height: 27px">
-                    <td class="trial-cell-header" dir="rtl">الحساب</td>
-                    <td class="trial-cell-header" dir="rtl">دولار</td>
-                    <td class="trial-cell-header" dir="rtl">سوري</td>
-                </tr>
-                <tr style="height: 27px">
-                    <td class="trial-cell-white trial-cell-left-dark" dir="rtl">صدقة</td>
-                    <td class="trial-cell-white" dir="rtl">7.80</td>
-                    <td class="trial-cell-white trial-cell-left-dark" dir="rtl">750</td>
-                </tr>
-                <tr style="height: 27px">
-                    <td class="trial-cell-gray" dir="rtl">حسم المبيعات</td>
-                    <td class="trial-cell-gray" dir="rtl">0.00</td>
-                    <td class="trial-cell-gray trial-cell-left-dark" dir="rtl">0</td>
-                </tr>
-                <tr style="height: 27px">
-                    <td class="trial-cell-white trial-cell-left-dark trial-cell-bottom-dark" dir="rtl">مصاريف اخرى</td>
-                    <td class="trial-cell-white trial-cell-bottom-dark" dir="rtl">0.00</td>
-                    <td class="trial-cell-white trial-cell-left-dark trial-cell-bottom-dark" dir="rtl">0</td>
-                </tr>
-                <tr style="height: 27px">
-                    <td class="trial-cell-total" dir="rtl"></td>
-                    <td class="trial-cell-total" dir="rtl">7.80</td>
-                    <td class="trial-cell-total trial-cell-bottom-dark" dir="rtl">750</td>
-                </tr>
-                <tr style="height: 27px">
-                    <td class="trial-cell-header" dir="rtl">الحساب</td>
-                    <td class="trial-cell-header" dir="rtl">دولار</td>
-                    <td class="trial-cell-header" dir="rtl">سوري</td>
-                </tr>
-                <tr style="height: 27px">
-                    <td class="trial-cell-white trial-cell-left-dark trial-cell-bottom-dark" dir="rtl">عبدالله</td>
-                    <td class="trial-cell-white trial-cell-bottom-dark" dir="rtl">245.00</td>
-                    <td class="trial-cell-white trial-cell-left-dark trial-cell-bottom-dark" dir="rtl">0</td>
-                </tr>
-                <tr style="height: 27px">
-                    <td class="trial-cell-total" dir="rtl"></td>
-                    <td class="trial-cell-total" dir="rtl">107.20</td>
-                    <td class="trial-cell-total trial-cell-bottom-dark" dir="rtl">-4,750</td>
-                </tr>
-                <tr style="height: 27px">
-                    <td class="trial-cell-header" dir="rtl">الحساب</td>
-                    <td class="trial-cell-header" dir="rtl">دولار</td>
-                    <td class="trial-cell-header" dir="rtl">سوري</td>
-                </tr>
-                <tr style="height: 27px">
-                    <td class="trial-cell-white trial-cell-left-dark" dir="rtl">الايرادات</td>
-                    <td class="trial-cell-white" dir="rtl">360.00</td>
-                    <td class="trial-cell-white trial-cell-left-dark" dir="rtl">-4,000</td>
-                </tr>
-                <tr style="height: 27px">
-                    <td class="trial-cell-gray trial-cell-left-dark" dir="rtl">المصاريف</td>
-                    <td class="trial-cell-gray" dir="rtl">7.80</td>
-                    <td class="trial-cell-gray trial-cell-left-dark trial-cell-bottom-dark" dir="rtl">750</td>
-                </tr>
-                <tr style="height: 27px">
-                    <td class="trial-cell-total" dir="rtl"></td>
-                    <td class="trial-cell-total" dir="rtl">352.20</td>
-                    <td class="trial-cell-total trial-cell-bottom-dark" dir="rtl">-4,750</td>
-                </tr>
-                <tr style="height: 27px">
-                    <td class="trial-cell-header" dir="rtl">
-                        <div class="usd-icon">
-                            <svg width="1.25em" viewBox="0 0 20 20" style="display: inline; padding-right: max(6px, 0.25em)">
-                                <g id="number-table-header-icon">
-                                    <path d="M5 16.6667L5.83333 13.3333H2.5L2.91667 11.6667H6.25L7.08333 8.33333H3.75L4.16667 6.66667H7.5L8.33333 3.33333H10L9.16667 6.66667H12.5L13.3333 3.33333H15L14.1667 6.66667H17.5L17.0833 8.33333H13.75L12.9167 11.6667H16.25L15.8333 13.3333H12.5L11.6667 16.6667H10L10.8333 13.3333H7.5L6.66667 16.6667H5ZM7.91667 11.6667H11.25L12.0833 8.33333H8.75L7.91667 11.6667Z" fill="#ffffff"></path>
-                                </g>
-                            </svg>
-                            <div>دولار</div>
-                        </div>
-                    </td>
-                    <td class="trial-cell-header" dir="rtl">سوري</td>
-                </tr>
-                <tr style="height: 27px">
-                    <td class="trial-cell-white trial-cell-left-dark" dir="rtl">راس المال العامل</td>
-                    <td class="trial-cell-white" dir="rtl"></td>
-                    <td class="trial-cell-white trial-cell-left-dark" dir="rtl">13,545</td>
-                </tr>
-                <tr style="height: 27px">
-                    <td class="trial-cell-gray trial-cell-left-dark" dir="rtl">راس المال</td>
-                    <td class="trial-cell-gray" dir="rtl">2,000.00</td>
-                    <td class="trial-cell-gray trial-cell-left-dark trial-cell-bottom-dark" dir="rtl">0</td>
-                </tr>
-                <tr style="height: 27px">
-                    <td class="trial-cell-total" dir="rtl">الصافي</td>
-                    <td class="trial-cell-total" dir="rtl">-2,000.00</td>
-                    <td class="trial-cell-total trial-cell-bottom-dark" dir="rtl">13,545</td>
-                </tr>
-            `;
-            
-            // عرض بيانات ميزان المراجعة المرفقة
-            tbody.innerHTML = trialBalanceHTML;
+            // بناء الجدول
+            trialBalanceRows.forEach(row => {
+                const tr = document.createElement('tr');
+                
+                if (row.type === 'group-title') {
+                    tr.className = 'group-title';
+                    tr.innerHTML = `
+                        <td class="text-right font-bold">${row.account}</td>
+                        <td></td>
+                        <td></td>
+                    `;
+                } else if (row.type === 'item') {
+                    tr.innerHTML = `
+                        <td class="text-right">${row.account}</td>
+                        <td class="${parseFloat(row.usd) < 0 ? 'negative' : 'positive'}">${row.usd}</td>
+                        <td class="${parseFloat(row.syp.replace(/,/g, '')) < 0 ? 'negative' : 'positive'}">${row.syp}</td>
+                    `;
+                } else if (row.type === 'subitem') {
+                    tr.innerHTML = `
+                        <td class="text-right account-subitem">${row.account}</td>
+                        <td class="${parseFloat(row.usd) < 0 ? 'negative' : 'positive'}">${row.usd}</td>
+                        <td class="${parseFloat(row.syp.replace(/,/g, '')) < 0 ? 'negative' : 'positive'}">${row.syp}</td>
+                    `;
+                } else if (row.type === 'group-total') {
+                    tr.className = 'group-total';
+                    tr.innerHTML = `
+                        <td class="text-right font-bold">${row.account}</td>
+                        <td class="font-bold ${parseFloat(row.usd) < 0 ? 'negative' : 'positive'}">${row.usd}</td>
+                        <td class="font-bold ${parseFloat(row.syp.replace(/,/g, '')) < 0 ? 'negative' : 'positive'}">${row.syp}</td>
+                    `;
+                } else if (row.type === 'capital-total') {
+                    tr.className = 'capital-total';
+                    tr.innerHTML = `
+                        <td class="text-right font-bold">${row.account}</td>
+                        <td class="font-bold ${parseFloat(row.usd) < 0 ? 'negative' : 'positive'}">${row.usd}</td>
+                        <td class="font-bold ${parseFloat(row.syp.replace(/,/g, '')) < 0 ? 'negative' : 'positive'}">${row.syp}</td>
+                    `;
+                }
+                
+                tbody.appendChild(tr);
+            });
             
             // تحديث معلومات التحديث
             if (lastUpdateTime) {
@@ -2172,7 +1992,7 @@
             if (tabName === 'statement') {
                 renderStatement();
             } else if (tabName === 'trialBalance') {
-                renderTrialBalanceFromCSV();
+                renderTrialBalance();
             } else if (tabName === 'balances') {
                 renderBalances();
             }
@@ -2301,7 +2121,7 @@
             switchSubTab('trialBalance');
             
             // عرض ميزان المراجعة مباشرة
-            renderTrialBalanceFromCSV();
+            renderTrialBalance();
         };
     </script>
 </body>
