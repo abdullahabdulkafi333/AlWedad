@@ -1643,7 +1643,7 @@
             }
         }
 
-        // عرض الأرصدة مع صف الإجمالي الصحيح
+        // عرض الأرصدة مع صف الإجمالي الصحيح - معدل لإظهار فقط الصفوف التي لها رصيد غير صفر
         function renderBalances() {
             const tbody = document.getElementById('balancesTableBody');
             const infoElement = document.getElementById('balancesInfo');
@@ -1677,9 +1677,11 @@
             let totalBalanceUsd = 0;
             let totalBalanceSyp = 0;
             
-            // تصفية البيانات
+            // تصفية البيانات - فقط الصفوف التي لها رصيد غير صفر
             const filteredData = allBalancesData.filter(row => {
                 const account = row['الحساب'] || '';
+                const balanceUsd = parseNumber(row['الرصيد دولار']);
+                const balanceSyp = parseNumber(row['الرصيد سوري']);
                 
                 // استبعاد صف الإجمالي من البيانات الأصلية
                 if (account.includes('الاجمالي') || account.includes('الإجمالي')) {
@@ -1691,7 +1693,12 @@
                     return false;
                 }
                 
-                return true; // لا يوجد بحث في الأرصدة الآن
+                // إظهار فقط الصفوف التي لها رصيد غير صفر (في أي من العملتين)
+                if (balanceUsd === 0 && balanceSyp === 0) {
+                    return false;
+                }
+                
+                return true;
             });
             
             // عرض البيانات المصفاة أولاً
@@ -1774,7 +1781,7 @@
                 const noDataRow = document.createElement('tr');
                 noDataRow.innerHTML = `
                     <td colspan="10" class="text-center py-4 text-gray-500">
-                        <i class="fas fa-database mr-2"></i> لا توجد بيانات للأرصدة
+                        <i class="fas fa-database mr-2"></i> لا توجد حسابات ذات أرصدة غير صفرية
                     </td>
                 `;
                 tbody.appendChild(noDataRow);
