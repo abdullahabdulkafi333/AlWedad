@@ -380,63 +380,37 @@
         
         /* تحسين عرض جداول ميزان المراجعة */
         .trial-section-header {
-            background: #ede9fe;
+            background: #e0e7ff;
             font-weight: bold;
-            color: #5b21b6;
+            color: #3730a3;
             text-align: right;
-            padding: 8px 12px;
-            border-bottom: 2px solid #ddd6fe;
+            padding: 10px 12px;
+            border-bottom: 2px solid #c7d2fe;
+            font-size: 0.9rem; /* زيادة حجم الخط */
+            font-weight: 700; /* زيادة سماكة الخط */
         }
         
         .trial-total-row {
-            background: #fef3c7;
+            background: #e5e7eb; /* تغيير من اللون الأصفر إلى الرمادي */
             font-weight: bold;
-            border-top: 2px solid #f59e0b;
+            border-top: 2px solid #9ca3af; /* تغيير اللون إلى رمادي داكن */
+            color: #111827; /* لون النص داكن */
+            font-size: 0.85rem;
         }
         
-        /* تنسيقات ميزان المراجعة الجديدة */
-        .trial-section-divider {
-            background: #7c3aed;
-            color: white;
-            font-weight: bold;
-            padding: 8px;
-            text-align: center;
-            margin: 10px 0 5px 0;
-            border-radius: 4px;
+        .trial-account-row {
+            font-size: 0.82rem; /* حجم خط محسّن للحسابات */
+            font-weight: 600; /* وزن متوسط للخط */
         }
         
-        .trial-empty-row {
-            height: 15px;
+        .trial-amount-cell {
+            font-size: 0.82rem; /* حجم خط محسّن للمبالغ */
+            font-weight: 600; /* وزن متوسط للخط */
         }
         
-        .trial-subtotal-row {
-            background: #fef3c7;
-            font-weight: bold;
-        }
-        
-        .trial-final-total {
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-            font-weight: bold;
-            border-top: 3px double #d97706;
-        }
-        
-        .account-cell {
-            text-align: right;
-            padding-right: 12px !important;
-        }
-        
-        .amount-cell {
-            text-align: center;
-            font-family: monospace;
-            font-weight: 600;
-        }
-        
-        .usd-cell {
-            color: #1e40af;
-        }
-        
-        .syp-cell {
-            color: #166534;
+        /* إزالة التأثيرات المفرطة على الصفوف */
+        .trial-account-row:hover {
+            background-color: #f8fafc !important;
         }
     </style>
 </head>
@@ -1651,7 +1625,7 @@
             }
         }
 
-        // عرض ميزان المراجعة بنفس تنسيق CSV المرفق
+        // عرض ميزان المراجعة - النسخة المحسنة
         function renderTrialBalance() {
             const tbody = document.getElementById('trialBalanceTableBody');
             const infoElement = document.getElementById('trialBalanceInfo');
@@ -1675,78 +1649,205 @@
             
             console.log('بيانات ميزان المراجعة المحملة:', allTrialBalanceData);
             
-            let rowCount = 0;
-            let currentSection = '';
-            
-            // معالجة كل صف في البيانات
-            allTrialBalanceData.forEach((row, index) => {
-                const account = (row['الحساب'] || '').trim();
-                const usdAmount = (row['دولار'] || '').trim();
-                const sypAmount = (row['سوري'] || '').trim();
+            // تصفية البيانات بشكل صحيح
+            const filteredData = allTrialBalanceData.filter(row => {
+                const account = (row['الحساب'] || '').toString().trim();
+                const usdAmount = (row['دولار'] || '').toString().trim();
+                const sypAmount = (row['سوري'] || '').toString().trim();
                 
-                // تحليل الأرقام
+                // استبعاد الصفوف الفارغة تماماً
+                if (account === '' && usdAmount === '' && sypAmount === '') {
+                    return false;
+                }
+                
+                // استبعاد رؤوس الجدول الأصلية
+                if (account === 'الحساب' && (usdAmount === 'دولار' || usdAmount === 'دولار') && (sypAmount === 'سوري' || sypAmount === 'سوري')) {
+                    return false;
+                }
+                
+                // استبعاد الصفوف التي تحتوي فقط على أرقام (مثل 2000) في عمود الحساب
+                if (account && /^\d+$/.test(account) && (usdAmount === '' || usdAmount === ' ') && (sypAmount === '' || sypAmount === ' ')) {
+                    return false;
+                }
+                
+                return true;
+            });
+            
+            let currentSection = '';
+            let inSection = false;
+            let sectionRows = [];
+            let hasDataForCurrentSection = false;
+            
+            // تصنيف البيانات
+            filteredData.forEach((row, index) => {
+                const account = (row['الحساب'] || '').toString().trim();
+                const usdAmount = (row['دولار'] || '').toString().trim();
+                const sypAmount = (row['سوري'] || '').toString().trim();
+                
                 const usdNum = parseNumber(usdAmount);
                 const sypNum = parseNumber(sypAmount);
                 
-                // إذا كان صف عنوان (الحساب فارغ والدولار ليس رقماً)
-                if (account === '' && usdAmount && !usdAmount.match(/^-?\d+(\.\d+)?$/)) {
-                    // إضافة سطر عنوان القسم
-                    const titleRow = document.createElement('tr');
-                    titleRow.className = 'trial-section-header';
-                    titleRow.innerHTML = `
-                        <td colspan="3" class="text-center font-bold">${usdAmount}</td>
-                    `;
-                    tbody.appendChild(titleRow);
-                    currentSection = usdAmount;
-                }
-                // إذا كان صف إجمالي (الحساب فارغ والدولار رقم)
-                else if (account === '' && usdAmount && usdAmount.match(/^-?\d+(\.\d+)?$/)) {
-                    // إضافة سطر الإجمالي
-                    const totalRow = document.createElement('tr');
-                    totalRow.className = 'trial-subtotal-row';
-                    totalRow.innerHTML = `
-                        <td class="account-cell">الاجمالي</td>
-                        <td class="amount-cell usd-cell">${usdNum !== 0 ? usdNum.toFixed(2) : ''}</td>
-                        <td class="amount-cell syp-cell">${sypNum !== 0 ? Math.round(sypNum).toLocaleString() : ''}</td>
-                    `;
-                    tbody.appendChild(totalRow);
+                // إذا كان الصف بمثابة عنوان قسم (حساب فارغ، دولار ليس رقمًا، وعادة ما يكون نصاً مثل "الأصول")
+                if ((account === '' || account === ' ') && 
+                    usdAmount && 
+                    usdAmount !== '' && 
+                    !usdAmount.match(/^-?\d+(\.\d+)?$/) &&
+                    !usdAmount.includes('-') &&
+                    usdAmount !== 'دولار') {
                     
-                    // إضافة سطر فارغ للفصل
-                    const emptyRow = document.createElement('tr');
-                    emptyRow.className = 'trial-empty-row';
-                    emptyRow.innerHTML = `<td colspan="3"></td>`;
-                    tbody.appendChild(emptyRow);
-                }
-                // إذا كان صف حساب عادي
-                else if (account !== '') {
-                    // إذا كان حساب خاص (مثل "الاجمالي") نجعله مميزاً
-                    const isSpecialAccount = account.includes('الاجمالي') || account.includes('الإجمالي') || 
-                                            account.includes('راس المال') || account.includes('الصافي');
-                    
-                    const tr = document.createElement('tr');
-                    
-                    if (isSpecialAccount) {
-                        tr.className = 'trial-final-total';
-                    } else {
-                        tr.className = rowCount % 2 === 0 ? 'bg-gray-50' : '';
+                    // عرض القسم السابق إن وجد
+                    if (inSection && sectionRows.length > 0 && hasDataForCurrentSection) {
+                        displaySection(currentSection, sectionRows);
                     }
                     
+                    // بدء قسم جديد
+                    currentSection = usdAmount;
+                    inSection = true;
+                    sectionRows = [];
+                    hasDataForCurrentSection = false;
+                    
+                    // تجاهل القسم "2000" (الرقم غير المرغوب فيه)
+                    if (currentSection === '2000') {
+                        currentSection = '';
+                        inSection = false;
+                        return;
+                    }
+                }
+                // إذا كان صف بيانات (حساب له قيمة)
+                else if (account !== '' && account !== ' ' && !account.includes('الاجمالي') && !account.includes('الإجمالي')) {
+                    if (inSection) {
+                        sectionRows.push({
+                            account: account,
+                            usd: usdNum,
+                            syp: sypNum
+                        });
+                        hasDataForCurrentSection = true;
+                    } else {
+                        // إذا لم نكن داخل قسم، نعرض الصف مباشرة
+                        const tr = document.createElement('tr');
+                        tr.className = 'trial-account-row';
+                        tr.innerHTML = `
+                            <td class="text-right">${account}</td>
+                            <td class="text-center trial-amount-cell">${usdNum !== 0 ? usdNum.toFixed(2) : ''}</td>
+                            <td class="text-center trial-amount-cell">${sypNum !== 0 ? Math.round(sypNum).toLocaleString() : ''}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    }
+                }
+                // إذا كان صف إجمالي
+                else if (account.includes('الاجمالي') || account.includes('الإجمالي')) {
+                    // عرض القسم السابق إن وجد
+                    if (inSection && sectionRows.length > 0 && hasDataForCurrentSection) {
+                        displaySection(currentSection, sectionRows);
+                    }
+                    
+                    // عرض سطر الإجمالي
+                    const tr = document.createElement('tr');
+                    tr.className = 'trial-total-row';
                     tr.innerHTML = `
-                        <td class="account-cell ${isSpecialAccount ? 'font-bold' : ''}">${account}</td>
-                        <td class="amount-cell usd-cell ${isSpecialAccount ? 'font-bold' : ''}">${usdNum !== 0 ? usdNum.toFixed(2) : ''}</td>
-                        <td class="amount-cell syp-cell ${isSpecialAccount ? 'font-bold' : ''}">${sypNum !== 0 ? Math.round(sypNum).toLocaleString() : ''}</td>
+                        <td class="text-right font-bold">${account}</td>
+                        <td class="text-center font-bold">${usdNum !== 0 ? usdNum.toFixed(2) : ''}</td>
+                        <td class="text-center font-bold">${sypNum !== 0 ? Math.round(sypNum).toLocaleString() : ''}</td>
                     `;
                     tbody.appendChild(tr);
-                    rowCount++;
+                    
+                    // إعادة تعيين المتغيرات
+                    currentSection = '';
+                    inSection = false;
+                    sectionRows = [];
+                    hasDataForCurrentSection = false;
+                    
+                    // إضافة سطر فارغ بعد الإجمالي
+                    if (index < filteredData.length - 1) {
+                        const spacerRow = document.createElement('tr');
+                        spacerRow.innerHTML = `<td colspan="3" style="height: 8px;"></td>`;
+                        tbody.appendChild(spacerRow);
+                    }
                 }
-                // إذا كان صف فارغ تماماً (جميع الحقول فارغة)
-                else if (account === '' && usdAmount === '' && sypAmount === '') {
-                    // إضافة سطر فارغ بسيط
-                    const emptyRow = document.createElement('tr');
-                    emptyRow.innerHTML = `<td colspan="3" style="height: 5px;"></td>`;
-                    tbody.appendChild(emptyRow);
+                // إذا كان صف إجمالي بدون كلمة إجمالي (حساب فارغ ومبلغ)
+                else if ((account === '' || account === ' ') && (usdNum !== 0 || sypNum !== 0)) {
+                    // عرض القسم السابق إن وجد
+                    if (inSection && sectionRows.length > 0 && hasDataForCurrentSection) {
+                        displaySection(currentSection, sectionRows);
+                    }
+                    
+                    // عرض سطر الإجمالي الضمني
+                    const tr = document.createElement('tr');
+                    tr.className = 'trial-total-row';
+                    tr.innerHTML = `
+                        <td class="text-right font-bold">الاجمالي</td>
+                        <td class="text-center font-bold">${usdNum !== 0 ? usdNum.toFixed(2) : ''}</td>
+                        <td class="text-center font-bold">${sypNum !== 0 ? Math.round(sypNum).toLocaleString() : ''}</td>
+                    `;
+                    tbody.appendChild(tr);
+                    
+                    // إعادة تعيين المتغيرات
+                    currentSection = '';
+                    inSection = false;
+                    sectionRows = [];
+                    hasDataForCurrentSection = false;
+                    
+                    // إضافة سطر فارغ بعد الإجمالي
+                    if (index < filteredData.length - 1) {
+                        const spacerRow = document.createElement('tr');
+                        spacerRow.innerHTML = `<td colspan="3" style="height: 8px;"></td>`;
+                        tbody.appendChild(spacerRow);
+                    }
                 }
             });
+            
+            // عرض القسم الأخير إذا كان موجوداً
+            if (inSection && sectionRows.length > 0 && hasDataForCurrentSection) {
+                displaySection(currentSection, sectionRows);
+            }
+            
+            // دالة لعرض قسم كامل
+            function displaySection(sectionTitle, rows) {
+                // عرض عنوان القسم فقط إذا كان له محتوى
+                if (sectionTitle && sectionTitle !== '' && sectionTitle !== ' ') {
+                    const sectionHeaderRow = document.createElement('tr');
+                    sectionHeaderRow.className = 'trial-section-header';
+                    sectionHeaderRow.innerHTML = `
+                        <td colspan="3" class="text-right font-bold">${sectionTitle}</td>
+                    `;
+                    tbody.appendChild(sectionHeaderRow);
+                }
+                
+                // عرض صفوف القسم
+                let sectionTotalUsd = 0;
+                let sectionTotalSyp = 0;
+                
+                rows.forEach((rowData, i) => {
+                    sectionTotalUsd += rowData.usd;
+                    sectionTotalSyp += rowData.syp;
+                    
+                    const tr = document.createElement('tr');
+                    tr.className = i % 2 === 0 ? 'bg-gray-50 trial-account-row' : 'trial-account-row';
+                    tr.innerHTML = `
+                        <td class="text-right">${rowData.account}</td>
+                        <td class="text-center trial-amount-cell">${rowData.usd !== 0 ? rowData.usd.toFixed(2) : ''}</td>
+                        <td class="text-center trial-amount-cell">${rowData.syp !== 0 ? Math.round(rowData.syp).toLocaleString() : ''}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+                
+                // عرض إجمالي القسم إذا كان هناك مبالغ
+                if (sectionTotalUsd !== 0 || sectionTotalSyp !== 0) {
+                    const totalRow = document.createElement('tr');
+                    totalRow.className = 'trial-total-row';
+                    totalRow.innerHTML = `
+                        <td class="text-right font-bold">الاجمالي</td>
+                        <td class="text-center font-bold">${sectionTotalUsd !== 0 ? sectionTotalUsd.toFixed(2) : ''}</td>
+                        <td class="text-center font-bold">${sectionTotalSyp !== 0 ? Math.round(sectionTotalSyp).toLocaleString() : ''}</td>
+                    `;
+                    tbody.appendChild(totalRow);
+                }
+                
+                // إضافة سطر فارغ بعد القسم
+                const spacerRow = document.createElement('tr');
+                spacerRow.innerHTML = `<td colspan="3" style="height: 8px;"></td>`;
+                tbody.appendChild(spacerRow);
+            }
             
             // تحديث معلومات التحديث
             if (lastUpdateTime) {
@@ -1765,7 +1866,7 @@
             }
         }
 
-        // عرض الأرصدة مع صف الإجمالي فقط (بدون الإجمالي النهائي)
+        // عرض الأرصدة مع صف الإجمالي الصحيح
         function renderBalances() {
             const tbody = document.getElementById('balancesTableBody');
             const infoElement = document.getElementById('balancesInfo');
@@ -1805,16 +1906,13 @@
             let totalBalanceUsd = 0;
             let totalBalanceSyp = 0;
             
-            // متغيرات لتخزين صف الإجمالي من البيانات الأصلية
-            let totalRowFromData = null;
-            
+            // تصفية البيانات
             const filteredData = allBalancesData.filter(row => {
                 const account = row['الحساب'] || '';
                 
-                // حفظ صف الإجمالي من البيانات الأصلية
-                if (account.includes('الاجمالي')) {
-                    totalRowFromData = row;
-                    return true; // نرجع true لإدراجه في العرض
+                // استبعاد صف الإجمالي من البيانات الأصلية
+                if (account.includes('الاجمالي') || account.includes('الإجمالي')) {
+                    return false; // نستبعده من العرض العادي، سنحسب الإجمالي الصحيح بنفسنا
                 }
                 
                 // استبعاد الصفوف الفارغة
@@ -1872,7 +1970,7 @@
                 return matchesAccount && matchesType && matchesCurrency && matchesMinAmount;
             });
             
-            // عرض البيانات المصفاة
+            // عرض البيانات المصفاة أولاً
             filteredData.forEach((row, index) => {
                 const account = row['الحساب'] || '';
                 const salesUsd = parseNumber(row['مبيعات دولار']);
@@ -1884,34 +1982,24 @@
                 const balanceUsd = parseNumber(row['الرصيد دولار']);
                 const balanceSyp = parseNumber(row['الرصيد سوري']);
                 
-                // تحديد إذا كان هذا سطر الإجمالي
-                const isTotalRow = account.includes('الاجمالي');
-                
-                if (!isTotalRow) {
-                    // تحديث الإجماليات فقط للصفوف غير الإجمالية
-                    totalSalesUsd += salesUsd;
-                    totalSalesSyp += salesSyp;
-                    totalPurchasesUsd += purchasesUsd;
-                    totalPurchasesSyp += purchasesSyp;
-                    totalPaymentsUsd += paymentUsd;
-                    totalPaymentsSyp += paymentSyp;
-                    totalBalanceUsd += balanceUsd;
-                    totalBalanceSyp += balanceSyp;
-                }
+                // تحديث الإجماليات - الجمع العمودي الصحيح
+                totalSalesUsd += salesUsd;
+                totalSalesSyp += salesSyp;
+                totalPurchasesUsd += purchasesUsd;
+                totalPurchasesSyp += purchasesSyp;
+                totalPaymentsUsd += paymentUsd;
+                totalPaymentsSyp += paymentSyp;
+                totalBalanceUsd += balanceUsd;
+                totalBalanceSyp += balanceSyp;
                 
                 rowIndex++;
                 
                 const tr = document.createElement('tr');
-                
-                if (isTotalRow) {
-                    tr.className = 'total-row';
-                } else {
-                    tr.className = rowIndex % 2 === 0 ? 'bg-gray-50' : '';
-                }
+                tr.className = rowIndex % 2 === 0 ? 'bg-gray-50' : '';
                 
                 tr.innerHTML = `
                     <td class="text-gray-400 text-[10px]">${rowIndex}</td>
-                    <td class="text-right font-bold ${isTotalRow ? 'text-green-800' : 'text-blue-700'}">${account || 'غير محدد'}</td>
+                    <td class="text-right font-bold text-blue-700">${account || 'غير محدد'}</td>
                     <td class="${salesUsd >= 0 ? 'positive-balance' : 'negative-balance'}">${salesUsd !== 0 ? salesUsd.toFixed(2) : ''}</td>
                     <td class="${salesSyp >= 0 ? 'positive-balance' : 'negative-balance'}">${salesSyp !== 0 ? Math.round(salesSyp).toLocaleString() : ''}</td>
                     <td class="${purchasesUsd >= 0 ? 'positive-balance' : 'negative-balance'}">${purchasesUsd !== 0 ? purchasesUsd.toFixed(2) : ''}</td>
@@ -1924,13 +2012,13 @@
                 tbody.appendChild(tr);
             });
             
-            // إذا لم يكن هناك صف إجمالي في البيانات الأصلية، نضيف واحداً يدوياً
-            if (!totalRowFromData && filteredData.length > 0) {
+            // إضافة سطر الإجمالي الصحيح
+            if (filteredData.length > 0) {
                 const totalRow = document.createElement('tr');
                 totalRow.className = 'total-row';
                 totalRow.innerHTML = `
                     <td class="text-gray-400 text-[10px]">${rowIndex + 1}</td>
-                    <td class="text-right font-bold text-green-800">الاجمالي</td>
+                    <td class="text-right font-bold text-green-800">الإجمالي</td>
                     <td class="${totalSalesUsd >= 0 ? 'positive-balance' : 'negative-balance'} font-bold">${totalSalesUsd.toFixed(2)}</td>
                     <td class="${totalSalesSyp >= 0 ? 'positive-balance' : 'negative-balance'} font-bold">${Math.round(totalSalesSyp).toLocaleString()}</td>
                     <td class="${totalPurchasesUsd >= 0 ? 'positive-balance' : 'negative-balance'} font-bold">${totalPurchasesUsd.toFixed(2)}</td>
