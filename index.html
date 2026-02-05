@@ -40,6 +40,28 @@
 
         td { padding: 6px 4px; border-bottom: 1px solid #f1f5f9; text-align: center; font-size: 0.75rem; }
 
+        /* تكبير خط الأرقام في ميزان المراجعة - إضافة */
+        #trialBalanceTableBody td:not(:first-child) {
+            font-size: 0.85rem !important; /* تكبير درجة واحدة من 0.75rem إلى 0.85rem */
+        }
+
+        /* إزالة المسافة البادئة للعناصر الفرعية في ميزان المراجعة */
+        .account-subitem {
+            padding-right: 0 !important;
+        }
+
+        /* جعل جميع الخلايا في نفس السوية */
+        .trial-balance-table td {
+            text-align: center !important;
+            padding-right: 0 !important;
+            padding-left: 0 !important;
+        }
+
+        /* محاذاة النصوص بشكل متماثل */
+        .trial-balance-table .text-right {
+            text-align: center !important;
+        }
+
         .search-wrapper { position: relative; width: 100%; }
 
         .input-glass {
@@ -375,8 +397,7 @@
         }
         
         .account-subitem {
-            padding-right: 20px !important;
-            font-size: 0.75rem;
+            font-size: 0.85rem !important; /* تكبير درجة واحدة */
         }
         
         .negative {
@@ -396,7 +417,8 @@
             background: #e5e7eb;
             font-weight: bold;
             color: #374151;
-            padding: 8px 12px !important;
+            padding: 8px 6px !important; /* تعديل المسافة لتكون مركزة */
+            text-align: center !important; /* جعل النص في المنتصف */
         }
         
         .group-total {
@@ -409,6 +431,17 @@
             background: #dbeafe;
             font-weight: bold;
             border-top: 2px solid #93c5fd;
+        }
+        
+        /* تنسيق جديد لميزان المراجعة - جميع الصفوف في نفس السوية */
+        .trial-balance-table tbody td {
+            text-align: center !important;
+            padding: 6px 4px !important;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .trial-balance-table tbody td:first-child {
+            text-align: center !important; /* محاذاة أسماء الحسابات في المنتصف */
         }
     </style>
 </head>
@@ -545,7 +578,7 @@
                 
                 <!-- ميزان المراجعة - تصميم بسيط -->
                 <div class="table-container">
-                    <table>
+                    <table class="trial-balance-table">
                         <thead>
                             <tr>
                                 <th width="40%">الحساب</th>
@@ -1697,33 +1730,33 @@
                 if (row.type === 'group-title') {
                     tr.className = 'group-title';
                     tr.innerHTML = `
-                        <td class="text-right font-bold">${row.account}</td>
+                        <td class="text-center font-bold">${row.account}</td>
                         <td></td>
                         <td></td>
                     `;
                 } else if (row.type === 'item') {
                     tr.innerHTML = `
-                        <td class="text-right">${row.account}</td>
+                        <td class="text-center">${row.account}</td>
                         <td class="${parseFloat(row.usd) < 0 ? 'negative' : 'positive'}">${row.usd}</td>
                         <td class="${parseFloat(row.syp.replace(/,/g, '')) < 0 ? 'negative' : 'positive'}">${row.syp}</td>
                     `;
                 } else if (row.type === 'subitem') {
                     tr.innerHTML = `
-                        <td class="text-right account-subitem">${row.account}</td>
+                        <td class="text-center account-subitem">${row.account}</td>
                         <td class="${parseFloat(row.usd) < 0 ? 'negative' : 'positive'}">${row.usd}</td>
                         <td class="${parseFloat(row.syp.replace(/,/g, '')) < 0 ? 'negative' : 'positive'}">${row.syp}</td>
                     `;
                 } else if (row.type === 'group-total') {
                     tr.className = 'group-total';
                     tr.innerHTML = `
-                        <td class="text-right font-bold">${row.account}</td>
+                        <td class="text-center font-bold">${row.account}</td>
                         <td class="font-bold ${parseFloat(row.usd) < 0 ? 'negative' : 'positive'}">${row.usd}</td>
                         <td class="font-bold ${parseFloat(row.syp.replace(/,/g, '')) < 0 ? 'negative' : 'positive'}">${row.syp}</td>
                     `;
                 } else if (row.type === 'capital-total') {
                     tr.className = 'capital-total';
                     tr.innerHTML = `
-                        <td class="text-right font-bold">${row.account}</td>
+                        <td class="text-center font-bold">${row.account}</td>
                         <td class="font-bold ${parseFloat(row.usd) < 0 ? 'negative' : 'positive'}">${row.usd}</td>
                         <td class="font-bold ${parseFloat(row.syp.replace(/,/g, '')) < 0 ? 'negative' : 'positive'}">${row.syp}</td>
                     `;
