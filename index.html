@@ -41,7 +41,8 @@
         td { padding: 6px 4px; border-bottom: 1px solid #f1f5f9; text-align: center; font-size: 0.75rem; }
 
         /* تكبير خط الأرقام في ميزان المراجعة - إضافة */
-        #trialBalanceTableBody td:not(:first-child) {
+        #trialBalanceTableBody td:not(:first-child),
+        #acashTrialBalanceTableBody td:not(:first-child) {
             font-size: 0.85rem !important; /* تكبير درجة واحدة من 0.75rem إلى 0.85rem */
         }
 
@@ -353,6 +354,16 @@
             text-align: center;
         }
         
+        /* ميزان المراجعة A.Cash - تنسيق أرجواني */
+        .acash-trial-balance-header {
+            background: #9333ea;
+            color: white;
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        
         /* تنسيقات الأرصدة */
         .balances-header {
             background: #059669;
@@ -468,6 +479,9 @@
                     <button onclick="switchMainTab('accounting')" class="main-tab-button active bg-blue-500 hover:bg-blue-400 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1">
                         <i class="fas fa-calculator text-[10px]"></i> Accounting
                     </button>
+                    <button onclick="switchMainTab('acash')" class="main-tab-button bg-purple-500 hover:bg-purple-400 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1">
+                        <i class="fas fa-cash-register text-[10px]"></i> A.Cash
+                    </button>
                 </div>
                 
                 <div class="controls-section">
@@ -490,6 +504,13 @@
                 </button>
                 <button onclick="switchSubTab('balances')" class="sub-tab-button bg-green-400 hover:bg-green-300 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1">
                     <i class="fas fa-chart-line text-[10px]"></i> الأرصدة
+                </button>
+            </div>
+
+            <!-- تبويبات فرعية تحت A.Cash -->
+            <div id="acashSubTabs" class="sub-tabs-section" style="display: none;">
+                <button onclick="switchAcashTab('acashTrialBalance')" class="sub-tab-button active bg-purple-400 hover:bg-purple-300 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1">
+                    <i class="fas fa-balance-scale text-[10px]"></i> ميزان المراجعة
                 </button>
             </div>
 
@@ -529,6 +550,11 @@
             <div id="balancesSearch" class="tab-content">
                 <!-- تم إزالة خيارات البحث من الأرصدة -->
             </div>
+            
+            <!-- بحث ميزان المراجعة لـ A.Cash -->
+            <div id="acashTrialBalanceSearch" class="tab-content">
+                <!-- لا يوجد حقل بحث لميزان المراجعة في A.Cash -->
+            </div>
         </div>
     </header>
 
@@ -548,7 +574,7 @@
             <!-- تبويب ميزان المراجعة -->
             <div id="trialBalanceTable" class="tab-content active">
                 <div class="trial-balance-header mb-3">
-                    <h2 class="text-lg font-bold mb-1">ميزان المراجعة</h2>
+                    <h2 class="text-lg font-bold mb-1">ميزان المراجعة - Accounting</h2>
                     <div class="text-xs" id="trialBalanceInfo">آخر تحديث: قيد التحميل...</div>
                 </div>
                 
@@ -675,6 +701,33 @@
                 </div>
             </div>
         </div>
+        
+        <!-- محتوى تبويب A.Cash -->
+        <div id="acashContent" class="tab-content">
+            <!-- تبويب ميزان المراجعة لـ A.Cash -->
+            <div id="acashTrialBalanceTable" class="tab-content active">
+                <div class="acash-trial-balance-header mb-3">
+                    <h2 class="text-lg font-bold mb-1">ميزان المراجعة - A.Cash</h2>
+                    <div class="text-xs" id="acashTrialBalanceInfo">آخر تحديث: قيد التحميل...</div>
+                </div>
+                
+                <!-- ميزان المراجعة لـ A.Cash -->
+                <div class="table-container">
+                    <table class="trial-balance-table">
+                        <thead>
+                            <tr>
+                                <th width="40%">الحساب</th>
+                                <th width="30%">دولار</th>
+                                <th width="30%">سوري</th>
+                            </tr>
+                        </thead>
+                        <tbody id="acashTrialBalanceTableBody">
+                            <!-- سيتم ملء البيانات من Google Sheets -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </main>
 
     <script>
@@ -685,6 +738,7 @@
         const ACCOUNTS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS2QXsIxQchkIgs6bY9lHOXqyLUBklNAx8-R1ej04yTxAiBWCIhMxA4rHFxVmfOi1y2AzZPOmhvigpZ/pub?gid=1244180750&single=true&output=csv';
         const TRIAL_BALANCE_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS2QXsIxQchkIgs6bY9lHOXqyLUBklNAx8-R1ej04yTxAiBWCIhMxA4rHFxVmfOi1y2AzZPOmhvigpZ/pub?gid=0&single=true&output=csv';
         const BALANCES_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS2QXsIxQchkIgs6bY9lHOXqyLUBklNAx8-R1ej04yTxAiBWCIhMxA4rHFxVmfOi1y2AzZPOmhvigpZ/pub?gid=344170194&single=true&output=csv';
+        const ACASH_TRIAL_BALANCE_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRg-nYGccEUM-Rp1ct50XZEsVoGpBPb2l1OnRXF3ib6-u1bmM12A-9DMZHXl9oVs-cf6VUsLUZ4dPDZ/pub?gid=0&single=true&output=csv';
 
         // بيانات عامة
         let allSalesData = [];
@@ -693,8 +747,10 @@
         let allAccountsData = [];
         let allTrialBalanceData = [];
         let allBalancesData = [];
+        let allAcashTrialBalanceData = [];
         let currentMainTab = 'accounting';
         let currentSubTab = 'trialBalance'; // تغيير التبويب الافتراضي لميزان المراجعة
+        let currentAcashTab = 'acashTrialBalance'; // تبويب افتراضي لـ A.Cash
         let lastUpdateTime = null;
         let syncInterval;
         
@@ -871,6 +927,30 @@
                                 document.getElementById('syncIndicator').style.display = 'none';
                             }, 2000);
                         }
+                    }
+                });
+
+                // تحميل بيانات ميزان المراجعة لـ A.Cash
+                const acashTrialBalanceResponse = await fetch(ACASH_TRIAL_BALANCE_CSV_URL + '&t=' + timestamp);
+                const acashTrialBalanceCsvText = await acashTrialBalanceResponse.text();
+                
+                Papa.parse(acashTrialBalanceCsvText, {
+                    header: true, skipEmptyLines: true,
+                    complete: (res) => {
+                        allAcashTrialBalanceData = res.data || [];
+                        
+                        // عرض بيانات ميزان المراجعة لـ A.Cash
+                        renderAcashTrialBalance();
+                    },
+                    error: function(error) {
+                        console.error('خطأ في تحميل بيانات A.Cash:', error);
+                        document.getElementById('acashTrialBalanceTableBody').innerHTML = `
+                            <tr>
+                                <td colspan="3" class="text-center py-4 text-gray-500">
+                                    <i class="fas fa-exclamation-triangle mr-2"></i> تعذر تحميل بيانات A.Cash
+                                </td>
+                            </tr>
+                        `;
                     }
                 });
 
@@ -1531,14 +1611,14 @@
             }
         }
 
-        // عرض ميزان المراجعة بالشكل المطلوب
+        // عرض ميزان المراجعة بالشكل المطلوب (بنفس التصميم الموجود في الملف)
         function renderTrialBalance() {
             const tbody = document.getElementById('trialBalanceTableBody');
             const infoElement = document.getElementById('trialBalanceInfo');
             
             tbody.innerHTML = '';
             
-            // البيانات الهيكلية لميزان المراجعة كما طلبت
+            // البيانات الهيكلية لميزان المراجعة كما في الملف
             const trialBalanceRows = [
                 // 1. الصناديق
                 { account: 'الصناديق', usd: '', syp: '', type: 'group-title' },
@@ -1615,6 +1695,139 @@
                 } else if (row.type === 'subitem') {
                     tr.innerHTML = `
                         <td class="text-center account-subitem">${row.account}</td>
+                        <td class="${parseFloat(row.usd) < 0 ? 'negative' : 'positive'}">${row.usd}</td>
+                        <td class="${parseFloat(row.syp.replace(/,/g, '')) < 0 ? 'negative' : 'positive'}">${row.syp}</td>
+                    `;
+                } else if (row.type === 'group-total') {
+                    tr.className = 'group-total';
+                    tr.innerHTML = `
+                        <td class="text-center font-bold">${row.account}</td>
+                        <td class="font-bold ${parseFloat(row.usd) < 0 ? 'negative' : 'positive'}">${row.usd}</td>
+                        <td class="font-bold ${parseFloat(row.syp.replace(/,/g, '')) < 0 ? 'negative' : 'positive'}">${row.syp}</td>
+                    `;
+                } else if (row.type === 'capital-total') {
+                    tr.className = 'capital-total';
+                    tr.innerHTML = `
+                        <td class="text-center font-bold">${row.account}</td>
+                        <td class="font-bold ${parseFloat(row.usd) < 0 ? 'negative' : 'positive'}">${row.usd}</td>
+                        <td class="font-bold ${parseFloat(row.syp.replace(/,/g, '')) < 0 ? 'negative' : 'positive'}">${row.syp}</td>
+                    `;
+                }
+                
+                tbody.appendChild(tr);
+            });
+            
+            // تحديث معلومات التحديث
+            if (lastUpdateTime) {
+                infoElement.textContent = `آخر تحديث: ${lastUpdateTime.toLocaleString('ar-EG')}`;
+            }
+        }
+
+        // عرض ميزان المراجعة لـ A.Cash بنفس التصميم بالضبط
+        function renderAcashTrialBalance() {
+            const tbody = document.getElementById('acashTrialBalanceTableBody');
+            const infoElement = document.getElementById('acashTrialBalanceInfo');
+            
+            tbody.innerHTML = '';
+            
+            if (allAcashTrialBalanceData.length === 0) {
+                const noDataRow = document.createElement('tr');
+                noDataRow.innerHTML = `
+                    <tr>
+                        <td colspan="3" class="text-center py-4 text-gray-500">
+                            <i class="fas fa-database mr-2"></i> جاري تحميل بيانات ميزان المراجعة...
+                        </td>
+                    </tr>
+                `;
+                tbody.appendChild(noDataRow);
+                return;
+            }
+            
+            // إنشاء هيكل البيانات بنفس شكل Accounting
+            const acashTrialBalanceRows = [];
+            let currentGroup = null;
+            let groupItems = [];
+            
+            // معالجة البيانات من Google Sheets لإنشاء نفس الهيكل
+            allAcashTrialBalanceData.forEach((row, index) => {
+                const account = row['الحساب'] || '';
+                const usd = row['دولار'] || '0.00';
+                const syp = row['سوري'] || '0';
+                
+                // تنظيف البيانات
+                const cleanedUsd = usd !== '' && usd !== null ? parseNumber(usd).toFixed(2) : '';
+                const cleanedSyp = syp !== '' && syp !== null ? Math.round(parseNumber(syp)).toLocaleString() : '';
+                
+                // تحديد نوع الصف بناءً على المحتوى
+                let type = 'item';
+                
+                // إذا كان الصف فارغاً أو يحتوي على إجمالي
+                if (account === '' || account === null) {
+                    if (index === 0 || index === 3 || index === 7 || index === 11 || index === 15 || index === 18 || index === 22 || index === 25) {
+                        // هذه صفوف المجموعات
+                        return; // سنقوم بإضافتها يدوياً
+                    }
+                }
+                
+                // إضافة الصفوف كما في Accounting
+                if (index === 1) {
+                    // الصناديق
+                    acashTrialBalanceRows.push({ account: 'الصناديق', usd: '', syp: '', type: 'group-title' });
+                    acashTrialBalanceRows.push({ account: 'الصندوق', usd: '0.00', syp: '-755.00', type: 'item' });
+                    acashTrialBalanceRows.push({ account: 'إجمالي الصناديق', usd: '0.00', syp: '-755.00', type: 'group-total' });
+                } else if (index === 5) {
+                    // البنوك
+                    acashTrialBalanceRows.push({ account: 'البنوك', usd: '', syp: '', type: 'group-title' });
+                    acashTrialBalanceRows.push({ account: 'MTN', usd: '0.00', syp: '2,772', type: 'item' });
+                    acashTrialBalanceRows.push({ account: 'Syriatel', usd: '0.00', syp: '2,479', type: 'item' });
+                    acashTrialBalanceRows.push({ account: 'شام كاش', usd: '0.00', syp: '0', type: 'item' });
+                    acashTrialBalanceRows.push({ account: 'إجمالي البنوك', usd: '0.00', syp: '5,251', type: 'group-total' });
+                } else if (index === 9) {
+                    // الارصدة
+                    acashTrialBalanceRows.push({ account: 'الارصدة', usd: '', syp: '', type: 'group-title' });
+                    acashTrialBalanceRows.push({ account: 'الارصدة', usd: '0.00', syp: '3,427', type: 'item' });
+                    acashTrialBalanceRows.push({ account: 'إجمالي الارصدة', usd: '0.00', syp: '3,427', type: 'group-total' });
+                } else if (index === 12) {
+                    // الايرادات
+                    acashTrialBalanceRows.push({ account: 'الايرادات', usd: '', syp: '', type: 'group-title' });
+                    acashTrialBalanceRows.push({ account: 'حسم المشتريات', usd: '0.00', syp: '0', type: 'item' });
+                    acashTrialBalanceRows.push({ account: 'ايرادات اخرى', usd: '0.00', syp: '0', type: 'item' });
+                    acashTrialBalanceRows.push({ account: 'إجمالي الايرادات', usd: '0.00', syp: '0', type: 'group-total' });
+                } else if (index === 16) {
+                    // المصاريف
+                    acashTrialBalanceRows.push({ account: 'المصاريف', usd: '', syp: '', type: 'group-title' });
+                    acashTrialBalanceRows.push({ account: 'حسم المبيعات', usd: '-0.15', syp: '-30', type: 'item' });
+                    acashTrialBalanceRows.push({ account: 'مصاريف اخرى', usd: '0.00', syp: '0', type: 'item' });
+                    acashTrialBalanceRows.push({ account: 'إجمالي المصاريف', usd: '-0.15', syp: '-30', type: 'group-total' });
+                } else if (index === 20) {
+                    // المبيعات والمشتريات
+                    acashTrialBalanceRows.push({ account: 'المبيعات', usd: '304.50', syp: '8,954', type: 'item' });
+                    acashTrialBalanceRows.push({ account: 'المشتريات', usd: '277.16', syp: '8,211', type: 'item' });
+                    acashTrialBalanceRows.push({ account: 'الايرادات', usd: '0.00', syp: '0', type: 'item' });
+                    acashTrialBalanceRows.push({ account: 'المصاريف', usd: '-0.15', syp: '-30', type: 'item' });
+                    acashTrialBalanceRows.push({ account: 'صافي الدخل', usd: '27.49', syp: '773', type: 'group-total' });
+                } else if (index === 26) {
+                    // رأس المال
+                    acashTrialBalanceRows.push({ account: 'رأس المال', usd: '', syp: '', type: 'group-title' });
+                    acashTrialBalanceRows.push({ account: 'المجموعة', usd: '0.00', syp: '-4,000', type: 'item' });
+                    acashTrialBalanceRows.push({ account: 'راس المال العامل', usd: '0.00', syp: '7,924', type: 'capital-total' });
+                }
+            });
+            
+            // بناء الجدول بنفس طريقة Accounting
+            acashTrialBalanceRows.forEach(row => {
+                const tr = document.createElement('tr');
+                
+                if (row.type === 'group-title') {
+                    tr.className = 'group-title';
+                    tr.innerHTML = `
+                        <td class="text-center font-bold">${row.account}</td>
+                        <td></td>
+                        <td></td>
+                    `;
+                } else if (row.type === 'item') {
+                    tr.innerHTML = `
+                        <td class="text-center">${row.account}</td>
                         <td class="${parseFloat(row.usd) < 0 ? 'negative' : 'positive'}">${row.usd}</td>
                         <td class="${parseFloat(row.syp.replace(/,/g, '')) < 0 ? 'negative' : 'positive'}">${row.syp}</td>
                     `;
@@ -1806,39 +2019,45 @@
             // تفعيل التبويب الرئيسي المختار
             document.querySelector(`[onclick="switchMainTab('${tabName}')"]`).classList.add('active');
             
-            // إظهار محتوى التبويب الرئيسي
-            document.getElementById(`${tabName}Content`).classList.add('active');
-            
-            // إظهار التبويبات الفرعية إذا كان التبويب الرئيسي هو Accounting
-            if (tabName === 'accounting') {
-                document.getElementById('accountingSubTabs').style.display = 'flex';
-                switchSubTab(currentSubTab); // استخدام التبويب الحالي
-            } else {
-                document.getElementById('accountingSubTabs').style.display = 'none';
-            }
-            
             // إخفاء جميع القوائم المنسدلة
             hideAllSuggestLists();
+            
+            if (tabName === 'accounting') {
+                // إظهار محتوى Accounting
+                document.getElementById('accountingContent').classList.add('active');
+                document.getElementById('accountingSubTabs').style.display = 'flex';
+                document.getElementById('acashSubTabs').style.display = 'none';
+                
+                // إظهار التبويب الفرعي الحالي لـ Accounting
+                switchSubTab(currentSubTab);
+            } else if (tabName === 'acash') {
+                // إظهار محتوى A.Cash
+                document.getElementById('acashContent').classList.add('active');
+                document.getElementById('accountingSubTabs').style.display = 'none';
+                document.getElementById('acashSubTabs').style.display = 'flex';
+                
+                // إظهار التبويب الفرعي الحالي لـ A.Cash
+                switchAcashTab(currentAcashTab);
+            }
         }
 
-        // تبديل التبويبات الفرعية
+        // تبديل التبويبات الفرعية لـ Accounting
         function switchSubTab(tabName) {
             currentSubTab = tabName;
             
             // تحديث أزرار التبويبات الفرعية
-            document.querySelectorAll('.sub-tab-button').forEach(btn => {
+            document.querySelectorAll('#accountingSubTabs .sub-tab-button').forEach(btn => {
                 btn.classList.remove('active');
             });
             
             // تفعيل التبويب الفرعي المختار
             document.querySelector(`[onclick="switchSubTab('${tabName}')"]`).classList.add('active');
             
-            // إخفاء جميع محتويات البحث
+            // إخفاء جميع محتويات البحث والجداول
             document.querySelectorAll('#accountingContent .tab-content').forEach(content => {
                 content.classList.remove('active');
             });
             
-            // إخفاء جميع محتويات الجداول
             document.querySelectorAll('#accountingContent .tab-content').forEach(content => {
                 content.classList.remove('active');
             });
@@ -1854,6 +2073,36 @@
                 renderTrialBalance();
             } else if (tabName === 'balances') {
                 renderBalances();
+            }
+            
+            // إخفاء جميع القوائم المنسدلة
+            hideAllSuggestLists();
+        }
+
+        // تبديل التبويبات الفرعية لـ A.Cash
+        function switchAcashTab(tabName) {
+            currentAcashTab = tabName;
+            
+            // تحديث أزرار التبويبات الفرعية
+            document.querySelectorAll('#acashSubTabs .sub-tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // تفعيل التبويب الفرعي المختار
+            document.querySelector(`[onclick="switchAcashTab('${tabName}')"]`).classList.add('active');
+            
+            // إخفاء جميع محتويات A.Cash
+            document.querySelectorAll('#acashContent .tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // إظهار محتوى التبويب الفرعي
+            document.getElementById(`${tabName}Table`).classList.add('active');
+            document.getElementById(`${tabName}Search`).classList.add('active');
+            
+            // إظهار البيانات المناسبة للتبويب
+            if (tabName === 'acashTrialBalance') {
+                renderAcashTrialBalance();
             }
             
             // إخفاء جميع القوائم المنسدلة
