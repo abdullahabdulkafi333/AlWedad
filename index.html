@@ -429,6 +429,8 @@
         const ACCOUNTS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS2QXsIxQchkIgs6bY9lHOXqyLUBklNAx8-R1ej04yTxAiBWCIhMxA4rHFxVmfOi1y2AzZPOmhvigpZ/pub?gid=1244180750&single=true&output=csv';
         const TRIAL_BALANCE_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS2QXsIxQchkIgs6bY9lHOXqyLUBklNAx8-R1ej04yTxAiBWCIhMxA4rHFxVmfOi1y2AzZPOmhvigpZ/pub?gid=0&single=true&output=csv';
         const BALANCES_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS2QXsIxQchkIgs6bY9lHOXqyLUBklNAx8-R1ej04yTxAiBWCIhMxA4rHFxVmfOi1y2AzZPOmhvigpZ/pub?gid=344170194&single=true&output=csv';
+        
+        // رابط A.Cash - تم تعديله إلى الرابط الصحيح
         const ACASH_TRIAL_BALANCE_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRg-nYGccEUM-Rp1ct50XZEsVoGpBPb2l1OnRXF3ib6-u1bmM12A-9DMZHXl9oVs-cf6VUsLUZ4dPDZ/pub?gid=0&single=true&output=csv';
 
         // بيانات عامة
@@ -518,7 +520,7 @@
                     } 
                 });
 
-                // جلب بيانات ميزان المراجعة A.Cash - بشكل منفصل تماماً
+                // جلب بيانات ميزان المراجعة A.Cash
                 await fetchAcashTrialBalanceData(timestamp);
 
                 lastUpdateTime = new Date();
@@ -531,7 +533,7 @@
             }
         }
 
-        // دالة منفصلة لجلب بيانات A.Cash
+        // دالة منفصلة لجلب بيانات A.Cash - تم تعديلها بشكل كامل
         async function fetchAcashTrialBalanceData(timestamp) {
             try {
                 const acashRes = await fetch(ACASH_TRIAL_BALANCE_CSV_URL + '&t=' + timestamp);
@@ -541,8 +543,66 @@
                     header: true, 
                     skipEmptyLines: false,
                     complete: (res) => { 
-                        // تخزين البيانات مباشرة كما هي من الرابط
-                        allAcashTrialBalanceData = res.data;
+                        // تنظيف البيانات
+                        let rawData = res.data;
+                        
+                        // تصفية الصفوف الفارغة
+                        let filteredData = rawData.filter(row => {
+                            // التحقق من وجود بيانات في الصف
+                            const values = Object.values(row);
+                            return values.some(v => v && v.trim && v.trim() !== '');
+                        });
+                        
+                        // إنشاء هيكل بيانات ميزان المراجعة
+                        let trialBalanceData = [];
+                        
+                        // معالجة كل صف
+                        for (let i = 0; i < filteredData.length; i++) {
+                            const row = filteredData[i];
+                            
+                            // الحصول على أسماء الأعمدة
+                            const columns = Object.keys(row);
+                            
+                            // محاولة العثور على العمود المناسب لكل حقل
+                            let accountField = columns.find(col => 
+                                col.includes('الحساب') || col.includes('Account') || col === 'A'
+                            ) || columns[0];
+                            
+                            let usdField = columns.find(col => 
+                                col.includes('دولار') || col.includes('USD') || col === 'B' || col.includes('Amount')
+                            ) || (columns.length > 1 ? columns[1] : '');
+                            
+                            let sypField = columns.find(col => 
+                                col.includes('سوري') || col.includes('SYP') || col === 'C'
+                            ) || (columns.length > 2 ? columns[2] : '');
+                            
+                            // استخراج القيم
+                            let account = row[accountField] || '';
+                            let usd = usdField ? (row[usdField] || '') : '';
+                            let syp = sypField ? (row[sypField] || '') : '';
+                            
+                            // تنظيف القيم
+                            account = String(account).trim();
+                            usd = String(usd).trim();
+                            syp = String(syp).trim();
+                            
+                            // تخطي صفوف العنوان
+                            if (account === 'الحساب' || account === 'Account' || 
+                                (account.includes('الحساب') && usd.includes('دولار'))) {
+                                continue;
+                            }
+                            
+                            // إضافة الصف إلى البيانات
+                            trialBalanceData.push({
+                                'الحساب': account,
+                                'دولار': usd,
+                                'سوري': syp,
+                                '_raw': row // الاحتفاظ بالبيانات الخام للتصحيح
+                            });
+                        }
+                        
+                        // تخزين البيانات
+                        allAcashTrialBalanceData = trialBalanceData;
                         
                         // عرض البيانات إذا كان التبويب الحالي هو A.Cash
                         if (currentMainTab === 'acash' && currentAcashTab === 'acashTrialBalance') {
@@ -550,6 +610,7 @@
                         }
                         
                         console.log('A.Cash Data loaded:', allAcashTrialBalanceData.length, 'rows');
+                        console.log('Sample A.Cash data:', allAcashTrialBalanceData.slice(0, 3));
                     },
                     error: (error) => {
                         console.error('Error parsing A.Cash CSV:', error);
@@ -563,7 +624,7 @@
         }
 
         function showSyncNotification() { document.getElementById('syncIndicator').style.display = 'block'; }
-        function startAutoSync() { if (syncInterval) clearInterval(syncInterval); syncInterval = setInterval(() => fetchAllData(true), 5000); }
+        function startAutoSync() { if (syncInterval) clearInterval(syncInterval); syncInterval = setInterval(() => fetchAllData(true), 30000); } // 30 ثانية بدلاً من 5 ثوان
 
         // إعداد القوائم المنسدلة لكشف الحساب
         function setupStatementDropdowns() {
@@ -618,8 +679,11 @@
                 };
             });
             ['searchStatementDateFrom','searchStatementDateTo','searchStatementDescription'].forEach(id => {
-                document.getElementById(id).addEventListener('change', renderStatement);
-                if (id === 'searchStatementDescription') document.getElementById(id).addEventListener('input', function() { clearTimeout(this.searchTimeout); this.searchTimeout = setTimeout(renderStatement,500); });
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener('change', renderStatement);
+                    if (id === 'searchStatementDescription') element.addEventListener('input', function() { clearTimeout(this.searchTimeout); this.searchTimeout = setTimeout(renderStatement,500); });
+                }
             });
         }
 
@@ -691,6 +755,8 @@
             const itemFilter = document.getElementById('searchStatementItem').value.toLowerCase();
             const descFilter = document.getElementById('searchStatementDescription').value.toLowerCase();
 
+            if (!tbody) return;
+            
             let data = [], totalSalesUsd=0,totalPurchasesUsd=0,totalReceiptsUsd=0,totalPaymentsUsd=0;
             let totalSalesSyp=0,totalPurchasesSyp=0,totalReceiptsSyp=0,totalPaymentsSyp=0;
 
@@ -790,35 +856,12 @@
             let rowCount = 0;
             let hasData = false;
             
-            // الحصول على أسماء الأعمدة من أول صف
-            const firstRow = data[0];
-            const columns = Object.keys(firstRow || {});
-            
-            // محاولة تحديد أسماء الأعمدة الصحيحة
-            let accountCol = columns.find(col => 
-                col.includes('الحساب') || col.includes('Account') || col.includes('account')
-            ) || columns[0];
-            
-            let usdCol = columns.find(col => 
-                col.includes('دولار') || col.includes('USD') || col.includes('usd') || col.includes('مبلغ') || col.includes('Amount')
-            ) || (columns.length > 1 ? columns[1] : '');
-            
-            let sypCol = columns.find(col => 
-                col.includes('سوري') || col.includes('SYP') || col.includes('syp')
-            ) || (columns.length > 2 ? columns[2] : '');
-            
-            // إذا لم نجد أعمدة مناسبة، نستخدم الفهرس
-            if (!accountCol && columns.length > 0) accountCol = columns[0];
-            if (!usdCol && columns.length > 1) usdCol = columns[1];
-            if (!sypCol && columns.length > 2) sypCol = columns[2];
-            
             for (let row of data) {
                 if (!row) continue;
                 
-                // الحصول على القيم من الصف
-                let account = row[accountCol] || row[Object.keys(row)[0]] || '';
-                let usd = usdCol ? (row[usdCol] || '') : '';
-                let syp = sypCol ? (row[sypCol] || '') : '';
+                let account = row['الحساب'] || '';
+                let usd = row['دولار'] || '';
+                let syp = row['سوري'] || '';
                 
                 // تنظيف القيم
                 account = String(account).trim();
@@ -826,31 +869,27 @@
                 syp = String(syp).trim();
 
                 // تخطي صفوف العنوان
-                if (account === 'الحساب' || account === 'Account' || account.toLowerCase().includes('account')) {
+                if (account === 'الحساب' || account === 'Account' || 
+                    (account.includes('الحساب') && usd.includes('دولار'))) {
                     continue;
                 }
 
-                let isEmpty = account === '' && usd === '' && syp === '';
+                // تخطي الصفوف الفارغة تماماً
+                if (account === '' && usd === '' && syp === '') {
+                    continue;
+                }
 
-                // عناوين المجموعات
+                // عناوين المجموعات - يمكن تعديلها حسب الحاجة
                 const groupTitles = ['الصناديق', 'البنوك', 'رأس المال', 'قائمة الدخل', 'المسحوبات الشخصية'];
                 const isGroupTitle = groupTitles.some(g => account.includes(g));
 
-                const isSpecialWhite = account.includes('الارصدة') || account.includes('الايرادات') || 
-                                      account.includes('المصاريف') || account.includes('الإيرادات') || 
-                                      account.includes('المصروفات');
-
+                // تحديد ما إذا كان هذا صف إجمالي
                 const isTotalRow = (account.includes('الاجمالي') || account.includes('الإجمالي') || 
-                                   account.includes('المجموع')) && !isGroupTitle && !isSpecialWhite;
-                const isGrandTotal = account.includes('الصافي') || account.includes('الرصيد النهائي');
-
-                if (isEmpty && !isTotalRow && !isGrandTotal) {
-                    let sp = document.createElement('tr');
-                    sp.className = 'spacer-row';
-                    sp.innerHTML = '<td colspan="3"></td>';
-                    tbody.appendChild(sp);
-                    continue;
-                }
+                                   account.includes('المجموع') || account.includes('المجموع الكلي')) && 
+                                   !account.includes('الصناديق') && !account.includes('البنوك');
+                
+                const isGrandTotal = account.includes('الصافي') || account.includes('الرصيد النهائي') || 
+                                    account.includes('الإجمالي النهائي');
 
                 // تنسيق الأرقام
                 let formattedUsd = '';
@@ -868,7 +907,7 @@
 
                 // تحديد كلاس الصف
                 let rowClass = '';
-                if (isGroupTitle && !isSpecialWhite) rowClass = 'group-title';
+                if (isGroupTitle) rowClass = 'group-title';
                 else if (isTotalRow) rowClass = 'silver-bg';
                 else if (isGrandTotal) rowClass = 'grand-total';
                 else rowClass = 'bg-white';
@@ -894,7 +933,6 @@
                 let tr = document.createElement('tr');
                 tr.className = rowClass;
                 
-                // التأكد من عرض القيم بشكل صحيح
                 let accountDisplay = account || '&nbsp;';
                 let usdDisplay = formattedUsd || '&nbsp;';
                 let sypDisplay = formattedSyp || '&nbsp;';
@@ -924,6 +962,9 @@
             const tbody = document.getElementById('balancesTableBody');
             const info = document.getElementById('balancesInfo');
             const summary = document.getElementById('balancesSummary');
+            
+            if (!tbody) return;
+            
             tbody.innerHTML = '';
             if (!allBalancesData.length) {
                 tbody.innerHTML = '<tr><td colspan="10" class="text-center py-4 text-gray-500">لا توجد بيانات</td></tr>';
@@ -1007,7 +1048,8 @@
             
             // تحديث أزرار التبويبات الفرعية لـ Accounting
             document.querySelectorAll('#accountingSubTabs .sub-tab-button').forEach(b => b.classList.remove('active'));
-            document.querySelector(`[onclick="switchSubTab('${tab}')"]`).classList.add('active');
+            const activeButton = document.querySelector(`[onclick="switchSubTab('${tab}')"]`);
+            if (activeButton) activeButton.classList.add('active');
             
             // إخفاء جميع محتويات Accounting
             document.querySelectorAll('#accountingContent .tab-content').forEach(c => c.classList.remove('active'));
@@ -1027,7 +1069,8 @@
             
             // تحديث أزرار التبويبات الفرعية لـ A.Cash
             document.querySelectorAll('#acashSubTabs .sub-tab-button').forEach(b => b.classList.remove('active'));
-            document.querySelector(`[onclick="switchAcashTab('${tab}')"]`).classList.add('active');
+            const activeButton = document.querySelector(`[onclick="switchAcashTab('${tab}')"]`);
+            if (activeButton) activeButton.classList.add('active');
             
             // إخفاء جميع محتويات A.Cash
             document.querySelectorAll('#acashContent .tab-content').forEach(c => c.classList.remove('active'));
@@ -1043,7 +1086,10 @@
         // طباعة
         function initPrintOptions() {
             loadPrintSettings();
-            let cont = document.getElementById('columnCheckboxes'); cont.innerHTML = '';
+            let cont = document.getElementById('columnCheckboxes'); 
+            if (!cont) return;
+            
+            cont.innerHTML = '';
             statementColumns.forEach(col => {
                 let label = document.createElement('label'); label.className = 'flex items-center gap-2 cursor-pointer';
                 let checked = printSettings.statement[col.id] !== false;
@@ -1076,9 +1122,13 @@
             fetchAllData();
             startAutoSync();
             let today = new Date().toISOString().split('T')[0];
-            document.getElementById('searchStatementDateTo').value = today;
+            let dateFromInput = document.getElementById('searchStatementDateTo');
+            if (dateFromInput) dateFromInput.value = today;
+            
             let lastYear = new Date(); lastYear.setFullYear(lastYear.getFullYear()-1);
-            document.getElementById('searchStatementDateFrom').value = lastYear.toISOString().split('T')[0];
+            let dateToInput = document.getElementById('searchStatementDateFrom');
+            if (dateToInput) dateToInput.value = lastYear.toISOString().split('T')[0];
+            
             switchMainTab('accounting');
             switchSubTab('trialBalance');
         };
