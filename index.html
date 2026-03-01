@@ -1574,7 +1574,7 @@
             if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="10" class="text-center py-4 text-gray-500">لا توجد حسابات ذات رصيد غير صفري</td></tr>'; summary.style.display='none'; }
         }
 
-        // عرض مبيعات A.Cash (التبويب الجديد) مع تطبيق الفلاتر وإضافة صف الإجمالي بشكل دائم
+        // عرض مبيعات A.Cash (التبويب الجديد) مع تطبيق الفلاتر وإضافة صف الإجمالي في الأسفل فقط
         function renderAcashSales() {
             const tbody = document.getElementById('acashSalesTableBody');
             const info = document.getElementById('acashSalesInfo');
@@ -1626,6 +1626,8 @@
             });
             
             let rowCount = 0;
+            // متغيرات لحساب إجمالي المبحوث عنه فقط
+            let totalQty = 0;
             let totalPurchase = 0;
             let totalSell = 0;
             let totalProfit = 0;
@@ -1647,11 +1649,13 @@
                 if (date === '' && company === '' && customer === '') continue;
                 
                 // تحويل الأرقام للحساب
+                let qtyNum = parseNumber(qty);
                 let purchaseNum = parseNumber(purchase);
                 let sellNum = parseNumber(sell);
                 let profitNum = parseNumber(profit);
                 
                 // إضافة إلى المجاميع
+                totalQty += qtyNum;
                 totalPurchase += purchaseNum;
                 totalSell += sellNum;
                 totalProfit += profitNum;
@@ -1660,7 +1664,6 @@
                 tr.className = i % 2 === 0 ? '' : 'bg-gray-50';
                 
                 // تنسيق الأرقام للعرض
-                let qtyNum = parseNumber(qty);
                 let qtyStr = qtyNum !== 0 ? qtyNum.toString() : '';
                 let purchaseStr = purchaseNum !== 0 ? purchaseNum.toFixed(2) : '';
                 let sellStr = sellNum !== 0 ? sellNum.toFixed(2) : '';
@@ -1683,22 +1686,29 @@
                 rowCount++;
             }
             
-            // إضافة صف الإجمالي بشكل دائم (يظهر حتى لو كانت النتائج فارغة)
+            // إضافة صف الإجمالي في الأسفل فقط (صف واحد دائم)
             let totalRow = document.createElement('tr');
             totalRow.className = 'total-row font-bold';
             
-            let totalPurchaseStr = totalPurchase.toFixed(2);
-            let totalSellStr = totalSell.toFixed(2);
-            let totalProfitStr = totalProfit.toFixed(2);
-            
-            // إضافة كلاسات للألوان للإجمالي
-            let totalProfitClass = totalProfit >= 0 ? 'positive-balance' : 'negative-balance';
-            
             if (rowCount === 0) {
-                // إذا كانت النتائج فارغة، نظهر صف الإجمالي بقيم صفرية
-                totalRow.innerHTML = `<td colspan="9" class="text-center font-bold text-green-800">لا توجد نتائج للبحث - الإجمالي: 0.00</td>`;
+                // إذا كانت النتائج فارغة، نظهر صف إجمالي بقيم صفرية
+                totalRow.innerHTML = `<td class="text-center font-bold text-green-800" colspan="5">لا توجد نتائج للبحث</td>
+                                     <td class="positive-balance">0</td>
+                                     <td class="positive-balance">0.00</td>
+                                     <td class="positive-balance">0.00</td>
+                                     <td class="positive-balance">0.00</td>`;
             } else {
-                totalRow.innerHTML = `<td class="text-center font-bold text-green-800" colspan="6">الإجمالي</td>
+                // تنسيق أرقام الإجمالي
+                let totalQtyStr = totalQty !== 0 ? totalQty.toString() : '0';
+                let totalPurchaseStr = totalPurchase.toFixed(2);
+                let totalSellStr = totalSell.toFixed(2);
+                let totalProfitStr = totalProfit.toFixed(2);
+                
+                // إضافة كلاسات للألوان للإجمالي
+                let totalProfitClass = totalProfit >= 0 ? 'positive-balance' : 'negative-balance';
+                
+                totalRow.innerHTML = `<td class="text-center font-bold text-green-800" colspan="5">الإجمالي</td>
+                                     <td class="positive-balance">${totalQtyStr}</td>
                                      <td class="positive-balance">${totalPurchaseStr}</td>
                                      <td class="positive-balance">${totalSellStr}</td>
                                      <td class="${totalProfitClass}">${totalProfitStr}</td>`;
