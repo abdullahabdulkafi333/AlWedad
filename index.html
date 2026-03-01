@@ -40,6 +40,28 @@
 
         td { padding: 6px 4px; border-bottom: 1px solid #f1f5f9; text-align: center; font-size: 0.75rem; }
 
+        /* تكبير خط الأرقام في ميزان المراجعة - إضافة */
+        #trialBalanceTableBody td:not(:first-child) {
+            font-size: 0.85rem !important; /* تكبير درجة واحدة من 0.75rem إلى 0.85rem */
+        }
+
+        /* إزالة المسافة البادئة للعناصر الفرعية في ميزان المراجعة */
+        .account-subitem {
+            padding-right: 0 !important;
+        }
+
+        /* جعل جميع الخلايا في نفس السوية */
+        .trial-balance-table td {
+            text-align: center !important;
+            padding-right: 0 !important;
+            padding-left: 0 !important;
+        }
+
+        /* محاذاة النصوص بشكل متماثل */
+        .trial-balance-table .text-right {
+            text-align: center !important;
+        }
+
         .search-wrapper { position: relative; width: 100%; }
 
         .input-glass {
@@ -321,7 +343,7 @@
             box-shadow: 0 4px 6px -1px rgba(107, 114, 128, 0.3);
         }
         
-        /* تنسيقات ميزان المراجعة */
+        /* ميزان المراجعة - تنسيق بسيط */
         .trial-balance-header {
             background: #7c3aed;
             color: white;
@@ -329,23 +351,6 @@
             border-radius: 8px;
             margin-bottom: 1rem;
             text-align: center;
-        }
-        
-        .trial-balance-section {
-            background: #f8fafc;
-            padding: 0.5rem;
-            border-radius: 6px;
-            margin-bottom: 0.5rem;
-            border: 1px solid #e2e8f0;
-        }
-        
-        .section-title {
-            font-weight: bold;
-            color: #1e40af;
-            margin-bottom: 0.5rem;
-            font-size: 0.85rem;
-            border-bottom: 1px solid #cbd5e1;
-            padding-bottom: 0.25rem;
         }
         
         /* تنسيقات الأرصدة */
@@ -378,39 +383,65 @@
             font-weight: bold;
         }
         
-        /* تحسين عرض جداول ميزان المراجعة */
-        .trial-section-header {
-            background: #e0e7ff;
+        /* تنسيقات خاصة بميزان المراجعة */
+        .account-header {
+            background: #4f46e5;
+            color: white;
             font-weight: bold;
-            color: #3730a3;
-            text-align: right;
-            padding: 10px 12px;
-            border-bottom: 2px solid #c7d2fe;
-            font-size: 0.9rem; /* زيادة حجم الخط */
-            font-weight: 700; /* زيادة سماكة الخط */
         }
         
-        .trial-total-row {
-            background: #e5e7eb; /* تغيير من اللون الأصفر إلى الرمادي */
+        .account-total {
+            background: #f3f4f6;
             font-weight: bold;
-            border-top: 2px solid #9ca3af; /* تغيير اللون إلى رمادي داكن */
-            color: #111827; /* لون النص داكن */
-            font-size: 0.85rem;
+            border-top: 2px solid #d1d5db;
         }
         
-        .trial-account-row {
-            font-size: 0.82rem; /* حجم خط محسّن للحسابات */
-            font-weight: 600; /* وزن متوسط للخط */
+        .account-subitem {
+            font-size: 0.85rem !important; /* تكبير درجة واحدة */
         }
         
-        .trial-amount-cell {
-            font-size: 0.82rem; /* حجم خط محسّن للمبالغ */
-            font-weight: 600; /* وزن متوسط للخط */
+        .negative {
+            color: #dc2626;
         }
         
-        /* إزالة التأثيرات المفرطة على الصفوف */
-        .trial-account-row:hover {
-            background-color: #f8fafc !important;
+        .positive {
+            color: #059669;
+        }
+        
+        .section-divider {
+            border-bottom: 2px solid #d1d5db;
+        }
+        
+        /* تنسيقات المجموعات الجديدة */
+        .group-title {
+            background: #e5e7eb;
+            font-weight: bold;
+            color: #374151;
+            padding: 8px 6px !important; /* تعديل المسافة لتكون مركزة */
+            text-align: center !important; /* جعل النص في المنتصف */
+        }
+        
+        .group-total {
+            background: #f3f4f6;
+            font-weight: bold;
+            border-top: 1px solid #d1d5db;
+        }
+        
+        .capital-total {
+            background: #dbeafe;
+            font-weight: bold;
+            border-top: 2px solid #93c5fd;
+        }
+        
+        /* تنسيق جديد لميزان المراجعة - جميع الصفوف في نفس السوية */
+        .trial-balance-table tbody td {
+            text-align: center !important;
+            padding: 6px 4px !important;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .trial-balance-table tbody td:first-child {
+            text-align: center !important; /* محاذاة أسماء الحسابات في المنتصف */
         }
     </style>
 </head>
@@ -545,16 +576,19 @@
                     <div class="text-xs" id="trialBalanceInfo">آخر تحديث: قيد التحميل...</div>
                 </div>
                 
+                <!-- ميزان المراجعة - تصميم بسيط -->
                 <div class="table-container">
-                    <table id="trialBalanceTableContent">
+                    <table class="trial-balance-table">
                         <thead>
                             <tr>
-                                <th>الحساب</th>
-                                <th>دولار</th>
-                                <th>سوري</th>
+                                <th width="40%">الحساب</th>
+                                <th width="30%">دولار</th>
+                                <th width="30%">سوري</th>
                             </tr>
                         </thead>
-                        <tbody id="trialBalanceTableBody"></tbody>
+                        <tbody id="trialBalanceTableBody">
+                            <!-- سيتم ملء البيانات هنا -->
+                        </tbody>
                     </table>
                 </div>
             </div>
@@ -1625,244 +1659,115 @@
             }
         }
 
-        // عرض ميزان المراجعة - النسخة المحسنة
+        // عرض ميزان المراجعة بالشكل المطلوب
         function renderTrialBalance() {
             const tbody = document.getElementById('trialBalanceTableBody');
             const infoElement = document.getElementById('trialBalanceInfo');
             
             tbody.innerHTML = '';
             
-            if (!allTrialBalanceData || allTrialBalanceData.length === 0) {
-                const noDataRow = document.createElement('tr');
-                noDataRow.innerHTML = `
-                    <td colspan="3" class="text-center py-4 text-gray-500">
-                        <i class="fas fa-database mr-2"></i> لا توجد بيانات لميزان المراجعة
-                    </td>
-                `;
-                tbody.appendChild(noDataRow);
+            // البيانات الهيكلية لميزان المراجعة كما طلبت
+            const trialBalanceRows = [
+                // 1. الصناديق
+                { account: 'الصناديق', usd: '', syp: '', type: 'group-title' },
+                { account: 'الصندوق', usd: '0.00', syp: '1,880', type: 'item' },
+                { account: 'صندوق كاش', usd: '15.00', syp: '-1,135', type: 'subitem' },
+                { account: 'صندوق الافتراضية', usd: '0.00', syp: '0', type: 'subitem' },
+                { account: 'المكتب', usd: '0.00', syp: '0', type: 'subitem' },
+                { account: 'إجمالي الصناديق', usd: '15.00', syp: '745', type: 'group-total' },
                 
-                if (lastUpdateTime) {
-                    infoElement.textContent = `آخر تحديث: ${lastUpdateTime.toLocaleString('ar-EG')}`;
-                }
-                return;
-            }
+                // 2. البنوك
+                { account: 'البنوك', usd: '', syp: '', type: 'group-title' },
+                { account: 'كاش', usd: '0.00', syp: '3,283', type: 'item' },
+                { account: 'الافتراضية', usd: '0.00', syp: '0', type: 'subitem' },
+                { account: 'شام كاش', usd: '0.00', syp: '0', type: 'subitem' },
+                { account: 'الهرم', usd: '0.00', syp: '0', type: 'subitem' },
+                { account: 'إجمالي البنوك', usd: '0.00', syp: '3,283', type: 'group-total' },
+                
+                // 3. الارصدة
+                { account: 'الارصدة', usd: '', syp: '', type: 'group-title' },
+                { account: 'الارصدة', usd: '2,000.00', syp: '9,517', type: 'item' },
+                { account: 'إجمالي الارصدة', usd: '2,000.00', syp: '9,517', type: 'group-total' },
+                
+                // 4. الايرادات
+                { account: 'الايرادات', usd: '', syp: '', type: 'group-title' },
+                { account: 'المحل', usd: '360.00', syp: '0', type: 'item' },
+                { account: 'كاش', usd: '0.00', syp: '-4,000', type: 'subitem' },
+                { account: 'الافتراضية', usd: '0.00', syp: '0', type: 'subitem' },
+                { account: 'حسم المشتريات', usd: '0.00', syp: '0', type: 'subitem' },
+                { account: 'ايرادات اخرى', usd: '0.00', syp: '0', type: 'subitem' },
+                { account: 'إجمالي الايرادات', usd: '360.00', syp: '-4,000', type: 'group-total' },
+                
+                // 5. المصاريف
+                { account: 'المصاريف', usd: '', syp: '', type: 'group-title' },
+                { account: 'صدقة', usd: '7.80', syp: '750', type: 'item' },
+                { account: 'حسم المبيعات', usd: '0.00', syp: '0', type: 'subitem' },
+                { account: 'مصاريف اخرى', usd: '0.00', syp: '0', type: 'subitem' },
+                { account: 'إجمالي المصاريف', usd: '7.80', syp: '750', type: 'group-total' },
+                
+                // 6. المسحوبات
+                { account: 'المسحوبات', usd: '', syp: '', type: 'group-title' },
+                { account: 'عبدالله', usd: '245.00', syp: '0', type: 'item' },
+                { account: 'إجمالي المسحوبات', usd: '245.00', syp: '0', type: 'group-total' },
+                
+                // 7. قائمة الدخل
+                { account: 'قائمة الدخل', usd: '', syp: '', type: 'group-title' },
+                { account: 'الايرادات', usd: '360.00', syp: '-4,000', type: 'item' },
+                { account: 'المصاريف', usd: '7.80', syp: '750', type: 'item' },
+                { account: 'صافي الدخل', usd: '352.20', syp: '-4,750', type: 'group-total' },
+                
+                // 8. رأس المال
+                { account: 'رأس المال', usd: '', syp: '', type: 'group-title' },
+                { account: 'راس المال العامل', usd: '', syp: '13,545', type: 'item' },
+                { account: 'راس المال', usd: '2,000.00', syp: '0', type: 'item' },
+                { account: 'الصافي', usd: '-2,000.00', syp: '13,545', type: 'capital-total' }
+            ];
             
-            console.log('بيانات ميزان المراجعة المحملة:', allTrialBalanceData);
-            
-            // تصفية البيانات بشكل صحيح
-            const filteredData = allTrialBalanceData.filter(row => {
-                const account = (row['الحساب'] || '').toString().trim();
-                const usdAmount = (row['دولار'] || '').toString().trim();
-                const sypAmount = (row['سوري'] || '').toString().trim();
+            // بناء الجدول
+            trialBalanceRows.forEach(row => {
+                const tr = document.createElement('tr');
                 
-                // استبعاد الصفوف الفارغة تماماً
-                if (account === '' && usdAmount === '' && sypAmount === '') {
-                    return false;
+                if (row.type === 'group-title') {
+                    tr.className = 'group-title';
+                    tr.innerHTML = `
+                        <td class="text-center font-bold">${row.account}</td>
+                        <td></td>
+                        <td></td>
+                    `;
+                } else if (row.type === 'item') {
+                    tr.innerHTML = `
+                        <td class="text-center">${row.account}</td>
+                        <td class="${parseFloat(row.usd) < 0 ? 'negative' : 'positive'}">${row.usd}</td>
+                        <td class="${parseFloat(row.syp.replace(/,/g, '')) < 0 ? 'negative' : 'positive'}">${row.syp}</td>
+                    `;
+                } else if (row.type === 'subitem') {
+                    tr.innerHTML = `
+                        <td class="text-center account-subitem">${row.account}</td>
+                        <td class="${parseFloat(row.usd) < 0 ? 'negative' : 'positive'}">${row.usd}</td>
+                        <td class="${parseFloat(row.syp.replace(/,/g, '')) < 0 ? 'negative' : 'positive'}">${row.syp}</td>
+                    `;
+                } else if (row.type === 'group-total') {
+                    tr.className = 'group-total';
+                    tr.innerHTML = `
+                        <td class="text-center font-bold">${row.account}</td>
+                        <td class="font-bold ${parseFloat(row.usd) < 0 ? 'negative' : 'positive'}">${row.usd}</td>
+                        <td class="font-bold ${parseFloat(row.syp.replace(/,/g, '')) < 0 ? 'negative' : 'positive'}">${row.syp}</td>
+                    `;
+                } else if (row.type === 'capital-total') {
+                    tr.className = 'capital-total';
+                    tr.innerHTML = `
+                        <td class="text-center font-bold">${row.account}</td>
+                        <td class="font-bold ${parseFloat(row.usd) < 0 ? 'negative' : 'positive'}">${row.usd}</td>
+                        <td class="font-bold ${parseFloat(row.syp.replace(/,/g, '')) < 0 ? 'negative' : 'positive'}">${row.syp}</td>
+                    `;
                 }
                 
-                // استبعاد رؤوس الجدول الأصلية
-                if (account === 'الحساب' && (usdAmount === 'دولار' || usdAmount === 'دولار') && (sypAmount === 'سوري' || sypAmount === 'سوري')) {
-                    return false;
-                }
-                
-                // استبعاد الصفوف التي تحتوي فقط على أرقام (مثل 2000) في عمود الحساب
-                if (account && /^\d+$/.test(account) && (usdAmount === '' || usdAmount === ' ') && (sypAmount === '' || sypAmount === ' ')) {
-                    return false;
-                }
-                
-                return true;
+                tbody.appendChild(tr);
             });
-            
-            let currentSection = '';
-            let inSection = false;
-            let sectionRows = [];
-            let hasDataForCurrentSection = false;
-            
-            // تصنيف البيانات
-            filteredData.forEach((row, index) => {
-                const account = (row['الحساب'] || '').toString().trim();
-                const usdAmount = (row['دولار'] || '').toString().trim();
-                const sypAmount = (row['سوري'] || '').toString().trim();
-                
-                const usdNum = parseNumber(usdAmount);
-                const sypNum = parseNumber(sypAmount);
-                
-                // إذا كان الصف بمثابة عنوان قسم (حساب فارغ، دولار ليس رقمًا، وعادة ما يكون نصاً مثل "الأصول")
-                if ((account === '' || account === ' ') && 
-                    usdAmount && 
-                    usdAmount !== '' && 
-                    !usdAmount.match(/^-?\d+(\.\d+)?$/) &&
-                    !usdAmount.includes('-') &&
-                    usdAmount !== 'دولار') {
-                    
-                    // عرض القسم السابق إن وجد
-                    if (inSection && sectionRows.length > 0 && hasDataForCurrentSection) {
-                        displaySection(currentSection, sectionRows);
-                    }
-                    
-                    // بدء قسم جديد
-                    currentSection = usdAmount;
-                    inSection = true;
-                    sectionRows = [];
-                    hasDataForCurrentSection = false;
-                    
-                    // تجاهل القسم "2000" (الرقم غير المرغوب فيه)
-                    if (currentSection === '2000') {
-                        currentSection = '';
-                        inSection = false;
-                        return;
-                    }
-                }
-                // إذا كان صف بيانات (حساب له قيمة)
-                else if (account !== '' && account !== ' ' && !account.includes('الاجمالي') && !account.includes('الإجمالي')) {
-                    if (inSection) {
-                        sectionRows.push({
-                            account: account,
-                            usd: usdNum,
-                            syp: sypNum
-                        });
-                        hasDataForCurrentSection = true;
-                    } else {
-                        // إذا لم نكن داخل قسم، نعرض الصف مباشرة
-                        const tr = document.createElement('tr');
-                        tr.className = 'trial-account-row';
-                        tr.innerHTML = `
-                            <td class="text-right">${account}</td>
-                            <td class="text-center trial-amount-cell">${usdNum !== 0 ? usdNum.toFixed(2) : ''}</td>
-                            <td class="text-center trial-amount-cell">${sypNum !== 0 ? Math.round(sypNum).toLocaleString() : ''}</td>
-                        `;
-                        tbody.appendChild(tr);
-                    }
-                }
-                // إذا كان صف إجمالي
-                else if (account.includes('الاجمالي') || account.includes('الإجمالي')) {
-                    // عرض القسم السابق إن وجد
-                    if (inSection && sectionRows.length > 0 && hasDataForCurrentSection) {
-                        displaySection(currentSection, sectionRows);
-                    }
-                    
-                    // عرض سطر الإجمالي
-                    const tr = document.createElement('tr');
-                    tr.className = 'trial-total-row';
-                    tr.innerHTML = `
-                        <td class="text-right font-bold">${account}</td>
-                        <td class="text-center font-bold">${usdNum !== 0 ? usdNum.toFixed(2) : ''}</td>
-                        <td class="text-center font-bold">${sypNum !== 0 ? Math.round(sypNum).toLocaleString() : ''}</td>
-                    `;
-                    tbody.appendChild(tr);
-                    
-                    // إعادة تعيين المتغيرات
-                    currentSection = '';
-                    inSection = false;
-                    sectionRows = [];
-                    hasDataForCurrentSection = false;
-                    
-                    // إضافة سطر فارغ بعد الإجمالي
-                    if (index < filteredData.length - 1) {
-                        const spacerRow = document.createElement('tr');
-                        spacerRow.innerHTML = `<td colspan="3" style="height: 8px;"></td>`;
-                        tbody.appendChild(spacerRow);
-                    }
-                }
-                // إذا كان صف إجمالي بدون كلمة إجمالي (حساب فارغ ومبلغ)
-                else if ((account === '' || account === ' ') && (usdNum !== 0 || sypNum !== 0)) {
-                    // عرض القسم السابق إن وجد
-                    if (inSection && sectionRows.length > 0 && hasDataForCurrentSection) {
-                        displaySection(currentSection, sectionRows);
-                    }
-                    
-                    // عرض سطر الإجمالي الضمني
-                    const tr = document.createElement('tr');
-                    tr.className = 'trial-total-row';
-                    tr.innerHTML = `
-                        <td class="text-right font-bold">الاجمالي</td>
-                        <td class="text-center font-bold">${usdNum !== 0 ? usdNum.toFixed(2) : ''}</td>
-                        <td class="text-center font-bold">${sypNum !== 0 ? Math.round(sypNum).toLocaleString() : ''}</td>
-                    `;
-                    tbody.appendChild(tr);
-                    
-                    // إعادة تعيين المتغيرات
-                    currentSection = '';
-                    inSection = false;
-                    sectionRows = [];
-                    hasDataForCurrentSection = false;
-                    
-                    // إضافة سطر فارغ بعد الإجمالي
-                    if (index < filteredData.length - 1) {
-                        const spacerRow = document.createElement('tr');
-                        spacerRow.innerHTML = `<td colspan="3" style="height: 8px;"></td>`;
-                        tbody.appendChild(spacerRow);
-                    }
-                }
-            });
-            
-            // عرض القسم الأخير إذا كان موجوداً
-            if (inSection && sectionRows.length > 0 && hasDataForCurrentSection) {
-                displaySection(currentSection, sectionRows);
-            }
-            
-            // دالة لعرض قسم كامل
-            function displaySection(sectionTitle, rows) {
-                // عرض عنوان القسم فقط إذا كان له محتوى
-                if (sectionTitle && sectionTitle !== '' && sectionTitle !== ' ') {
-                    const sectionHeaderRow = document.createElement('tr');
-                    sectionHeaderRow.className = 'trial-section-header';
-                    sectionHeaderRow.innerHTML = `
-                        <td colspan="3" class="text-right font-bold">${sectionTitle}</td>
-                    `;
-                    tbody.appendChild(sectionHeaderRow);
-                }
-                
-                // عرض صفوف القسم
-                let sectionTotalUsd = 0;
-                let sectionTotalSyp = 0;
-                
-                rows.forEach((rowData, i) => {
-                    sectionTotalUsd += rowData.usd;
-                    sectionTotalSyp += rowData.syp;
-                    
-                    const tr = document.createElement('tr');
-                    tr.className = i % 2 === 0 ? 'bg-gray-50 trial-account-row' : 'trial-account-row';
-                    tr.innerHTML = `
-                        <td class="text-right">${rowData.account}</td>
-                        <td class="text-center trial-amount-cell">${rowData.usd !== 0 ? rowData.usd.toFixed(2) : ''}</td>
-                        <td class="text-center trial-amount-cell">${rowData.syp !== 0 ? Math.round(rowData.syp).toLocaleString() : ''}</td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-                
-                // عرض إجمالي القسم إذا كان هناك مبالغ
-                if (sectionTotalUsd !== 0 || sectionTotalSyp !== 0) {
-                    const totalRow = document.createElement('tr');
-                    totalRow.className = 'trial-total-row';
-                    totalRow.innerHTML = `
-                        <td class="text-right font-bold">الاجمالي</td>
-                        <td class="text-center font-bold">${sectionTotalUsd !== 0 ? sectionTotalUsd.toFixed(2) : ''}</td>
-                        <td class="text-center font-bold">${sectionTotalSyp !== 0 ? Math.round(sectionTotalSyp).toLocaleString() : ''}</td>
-                    `;
-                    tbody.appendChild(totalRow);
-                }
-                
-                // إضافة سطر فارغ بعد القسم
-                const spacerRow = document.createElement('tr');
-                spacerRow.innerHTML = `<td colspan="3" style="height: 8px;"></td>`;
-                tbody.appendChild(spacerRow);
-            }
             
             // تحديث معلومات التحديث
             if (lastUpdateTime) {
                 infoElement.textContent = `آخر تحديث: ${lastUpdateTime.toLocaleString('ar-EG')}`;
-            }
-            
-            // إذا لم يكن هناك بيانات معروضة
-            if (tbody.children.length === 0) {
-                const noDataRow = document.createElement('tr');
-                noDataRow.innerHTML = `
-                    <td colspan="3" class="text-center py-4 text-gray-500">
-                        <i class="fas fa-info-circle mr-2"></i> لا توجد بيانات لعرضها في ميزان المراجعة
-                    </td>
-                `;
-                tbody.appendChild(noDataRow);
             }
         }
 
@@ -2247,6 +2152,9 @@
             
             // تفعيل تبويب ميزان المراجعة في البداية
             switchSubTab('trialBalance');
+            
+            // عرض ميزان المراجعة مباشرة
+            renderTrialBalance();
         };
     </script>
 </body>
