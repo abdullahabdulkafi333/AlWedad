@@ -48,6 +48,8 @@
             font-size: 0.9rem !important;
             border-top: 2px solid #d1d5db;
             padding: 8px 4px;
+            /* توسيط جميع خلايا صف الإجمالي */
+            text-align: center !important;
         }
 
         td { padding: 6px 4px; border-bottom: 1px solid #f1f5f9; font-size: 0.75rem; }
@@ -78,7 +80,11 @@
             font-size: 0.9rem !important;
         }
         
-        /* تنسيق خاص لصف الإجمالي في A.Cash Sales - تم نقله إلى tfoot */
+        /* إخفاء جميع الترويسات التي تحتوي على عناوين ومعلومات التحديث */
+        .trial-balance-header, .acash-trial-balance-header, .acash-balances-header, .balances-header,
+        #trialBalanceInfo, #balancesInfo, #acashTrialBalanceInfo, #acashBalancesInfo, #acashSalesInfo {
+            display: none !important;
+        }
         
         /* توسيط جميع خلايا الجدول بشكل افتراضي */
         .table-container table td,
@@ -237,10 +243,12 @@
         .print-btn:hover { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); transform: translateY(-1px); box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3); }
         .settings-btn { background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); color: white; border: none; transition: all 0.3s ease; }
         .settings-btn:hover { background: linear-gradient(135deg, #4b5563 0%, #374151 100%); transform: translateY(-1px); box-shadow: 0 4px 6px -1px rgba(107, 114, 128, 0.3); }
-        .trial-balance-header { background: #7c3aed; color: white; padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem; text-align: center; }
-        .acash-trial-balance-header { background: #9333ea; color: white; padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem; text-align: center; }
-        .acash-balances-header { background: #059669; color: white; padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem; text-align: center; }
-        .balances-header { background: #059669; color: white; padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem; text-align: center; }
+        
+        /* إخفاء جميع الترويسات التي تحتوي على عناوين رئيسية */
+        .trial-balance-header, .acash-trial-balance-header, .acash-balances-header, .balances-header {
+            display: none !important;
+        }
+        
         .total-row { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); font-weight: bold; }
         .subtotal-row { background: #f3f4f6; font-weight: 600; }
         .positive-balance { color: #059669; font-weight: bold; }
@@ -417,10 +425,7 @@
         <div id="accountingContent" class="tab-content active">
             <!-- ميزان المراجعة -->
             <div id="trialBalanceTable" class="tab-content active">
-                <div class="trial-balance-header mb-3">
-                    <h2 class="text-lg font-bold mb-1">ميزان المراجعة - Accounting</h2>
-                    <div class="text-xs" id="trialBalanceInfo">آخر تحديث: قيد التحميل...</div>
-                </div>
+                <!-- تم إخفاء العنوان -->
                 <div class="table-container">
                     <table class="trial-balance-table">
                         <thead>
@@ -475,16 +480,7 @@
             
             <!-- الأرصدة (بدون بحث) -->
             <div id="balancesTable" class="tab-content">
-                <div class="balances-header mb-3">
-                    <h2 class="text-lg font-bold mb-1">الأرصدة</h2>
-                    <div class="text-xs" id="balancesInfo">آخر تحديث: قيد التحميل...</div>
-                </div>
-                <div id="balancesSummary" class="statement-summary mb-3">
-                    <div class="summary-card"><div class="summary-title">إجمالي المبيعات $</div><div class="summary-value" id="summaryTotalSalesUsd">0.00 $</div></div>
-                    <div class="summary-card"><div class="summary-title">إجمالي المشتريات $</div><div class="summary-value" id="summaryTotalPurchasesUsd">0.00 $</div></div>
-                    <div class="summary-card"><div class="summary-title">إجمالي المدفوعات $</div><div class="summary-value" id="summaryTotalPaymentsUsd">0.00 $</div></div>
-                    <div class="summary-card"><div class="summary-title">إجمالي الرصيد $</div><div class="summary-value" id="summaryTotalBalanceUsd">0.00 $</div></div>
-                </div>
+                <!-- تم إخفاء العنوان -->
                 <div class="table-container">
                     <table id="balancesTableContent">
                         <thead>
@@ -502,10 +498,7 @@
         <div id="acashContent" class="tab-content">
             <!-- ميزان المراجعة A.Cash -->
             <div id="acashTrialBalanceTable" class="tab-content active">
-                <div class="acash-trial-balance-header mb-3">
-                    <h2 class="text-lg font-bold mb-1">ميزان المراجعة - A.Cash</h2>
-                    <div class="text-xs" id="acashTrialBalanceInfo">آخر تحديث: قيد التحميل...</div>
-                </div>
+                <!-- تم إخفاء العنوان -->
                 <div class="table-container">
                     <table class="trial-balance-table">
                         <thead>
@@ -522,10 +515,7 @@
             
             <!-- أرصدة A.Cash (التبويب الجديد) -->
             <div id="acashBalancesTable" class="tab-content">
-                <div class="acash-balances-header mb-3">
-                    <h2 class="text-lg font-bold mb-1">الأرصدة - A.Cash</h2>
-                    <div class="text-xs" id="acashBalancesInfo">آخر تحديث: قيد التحميل...</div>
-                </div>
+                <!-- تم إخفاء العنوان -->
                 <div class="table-container">
                     <table id="acashBalancesTableContent">
                         <thead>
@@ -547,10 +537,7 @@
 
             <!-- مبيعات A.Cash (التبويب الجديد) - تمت إضافة tfoot لتثبيت صف الإجمالي -->
             <div id="acashSalesTable" class="tab-content">
-                <div class="acash-balances-header mb-3" style="background: #eab308;">
-                    <h2 class="text-lg font-bold mb-1">المبيعات - A.Cash</h2>
-                    <div class="text-xs" id="acashSalesInfo">آخر تحديث: قيد التحميل...</div>
-                </div>
+                <!-- تم إخفاء العنوان -->
                 <div class="table-container">
                     <table id="acashSalesTableContent">
                         <thead>
@@ -939,7 +926,7 @@
                 }
                 
                 // تحديث معلومات الوقت لجميع التبويبات
-                updateAllInfoTexts();
+                // updateAllInfoTexts(); // تم تعطيلها لأن المعلومات مخفية
                 
             } catch (e) { 
                 console.error('Error fetching data:', e); 
@@ -952,17 +939,9 @@
             }
         }
 
-        // دالة لتحديث نصوص المعلومات لجميع التبويبات
+        // دالة لتحديث نصوص المعلومات لجميع التبويبات (معطلة لأن المعلومات مخفية)
         function updateAllInfoTexts() {
-            const infoElements = ['trialBalanceInfo', 'balancesInfo', 'acashTrialBalanceInfo', 'acashBalancesInfo', 'acashSalesInfo'];
-            infoElements.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) {
-                    el.textContent = lastUpdateTime ? 
-                        `آخر تحديث: ${lastUpdateTime.toLocaleString('ar-EG')}` : 
-                        'جاري التحميل...';
-                }
-            });
+            // تم تعطيل هذه الدالة لأن عناصر المعلومات مخفية
         }
 
         function showSyncNotification() { document.getElementById('syncIndicator').style.display = 'block'; }
@@ -1700,16 +1679,12 @@
                 rowCount++;
             }
             
-            // إضافة صف الإجمالي في tfoot (ثابت في الأسفل)
+            // إضافة صف الإجمالي في tfoot (ثابت في الأسفل) مع توسيط جميع الخلايا
             let totalRow = document.createElement('tr');
             
             if (rowCount === 0) {
                 // إذا كانت النتائج فارغة، نظهر صف إجمالي بقيم صفرية
-                totalRow.innerHTML = `<td class="text-center font-bold text-green-800" colspan="5">لا توجد نتائج للبحث</td>
-                                     <td class="positive-balance">0</td>
-                                     <td class="positive-balance">0.00</td>
-                                     <td class="positive-balance">0.00</td>
-                                     <td class="positive-balance">0.00</td>`;
+                totalRow.innerHTML = `<td colspan="9" class="text-center font-bold text-green-800">لا توجد نتائج للبحث - الإجمالي: 0.00</td>`;
             } else {
                 // تنسيق أرقام الإجمالي
                 let totalQtyStr = totalQty !== 0 ? totalQty.toString() : '0';
@@ -1720,11 +1695,11 @@
                 // إضافة كلاسات للألوان للإجمالي
                 let totalProfitClass = totalProfit >= 0 ? 'positive-balance' : 'negative-balance';
                 
-                totalRow.innerHTML = `<td class="text-center font-bold text-green-800" colspan="5">الإجمالي</td>
-                                     <td class="positive-balance">${totalQtyStr}</td>
-                                     <td class="positive-balance">${totalPurchaseStr}</td>
-                                     <td class="positive-balance">${totalSellStr}</td>
-                                     <td class="${totalProfitClass}">${totalProfitStr}</td>`;
+                totalRow.innerHTML = `<td colspan="5" class="text-center font-bold text-green-800">الإجمالي</td>
+                                     <td class="text-center positive-balance">${totalQtyStr}</td>
+                                     <td class="text-center positive-balance">${totalPurchaseStr}</td>
+                                     <td class="text-center positive-balance">${totalSellStr}</td>
+                                     <td class="text-center ${totalProfitClass}">${totalProfitStr}</td>`;
             }
             
             tfoot.appendChild(totalRow);
