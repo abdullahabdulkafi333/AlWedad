@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام المحاسبة - النسخة النهائية</title>
+    <title>Accounting</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -46,9 +46,10 @@
             font-size: 0.85rem !important;
         }
         
-        /* تعديل حجم خط الأرقام في أرصدة A.Cash - تصغير الخط */
+        /* تعديل حجم خط الأرقام في أرصدة A.Cash - تكبير الخط قليلاً حسب الطلب */
         #acashBalancesTableBody td {
-            font-size: 0.7rem !important;
+            font-size: 0.8rem !important;
+            font-weight: 600;
         }
         
         /* توسيط جميع خلايا الجدول */
@@ -234,19 +235,7 @@
         .bg-white { background-color: white !important; }
         .bg-white td { background-color: white !important; }
         
-        /* زر التحديث اليدوي */
-        .refresh-btn {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
-            border: none;
-            transition: all 0.3s ease;
-            margin-right: 5px;
-        }
-        .refresh-btn:hover {
-            background: linear-gradient(135deg, #059669 0%, #047857 100%);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
-        }
+        /* تم حذف زر التحديث اليدوي */
     </style>
 </head>
 <body class="bg-gray-50">
@@ -265,7 +254,7 @@
         <div class="container mx-auto">
             <div class="header-content mb-2">
                 <div class="title-section">
-                    <h1 class="text-xl font-bold text-blue-700">نظام المحاسبة</h1>
+                    <h1 class="text-xl font-bold text-blue-700">Accounting</h1>
                 </div>
                 
                 <div class="main-tabs-section">
@@ -278,9 +267,7 @@
                 </div>
                 
                 <div class="controls-section">
-                    <button onclick="manualRefresh()" class="refresh-btn px-2 py-1 rounded text-xs font-bold flex items-center gap-1">
-                        <i class="fas fa-sync-alt text-[10px]"></i> تحديث
-                    </button>
+                    <!-- تم حذف زر التحديث -->
                     <button onclick="togglePrintSettings()" class="settings-btn px-2 py-1 rounded text-xs font-bold flex items-center gap-1">
                         <i class="fas fa-cog text-[10px]"></i> خيارات
                     </button>
@@ -529,15 +516,6 @@
             {id:'credit_usd',label:'دائن $'}, {id:'balance_usd',label:'الرصيد $'}, {id:'debit_syp',label:'مدين ل.س'},
             {id:'credit_syp',label:'دائن ل.س'}, {id:'balance_syp',label:'الرصيد ل.س'}
         ];
-
-        // دالة التحديث اليدوي
-        function manualRefresh() {
-            if (isRefreshing) {
-                alert('جاري التحديث بالفعل، يرجى الانتظار...');
-                return;
-            }
-            fetchAllData(true);
-        }
 
         async function fetchAllData(showSyncIndicator = false) {
             if (isRefreshing) return;
@@ -830,12 +808,12 @@
         
         function startAutoSync() { 
             if (syncInterval) clearInterval(syncInterval); 
-            // زيادة وقت التحديث التلقائي إلى دقيقتين لتقليل الضغط على الخادم
+            // تحديث تلقائي كل 5 ثواني حسب الطلب
             syncInterval = setInterval(() => {
                 if (!isRefreshing) {
                     fetchAllData(true);
                 }
-            }, 120000); // دقيقتين
+            }, 5000); // 5 ثواني
         }
 
         // إعداد القوائم المنسدلة لكشف الحساب (بدون تغيير)
@@ -1160,7 +1138,7 @@
             }
         }
 
-        // عرض أرصدة A.Cash (التبويب الجديد) - مع تصفية حسب الرصيد غير الصفري وتصغير الخط وإضافة صف الإجمالي
+        // عرض أرصدة A.Cash (التبويب الجديد) - مع تصفية حسب الرصيد غير الصفري وتكبير الخط قليلاً وإضافة صف الإجمالي
         function renderAcashBalances() {
             const tbody = document.getElementById('acashBalancesTableBody');
             const info = document.getElementById('acashBalancesInfo');
@@ -1358,6 +1336,13 @@
             document.getElementById('accountingSubTabs').style.display = 'none';
             document.getElementById('acashSubTabs').style.display = 'none';
             
+            // إخفاء جميع خيارات البحث
+            document.getElementById('statementSearch').classList.remove('active');
+            document.getElementById('trialBalanceSearch').classList.remove('active');
+            document.getElementById('balancesSearch').classList.remove('active');
+            document.getElementById('acashTrialBalanceSearch').classList.remove('active');
+            document.getElementById('acashBalancesSearch').classList.remove('active');
+            
             if (tab === 'accounting') {
                 document.getElementById('accountingContent').classList.add('active');
                 document.getElementById('accountingSubTabs').style.display = 'flex';
@@ -1383,6 +1368,12 @@
             document.querySelectorAll('#accountingContent .tab-content').forEach(c => c.classList.remove('active'));
             
             document.getElementById(tab + 'Table').classList.add('active');
+            
+            // إخفاء جميع خيارات البحث وإظهار فقط الخاص بالتبويب النشط
+            document.getElementById('statementSearch').classList.remove('active');
+            document.getElementById('trialBalanceSearch').classList.remove('active');
+            document.getElementById('balancesSearch').classList.remove('active');
+            
             document.getElementById(tab + 'Search').classList.add('active');
             
             if (tab === 'statement') renderStatement();
@@ -1400,6 +1391,14 @@
             document.querySelectorAll('#acashContent .tab-content').forEach(c => c.classList.remove('active'));
             
             document.getElementById(tab + 'Table').classList.add('active');
+            
+            // إخفاء جميع خيارات البحث وإظهار فقط الخاص بالتبويب النشط
+            document.getElementById('statementSearch').classList.remove('active');
+            document.getElementById('trialBalanceSearch').classList.remove('active');
+            document.getElementById('balancesSearch').classList.remove('active');
+            document.getElementById('acashTrialBalanceSearch').classList.remove('active');
+            document.getElementById('acashBalancesSearch').classList.remove('active');
+            
             document.getElementById(tab + 'Search').classList.add('active');
             
             if (tab === 'acashTrialBalance') renderAcashTrialBalance();
