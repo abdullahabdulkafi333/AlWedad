@@ -46,10 +46,24 @@
             font-size: 0.85rem !important;
         }
         
-        /* تعديل حجم خط الأرقام في أرصدة A.Cash - تكبير الخط قليلاً حسب الطلب */
+        /* توضيح وتكبير خط الأرقام في أرصدة A.Cash - حجم متوسط */
         #acashBalancesTableBody td {
-            font-size: 0.8rem !important;
+            font-size: 0.85rem !important;
             font-weight: 600;
+        }
+        
+        /* توضيح وتكبير خط الأرقام في أرصدة Accounting - حجم متوسط */
+        #balancesTableBody td {
+            font-size: 0.85rem !important;
+            font-weight: 600;
+        }
+        
+        /* تنسيق خاص لصف الإجمالي في A.Cash Balances - توسيط جميع الخلايا */
+        #acashBalancesTableBody .total-row td {
+            text-align: center !important;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%) !important;
+            font-weight: bold;
+            font-size: 0.9rem !important;
         }
         
         /* توسيط جميع خلايا الجدول */
@@ -254,7 +268,7 @@
         <div class="container mx-auto">
             <div class="header-content mb-2">
                 <div class="title-section">
-                    <h1 class="text-xl font-bold text-blue-700">Accounting</h1>
+                    <h1 class="text-xl font-bold text-blue-700">A.Cash</h1>
                 </div>
                 
                 <div class="main-tabs-section">
@@ -1138,7 +1152,7 @@
             }
         }
 
-        // عرض أرصدة A.Cash (التبويب الجديد) - مع تصفية حسب الرصيد غير الصفري وتكبير الخط قليلاً وإضافة صف الإجمالي
+        // عرض أرصدة A.Cash (التبويب الجديد) - مع تصفية حسب الرصيد غير الصفري وتكبير الخط وإضافة صف الإجمالي
         function renderAcashBalances() {
             const tbody = document.getElementById('acashBalancesTableBody');
             const info = document.getElementById('acashBalancesInfo');
@@ -1222,7 +1236,7 @@
                 hasData = true;
             }
             
-            // إضافة صف الإجمالي إذا كان هناك بيانات
+            // إضافة صف الإجمالي إذا كان هناك بيانات - مع توسيط جميع الخلايا
             if (hasData) {
                 let totalRow = document.createElement('tr');
                 totalRow.className = 'total-row font-bold';
@@ -1243,13 +1257,14 @@
                 let balanceSypClass = totalBalanceSyp >= 0 ? 'positive-balance' : 'negative-balance';
                 let balanceUsdClass = totalBalanceUsd >= 0 ? 'positive-balance' : 'negative-balance';
                 
-                totalRow.innerHTML = `<td colspan="2" class="text-center font-bold text-green-800">الإجمالي</td>
-                                     <td class="${totalSalesClass}">${totalTotalSalesStr}</td>
-                                     <td class="${profitClass}">${totalProfitStr}</td>
-                                     <td class="${paidSypClass}">${totalPaidSypStr}</td>
-                                     <td class="${paidUsdClass}">${totalPaidUsdStr}</td>
-                                     <td class="${balanceSypClass}">${totalBalanceSypStr}</td>
-                                     <td class="${balanceUsdClass}">${totalBalanceUsdStr}</td>`;
+                // توسيط جميع الخلايا في صف الإجمالي
+                totalRow.innerHTML = `<td class="text-center font-bold text-green-800" colspan="2">الإجمالي</td>
+                                     <td class="${totalSalesClass} text-center">${totalTotalSalesStr}</td>
+                                     <td class="${profitClass} text-center">${totalProfitStr}</td>
+                                     <td class="${paidSypClass} text-center">${totalPaidSypStr}</td>
+                                     <td class="${paidUsdClass} text-center">${totalPaidUsdStr}</td>
+                                     <td class="${balanceSypClass} text-center">${totalBalanceSypStr}</td>
+                                     <td class="${balanceUsdClass} text-center">${totalBalanceUsdStr}</td>`;
                 
                 tbody.appendChild(totalRow);
             }
