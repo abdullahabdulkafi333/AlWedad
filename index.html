@@ -43,10 +43,11 @@
             position: sticky;
             bottom: 0;
             z-index: 20;
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%) !important;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+            color: white !important;
             font-weight: bold;
             font-size: 0.9rem !important;
-            border-top: 2px solid #d1d5db;
+            border-top: 2px solid #1d4ed8;
             padding: 8px 4px;
             /* توسيط جميع خلايا صف الإجمالي */
             text-align: center !important;
@@ -75,7 +76,8 @@
         /* تنسيق خاص لصف الإجمالي في A.Cash Balances - توسيط جميع الخلايا */
         #acashBalancesTableBody .total-row td {
             text-align: center !important;
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%) !important;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+            color: white !important;
             font-weight: bold;
             font-size: 0.9rem !important;
         }
@@ -249,7 +251,8 @@
             display: none !important;
         }
         
-        .total-row { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); font-weight: bold; }
+        .total-row { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important; color: white !important; font-weight: bold; }
+        .total-row td { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important; color: white !important; font-weight: bold; }
         .subtotal-row { background: #f3f4f6; font-weight: 600; }
         .positive-balance { color: #059669; font-weight: bold; }
         .negative-balance { color: #dc2626; font-weight: bold; }
@@ -264,8 +267,8 @@
         .silver-bg { background-color: #d1d5db !important; }
         .silver-bg td { background-color: #d1d5db !important; }
         
-        .grand-total { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%) !important; font-weight: bold; border-top: 3px solid #d1d5db; border-bottom: 3px solid #d1d5db; }
-        .grand-total td { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%) !important; font-weight: bold; }
+        .grand-total { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important; font-weight: bold; border-top: 3px solid #1d4ed8; border-bottom: 3px solid #1d4ed8; color: white !important; }
+        .grand-total td { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important; font-weight: bold; color: white !important; }
         
         .align-right { text-align: right; }
         .align-center { text-align: center; }
@@ -1473,22 +1476,15 @@
                 let totalBalanceSypStr = Math.round(totalBalanceSyp).toLocaleString();
                 let totalBalanceUsdStr = totalBalanceUsd.toFixed(2);
                 
-                // إضافة كلاسات للألوان للإجمالي
-                let totalSalesClass = totalTotalSales >= 0 ? 'positive-balance' : 'negative-balance';
-                let profitClass = totalProfit >= 0 ? 'positive-balance' : 'negative-balance';
-                let paidSypClass = totalPaidSyp >= 0 ? 'positive-balance' : 'negative-balance';
-                let paidUsdClass = totalPaidUsd >= 0 ? 'positive-balance' : 'negative-balance';
-                let balanceSypClass = totalBalanceSyp >= 0 ? 'positive-balance' : 'negative-balance';
-                let balanceUsdClass = totalBalanceUsd >= 0 ? 'positive-balance' : 'negative-balance';
-                
+                // إضافة كلاسات للألوان للإجمالي (مع لون أبيض لأن الخلفية زرقاء)
                 // توسيط جميع الخلايا في صف الإجمالي
-                totalRow.innerHTML = `<td class="text-center font-bold text-green-800" colspan="2">الإجمالي</td>
-                                     <td class="${totalSalesClass} text-center">${totalTotalSalesStr}</td>
-                                     <td class="${profitClass} text-center">${totalProfitStr}</td>
-                                     <td class="${paidSypClass} text-center">${totalPaidSypStr}</td>
-                                     <td class="${paidUsdClass} text-center">${totalPaidUsdStr}</td>
-                                     <td class="${balanceSypClass} text-center">${totalBalanceSypStr}</td>
-                                     <td class="${balanceUsdClass} text-center">${totalBalanceUsdStr}</td>`;
+                totalRow.innerHTML = `<td class="text-center font-bold" colspan="2">الإجمالي</td>
+                                     <td class="text-center">${totalTotalSalesStr}</td>
+                                     <td class="text-center">${totalProfitStr}</td>
+                                     <td class="text-center">${totalPaidSypStr}</td>
+                                     <td class="text-center">${totalPaidUsdStr}</td>
+                                     <td class="text-center">${totalBalanceSypStr}</td>
+                                     <td class="text-center">${totalBalanceUsdStr}</td>`;
                 
                 tbody.appendChild(totalRow);
             }
@@ -1545,12 +1541,12 @@
             });
             if (filtered.length) {
                 let tr = document.createElement('tr'); tr.className='total-row';
-                tr.innerHTML = `<td>${filtered.length+1}</td><td class="text-right font-bold text-green-800">الإجمالي</td>
-                <td class="positive-balance">${totalSalesUsd.toFixed(2)}</td><td class="positive-balance">${Math.round(totalSalesSyp).toLocaleString()}</td>
-                <td class="positive-balance">${totalPurchasesUsd.toFixed(2)}</td><td class="positive-balance">${Math.round(totalPurchasesSyp).toLocaleString()}</td>
-                <td class="positive-balance">${totalPayUsd.toFixed(2)}</td><td class="positive-balance">${Math.round(totalPaySyp).toLocaleString()}</td>
-                <td class="${totalBalUsd>=0?'positive-balance':'negative-balance'}">${totalBalUsd.toFixed(2)}</td>
-                <td class="${totalBalSyp>=0?'positive-balance':'negative-balance'}">${Math.round(totalBalSyp).toLocaleString()}</td>`;
+                tr.innerHTML = `<td>${filtered.length+1}</td><td class="text-right font-bold">الإجمالي</td>
+                <td class="text-center">${totalSalesUsd.toFixed(2)}</td><td class="text-center">${Math.round(totalSalesSyp).toLocaleString()}</td>
+                <td class="text-center">${totalPurchasesUsd.toFixed(2)}</td><td class="text-center">${Math.round(totalPurchasesSyp).toLocaleString()}</td>
+                <td class="text-center">${totalPayUsd.toFixed(2)}</td><td class="text-center">${Math.round(totalPaySyp).toLocaleString()}</td>
+                <td class="text-center ${totalBalUsd>=0?'':'negative'}">${totalBalUsd.toFixed(2)}</td>
+                <td class="text-center ${totalBalSyp>=0?'':'negative'}">${Math.round(totalBalSyp).toLocaleString()}</td>`;
                 tbody.appendChild(tr);
             }
             document.getElementById('summaryTotalSalesUsd').textContent = totalSalesUsd.toFixed(2)+' $';
@@ -1576,7 +1572,7 @@
             if (!allAcashSalesData || allAcashSalesData.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="9" class="text-center py-4 text-gray-500">لا توجد بيانات</td></tr>';
                 // إضافة صف إجمالي فارغ في tfoot
-                tfoot.innerHTML = `<tr><td colspan="9" class="text-center font-bold text-green-800">الإجمالي: 0.00</td></tr>`;
+                tfoot.innerHTML = `<tr><td colspan="9" class="text-center font-bold">الإجمالي: 0.00</td></tr>`;
                 if (info) info.textContent = 'لا توجد بيانات';
                 return;
             }
@@ -1684,7 +1680,7 @@
             
             if (rowCount === 0) {
                 // إذا كانت النتائج فارغة، نظهر صف إجمالي بقيم صفرية
-                totalRow.innerHTML = `<td colspan="9" class="text-center font-bold text-green-800">لا توجد نتائج للبحث - الإجمالي: 0.00</td>`;
+                totalRow.innerHTML = `<td colspan="9" class="text-center font-bold">لا توجد نتائج للبحث - الإجمالي: 0.00</td>`;
             } else {
                 // تنسيق أرقام الإجمالي
                 let totalQtyStr = totalQty !== 0 ? totalQty.toString() : '0';
@@ -1692,14 +1688,12 @@
                 let totalSellStr = totalSell.toFixed(2);
                 let totalProfitStr = totalProfit.toFixed(2);
                 
-                // إضافة كلاسات للألوان للإجمالي
-                let totalProfitClass = totalProfit >= 0 ? 'positive-balance' : 'negative-balance';
-                
-                totalRow.innerHTML = `<td colspan="5" class="text-center font-bold text-green-800">الإجمالي</td>
-                                     <td class="text-center positive-balance">${totalQtyStr}</td>
-                                     <td class="text-center positive-balance">${totalPurchaseStr}</td>
-                                     <td class="text-center positive-balance">${totalSellStr}</td>
-                                     <td class="text-center ${totalProfitClass}">${totalProfitStr}</td>`;
+                // إضافة كلاسات للألوان للإجمالي (مع لون أبيض لأن الخلفية زرقاء)
+                totalRow.innerHTML = `<td colspan="5" class="text-center font-bold">الإجمالي</td>
+                                     <td class="text-center">${totalQtyStr}</td>
+                                     <td class="text-center">${totalPurchaseStr}</td>
+                                     <td class="text-center">${totalSellStr}</td>
+                                     <td class="text-center">${totalProfitStr}</td>`;
             }
             
             tfoot.appendChild(totalRow);
