@@ -66,6 +66,14 @@
             font-size: 0.9rem !important;
         }
         
+        /* تنسيق خاص لصف الإجمالي في A.Cash Sales */
+        #acashSalesTableBody .total-row td {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%) !important;
+            font-weight: bold;
+            font-size: 0.9rem !important;
+            border-top: 2px solid #d1d5db;
+        }
+        
         /* توسيط جميع خلايا الجدول بشكل افتراضي */
         .table-container table td,
         .table-container table th {
@@ -363,8 +371,28 @@
             <!-- أرصدة A.Cash: لا يوجد بحث -->
             <div id="acashBalancesSearch" class="tab-content"></div>
 
-            <!-- مبيعات A.Cash: لا يوجد بحث -->
-            <div id="acashSalesSearch" class="tab-content"></div>
+            <!-- مبيعات A.Cash: تم إضافة البحث هنا -->
+            <div id="acashSalesSearch" class="tab-content">
+                <div class="grid grid-cols-5 gap-2 pb-2 mt-2">
+                    <div class="search-wrapper">
+                        <input type="date" id="searchAcashSalesDateFrom" class="input-glass acash-sales-search-input" placeholder="من تاريخ">
+                    </div>
+                    <div class="search-wrapper">
+                        <input type="date" id="searchAcashSalesDateTo" class="input-glass acash-sales-search-input" placeholder="إلى تاريخ">
+                    </div>
+                    <div class="search-wrapper">
+                        <input type="text" id="searchAcashSalesCompany" placeholder="الشركة" class="input-glass acash-sales-search-input" autocomplete="off">
+                        <div id="suggestAcashSalesCompany" class="suggestions-list"></div>
+                    </div>
+                    <div class="search-wrapper">
+                        <input type="text" id="searchAcashSalesCustomer" placeholder="العميل" class="input-glass acash-sales-search-input" autocomplete="off">
+                        <div id="suggestAcashSalesCustomer" class="suggestions-list"></div>
+                    </div>
+                    <div class="search-wrapper">
+                        <input type="text" id="searchAcashSalesNumber" placeholder="الرقم" class="input-glass acash-sales-search-input" autocomplete="off">
+                    </div>
+                </div>
+            </div>
         </div>
     </header>
 
@@ -1001,6 +1029,104 @@
             });
         }
 
+        // إعداد القوائم المنسدلة لمبيعات A.Cash
+        function setupAcashSalesDropdowns() {
+            const inputs = {
+                'searchAcashSalesCompany': 'suggestAcashSalesCompany',
+                'searchAcashSalesCustomer': 'suggestAcashSalesCustomer'
+            };
+            Object.keys(inputs).forEach(inputId => {
+                const input = document.getElementById(inputId);
+                const list = document.getElementById(inputs[inputId]);
+                if (!input || !list) return;
+                
+                const updateList = () => {
+                    const val = input.value.toLowerCase();
+                    let uniqueValues = [];
+                    
+                    if (inputId === 'searchAcashSalesCompany') {
+                        // جمع أسماء الشركات من بيانات مبيعات A.Cash
+                        uniqueValues = [...new Set(allAcashSalesData.map(r => String(r['الشركة'] || '').trim()))]
+                            .filter(n => n && n !== '');
+                    } else if (inputId === 'searchAcashSalesCustomer') {
+                        // جمع أسماء العملاء من بيانات مبيعات A.Cash
+                        uniqueValues = [...new Set(allAcashSalesData.map(r => String(r['العميل'] || '').trim()))]
+                            .filter(n => n && n !== '');
+                    }
+                    
+                    const filtered = uniqueValues.filter(v => v.toLowerCase().includes(val)).slice(0, 15);
+                    list.innerHTML = '';
+                    currentSuggestItems = [];
+                    
+                    if (filtered.length) {
+                        filtered.forEach(v => {
+                            const div = document.createElement('div');
+                            div.className = 'suggestion-item';
+                            div.textContent = v;
+                            div.onclick = () => { 
+                                input.value = v; 
+                                hideAllSuggestLists(); 
+                                renderAcashSales(); 
+                            };
+                            list.appendChild(div);
+                            currentSuggestItems.push(div);
+                        });
+                        list.style.display = 'block';
+                        currentFocusIndex = -1;
+                    } else {
+                        list.style.display = 'none';
+                        currentSuggestItems = [];
+                    }
+                };
+                
+                input.onfocus = function() { 
+                    hideAllSuggestLists(); 
+                    updateList(); 
+                };
+                input.oninput = function() { 
+                    updateList(); 
+                    clearTimeout(this.searchTimeout); 
+                    this.searchTimeout = setTimeout(renderAcashSales, 500); 
+                };
+                input.onkeydown = function(e) {
+                    if (e.key === 'ArrowDown') { 
+                        e.preventDefault(); 
+                        if (currentSuggestItems.length) { 
+                            currentFocusIndex = Math.min(currentFocusIndex + 1, currentSuggestItems.length - 1); 
+                            updateActiveItem(); 
+                        } 
+                    } else if (e.key === 'ArrowUp') { 
+                        e.preventDefault(); 
+                        if (currentSuggestItems.length) { 
+                            currentFocusIndex = Math.max(currentFocusIndex - 1, 0); 
+                            updateActiveItem(); 
+                        } 
+                    } else if (e.key === 'Enter') { 
+                        e.preventDefault(); 
+                        if (currentFocusIndex >= 0 && currentSuggestItems[currentFocusIndex]) 
+                            currentSuggestItems[currentFocusIndex].click(); 
+                        else if (currentSuggestItems.length) 
+                            currentSuggestItems[0].click(); 
+                        else 
+                            renderAcashSales(); 
+                    } else if (e.key === 'Escape') 
+                        hideAllSuggestLists();
+                };
+            });
+            
+            // إضافة مستمعي الأحداث لحقول التاريخ والرقم
+            ['searchAcashSalesDateFrom', 'searchAcashSalesDateTo', 'searchAcashSalesNumber'].forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener('change', renderAcashSales);
+                    element.addEventListener('input', function() { 
+                        clearTimeout(this.searchTimeout); 
+                        this.searchTimeout = setTimeout(renderAcashSales, 500); 
+                    });
+                }
+            });
+        }
+
         function updateActiveItem() {
             currentSuggestItems.forEach(i => i.classList.remove('active'));
             if (currentFocusIndex>=0 && currentSuggestItems[currentFocusIndex]) {
@@ -1009,7 +1135,7 @@
             }
         }
         function hideAllSuggestLists() { document.querySelectorAll('.suggestions-list').forEach(l=>l.style.display='none'); currentFocusIndex=-1; currentSuggestItems=[]; }
-        document.addEventListener('click', (e) => { if (!e.target.classList.contains('statement-search-input') && !e.target.classList.contains('suggestion-item')) hideAllSuggestLists(); });
+        document.addEventListener('click', (e) => { if (!e.target.classList.contains('statement-search-input') && !e.target.classList.contains('suggestion-item') && !e.target.classList.contains('acash-sales-search-input')) hideAllSuggestLists(); });
 
         function parseNumber(v) { 
             if (!v || v === '' || v === 'FALSE') return 0; 
@@ -1448,7 +1574,7 @@
             if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="10" class="text-center py-4 text-gray-500">لا توجد حسابات ذات رصيد غير صفري</td></tr>'; summary.style.display='none'; }
         }
 
-        // عرض مبيعات A.Cash (التبويب الجديد)
+        // عرض مبيعات A.Cash (التبويب الجديد) مع تطبيق الفلاتر وإضافة صف الإجمالي بشكل دائم
         function renderAcashSales() {
             const tbody = document.getElementById('acashSalesTableBody');
             const info = document.getElementById('acashSalesInfo');
@@ -1462,10 +1588,50 @@
                 return;
             }
             
-            let rowCount = 0;
+            // قراءة قيم الفلاتر
+            const dateFrom = parseHtmlDate(document.getElementById('searchAcashSalesDateFrom').value);
+            const dateTo = parseHtmlDate(document.getElementById('searchAcashSalesDateTo').value);
+            const companyFilter = document.getElementById('searchAcashSalesCompany').value.trim().toLowerCase();
+            const customerFilter = document.getElementById('searchAcashSalesCustomer').value.trim().toLowerCase();
+            const numberFilter = document.getElementById('searchAcashSalesNumber').value.trim().toLowerCase();
             
-            for (let i = 0; i < allAcashSalesData.length; i++) {
-                const row = allAcashSalesData[i];
+            let filteredData = allAcashSalesData.filter(row => {
+                if (!row) return false;
+                
+                // فلتر التاريخ
+                if (dateFrom || dateTo) {
+                    const dateStr = row['التاريخ'] || '';
+                    if (!isDateInRange(dateStr, dateFrom, dateTo)) return false;
+                }
+                
+                // فلتر الشركة
+                if (companyFilter) {
+                    const company = String(row['الشركة'] || '').trim().toLowerCase();
+                    if (!company.includes(companyFilter)) return false;
+                }
+                
+                // فلتر العميل
+                if (customerFilter) {
+                    const customer = String(row['العميل'] || '').trim().toLowerCase();
+                    if (!customer.includes(customerFilter)) return false;
+                }
+                
+                // فلتر الرقم
+                if (numberFilter) {
+                    const number = String(row['الرقم'] || '').trim().toLowerCase();
+                    if (!number.includes(numberFilter)) return false;
+                }
+                
+                return true;
+            });
+            
+            let rowCount = 0;
+            let totalPurchase = 0;
+            let totalSell = 0;
+            let totalProfit = 0;
+            
+            for (let i = 0; i < filteredData.length; i++) {
+                const row = filteredData[i];
                 if (!row) continue;
                 
                 let date = row['التاريخ'] || '';
@@ -1480,15 +1646,21 @@
                 // تخطي الصفوف الفارغة
                 if (date === '' && company === '' && customer === '') continue;
                 
-                let tr = document.createElement('tr');
-                tr.className = i % 2 === 0 ? '' : 'bg-gray-50';
-                
-                // تنسيق الأرقام
-                let qtyNum = parseNumber(qty);
+                // تحويل الأرقام للحساب
                 let purchaseNum = parseNumber(purchase);
                 let sellNum = parseNumber(sell);
                 let profitNum = parseNumber(profit);
                 
+                // إضافة إلى المجاميع
+                totalPurchase += purchaseNum;
+                totalSell += sellNum;
+                totalProfit += profitNum;
+                
+                let tr = document.createElement('tr');
+                tr.className = i % 2 === 0 ? '' : 'bg-gray-50';
+                
+                // تنسيق الأرقام للعرض
+                let qtyNum = parseNumber(qty);
                 let qtyStr = qtyNum !== 0 ? qtyNum.toString() : '';
                 let purchaseStr = purchaseNum !== 0 ? purchaseNum.toFixed(2) : '';
                 let sellStr = sellNum !== 0 ? sellNum.toFixed(2) : '';
@@ -1511,9 +1683,28 @@
                 rowCount++;
             }
             
+            // إضافة صف الإجمالي بشكل دائم (يظهر حتى لو كانت النتائج فارغة)
+            let totalRow = document.createElement('tr');
+            totalRow.className = 'total-row font-bold';
+            
+            let totalPurchaseStr = totalPurchase.toFixed(2);
+            let totalSellStr = totalSell.toFixed(2);
+            let totalProfitStr = totalProfit.toFixed(2);
+            
+            // إضافة كلاسات للألوان للإجمالي
+            let totalProfitClass = totalProfit >= 0 ? 'positive-balance' : 'negative-balance';
+            
             if (rowCount === 0) {
-                tbody.innerHTML = '<tr><td colspan="9" class="text-center py-4 text-gray-500">لا توجد بيانات</td></tr>';
+                // إذا كانت النتائج فارغة، نظهر صف الإجمالي بقيم صفرية
+                totalRow.innerHTML = `<td colspan="9" class="text-center font-bold text-green-800">لا توجد نتائج للبحث - الإجمالي: 0.00</td>`;
+            } else {
+                totalRow.innerHTML = `<td class="text-center font-bold text-green-800" colspan="6">الإجمالي</td>
+                                     <td class="positive-balance">${totalPurchaseStr}</td>
+                                     <td class="positive-balance">${totalSellStr}</td>
+                                     <td class="${totalProfitClass}">${totalProfitStr}</td>`;
             }
+            
+            tbody.appendChild(totalRow);
             
             if (info) {
                 info.textContent = lastUpdateTime ? 
@@ -1576,7 +1767,10 @@
             
             document.getElementById(tab + 'Search').classList.add('active');
             
-            if (tab === 'statement') renderStatement();
+            if (tab === 'statement') {
+                renderStatement();
+                setupStatementDropdowns();
+            }
             else if (tab === 'trialBalance') renderTrialBalance();
             else if (tab === 'balances') renderBalances();
         }
@@ -1604,7 +1798,10 @@
             
             if (tab === 'acashTrialBalance') renderAcashTrialBalance();
             else if (tab === 'acashBalances') renderAcashBalances();
-            else if (tab === 'acashSales') renderAcashSales();
+            else if (tab === 'acashSales') {
+                renderAcashSales();
+                setupAcashSalesDropdowns();
+            }
         }
 
         // طباعة
