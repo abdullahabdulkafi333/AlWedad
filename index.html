@@ -210,7 +210,7 @@
             border-radius: 20px;
             font-size: 0.7rem;
             font-weight: 600;
-            display: none;
+            display: none !important; /* إخفاء دائم لمؤشر التحديث */
             z-index: 1000;
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
             animation: pulse 2s infinite;
@@ -287,7 +287,7 @@
         <p class="mt-4 text-gray-600 text-sm">جاري تحميل البيانات...</p>
     </div>
 
-    <!-- مؤشر المزامنة -->
+    <!-- مؤشر المزامنة - مخفي بشكل دائم مع المحافظة على الوظيفة -->
     <div id="syncIndicator" class="sync-indicator no-print">
         <i class="fas fa-sync-alt mr-2"></i> جاري تحديث البيانات...
     </div>
