@@ -38,6 +38,18 @@
             border-bottom: 2px solid #1d4ed8;
         }
 
+        /* تثبيت صف الإجمالي في الأسفل */
+        tfoot td {
+            position: sticky;
+            bottom: 0;
+            z-index: 20;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%) !important;
+            font-weight: bold;
+            font-size: 0.9rem !important;
+            border-top: 2px solid #d1d5db;
+            padding: 8px 4px;
+        }
+
         td { padding: 6px 4px; border-bottom: 1px solid #f1f5f9; font-size: 0.75rem; }
 
         /* تكبير خط الأرقام في ميزان المراجعة */
@@ -66,13 +78,7 @@
             font-size: 0.9rem !important;
         }
         
-        /* تنسيق خاص لصف الإجمالي في A.Cash Sales */
-        #acashSalesTableBody .total-row td {
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%) !important;
-            font-weight: bold;
-            font-size: 0.9rem !important;
-            border-top: 2px solid #d1d5db;
-        }
+        /* تنسيق خاص لصف الإجمالي في A.Cash Sales - تم نقله إلى tfoot */
         
         /* توسيط جميع خلايا الجدول بشكل افتراضي */
         .table-container table td,
@@ -539,7 +545,7 @@
                 </div>
             </div>
 
-            <!-- مبيعات A.Cash (التبويب الجديد) -->
+            <!-- مبيعات A.Cash (التبويب الجديد) - تمت إضافة tfoot لتثبيت صف الإجمالي -->
             <div id="acashSalesTable" class="tab-content">
                 <div class="acash-balances-header mb-3" style="background: #eab308;">
                     <h2 class="text-lg font-bold mb-1">المبيعات - A.Cash</h2>
@@ -561,6 +567,9 @@
                             </tr>
                         </thead>
                         <tbody id="acashSalesTableBody"></tbody>
+                        <tfoot id="acashSalesTableFoot">
+                            <!-- سيتم تعبئة صف الإجمالي هنا عبر JavaScript -->
+                        </tfoot>
                     </table>
                 </div>
             </div>
@@ -1574,16 +1583,21 @@
             if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="10" class="text-center py-4 text-gray-500">لا توجد حسابات ذات رصيد غير صفري</td></tr>'; summary.style.display='none'; }
         }
 
-        // عرض مبيعات A.Cash (التبويب الجديد) مع تطبيق الفلاتر وإضافة صف الإجمالي في الأسفل فقط
+        // عرض مبيعات A.Cash (التبويب الجديد) مع تطبيق الفلاتر ووضع الإجمالي في tfoot ليكون ثابتاً
         function renderAcashSales() {
             const tbody = document.getElementById('acashSalesTableBody');
+            const tfoot = document.getElementById('acashSalesTableFoot');
             const info = document.getElementById('acashSalesInfo');
             
-            if (!tbody) return;
+            if (!tbody || !tfoot) return;
             
             tbody.innerHTML = '';
+            tfoot.innerHTML = '';
+            
             if (!allAcashSalesData || allAcashSalesData.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="9" class="text-center py-4 text-gray-500">لا توجد بيانات</td></tr>';
+                // إضافة صف إجمالي فارغ في tfoot
+                tfoot.innerHTML = `<tr><td colspan="9" class="text-center font-bold text-green-800">الإجمالي: 0.00</td></tr>`;
                 if (info) info.textContent = 'لا توجد بيانات';
                 return;
             }
@@ -1686,9 +1700,8 @@
                 rowCount++;
             }
             
-            // إضافة صف الإجمالي في الأسفل فقط (صف واحد دائم)
+            // إضافة صف الإجمالي في tfoot (ثابت في الأسفل)
             let totalRow = document.createElement('tr');
-            totalRow.className = 'total-row font-bold';
             
             if (rowCount === 0) {
                 // إذا كانت النتائج فارغة، نظهر صف إجمالي بقيم صفرية
@@ -1714,7 +1727,7 @@
                                      <td class="${totalProfitClass}">${totalProfitStr}</td>`;
             }
             
-            tbody.appendChild(totalRow);
+            tfoot.appendChild(totalRow);
             
             if (info) {
                 info.textContent = lastUpdateTime ? 
