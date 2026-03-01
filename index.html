@@ -66,7 +66,7 @@
             font-size: 0.9rem !important;
         }
         
-        /* توسيط جميع خلايا الجدول */
+        /* توسيط جميع خلايا الجدول بشكل افتراضي */
         .table-container table td,
         .table-container table th {
             text-align: center !important;
@@ -82,6 +82,12 @@
         .table-container table td:nth-child(2),
         .table-container table th:nth-child(2) {
             text-align: right !important;
+        }
+        
+        /* تعديل مهم: توسيط عامود دولار (العمود الثاني في ميزان المراجعة) */
+        .table-container .trial-balance-table td:nth-child(2),
+        .table-container .trial-balance-table th:nth-child(2) {
+            text-align: center !important;
         }
         
         .table-container table td:not(:first-child):not(:nth-child(2)),
@@ -1110,7 +1116,7 @@
                 else rowClass = 'bg-white';
 
                 let accountClass = 'align-right';
-                let usdClass = 'text-center number-cell';
+                let usdClass = 'align-center number-cell';
                 let sypClass = 'align-center number-cell';
 
                 if (formattedUsd) {
@@ -1472,4 +1478,3 @@
     </script>
 </body>
 </html>
-
