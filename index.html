@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Accounting System</title>
+    <title>Accounting</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -18,8 +18,9 @@
             font-size: 0.8rem; 
         }
 
+        /* الطول الافتراضي لجميع جداول التبويبات */
         .table-container { 
-            max-height: 70vh; /* تقليل الارتفاع لعرض 15 صف تقريباً */
+            max-height: 90vh;
             overflow-y: auto; 
             background: white; 
             border-radius: 8px; 
@@ -27,6 +28,11 @@
             border: 1px solid #e2e8f0;
             margin-bottom: 1rem;
             position: relative;
+        }
+
+        /* طول خاص لجدول كاش فقط - لعرض 15 صف */
+        #cashTable .table-container {
+            max-height: 70vh;
         }
 
         table { width: 100%; border-collapse: collapse; }
@@ -39,7 +45,7 @@
             border-bottom: 2px solid #1d4ed8;
         }
 
-        /* تثبيت الصف الأخير في جدول الكاش فقط - مع لون أفتح قليلاً */
+        /* تثبيت الصف الأخير في جدول الكاش فقط - مع لون مطابق لباقي التبويبات */
         .cash-table tbody tr:last-child {
             position: sticky;
             bottom: 0;
@@ -704,7 +710,7 @@
                 if (!isRefreshing) {
                     fetchAllData(true);
                 }
-            }, 60000); // زيادة المدة إلى 60 ثانية لتقليل التحميل
+            }, 60000); // 60 ثانية
         }
 
         // دوال مساعدة
