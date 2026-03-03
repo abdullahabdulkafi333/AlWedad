@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Accounting</title>
+    <title>Accounting System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -19,13 +19,14 @@
         }
 
         .table-container { 
-            max-height: 85vh; 
+            max-height: 75vh; 
             overflow-y: auto; 
             background: white; 
             border-radius: 8px; 
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
             border: 1px solid #e2e8f0;
             margin-bottom: 1rem;
+            position: relative;
         }
 
         table { width: 100%; border-collapse: collapse; }
@@ -33,8 +34,7 @@
         thead th { 
             position: sticky; top: 0; z-index: 20; 
             background-color: #2563eb; color: white; 
-            padding: 12px 6px; 
-            font-weight: 700;
+            padding: 10px 6px; font-weight: 700;
             font-size: 0.8rem;
             border-bottom: 2px solid #1d4ed8;
         }
@@ -49,21 +49,43 @@
             font-weight: bold;
             font-size: 0.9rem !important;
             border-top: 2px solid #1d4ed8;
-            padding: 10px 4px;
+            padding: 8px 4px;
             text-align: center !important;
         }
 
-        td { padding: 8px 4px; border-bottom: 1px solid #f1f5f9; font-size: 0.75rem; }
+        td { padding: 6px 4px; border-bottom: 1px solid #f1f5f9; font-size: 0.75rem; }
 
-        /* تكبير خط الأرقام */
+        /* تكبير خط الأرقام في ميزان المراجعة */
         #trialBalanceTableBody td:not(:first-child),
-        #cashTableBody td {
+        #acashTrialBalanceTableBody td:not(:first-child) {
             font-size: 0.85rem !important;
         }
         
+        /* توضيح وتكبير خط الأرقام في أرصدة A.Cash - حجم متوسط */
+        #acashBalancesTableBody td {
+            font-size: 0.85rem !important;
+            font-weight: 600;
+        }
+        
+        /* توضيح وتكبير خط الأرقام في أرصدة Accounting - حجم متوسط */
         #balancesTableBody td {
             font-size: 0.85rem !important;
             font-weight: 600;
+        }
+        
+        /* تنسيق خاص لصف الإجمالي في A.Cash Balances - توسيط جميع الخلايا */
+        #acashBalancesTableBody .total-row td {
+            text-align: center !important;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+            color: white !important;
+            font-weight: bold;
+            font-size: 0.9rem !important;
+        }
+        
+        /* إخفاء جميع الترويسات التي تحتوي على عناوين ومعلومات التحديث */
+        .trial-balance-header, .acash-trial-balance-header, .acash-balances-header, .balances-header,
+        #trialBalanceInfo, #balancesInfo, #acashTrialBalanceInfo, #acashBalancesInfo, #acashSalesInfo {
+            display: none !important;
         }
         
         /* توسيط جميع خلايا الجدول بشكل افتراضي */
@@ -84,7 +106,7 @@
             text-align: right !important;
         }
         
-        /* تعديل مهم: توسيط عامود دولار */
+        /* تعديل مهم: توسيط عامود دولار (العمود الثاني في ميزان المراجعة) */
         .table-container .trial-balance-table td:nth-child(2),
         .table-container .trial-balance-table th:nth-child(2) {
             text-align: center !important;
@@ -143,14 +165,14 @@
 
         .main-tab-button { transition: all 0.3s ease; }
         .main-tab-button.active { background: #2563eb; transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3); }
+        .sub-tab-button { transition: all 0.3s ease; }
+        .sub-tab-button.active { background: #3b82f6; transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2); }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
         @media print {
             @page { size: A4; margin: 1cm; }
-            header, .no-print, #loader, .print-settings-btn, .suggestions-list, .main-tab-button {
-                display: none !important;
-            }
+            header, .no-print, #loader, .print-settings-btn, .suggestions-list, .main-tab-button, .sub-tab-button { display: none !important; }
             .table-container { max-height: none !important; overflow: visible !important; border: none !important; box-shadow: none !important; margin-bottom: 0 !important; }
             table { width: 100%; border-collapse: collapse; }
             th { position: static !important; background-color: #eee !important; color: black !important; border: 1px solid #000 !important; }
@@ -231,10 +253,11 @@
         .negative { color: #dc2626; }
         .positive { color: #059669; }
         
-        /* تنسيقات المجموعات */
+        /* تنسيقات المجموعات - محسنة */
         .group-title { background: #e5e7eb !important; font-weight: bold; color: #374151 !important; }
         .group-title td { background: #e5e7eb !important; font-weight: bold; color: #374151 !important; }
         
+        /* فقط صفوف الإجمالي تكون فضية */
         .silver-bg { background-color: #d1d5db !important; }
         .silver-bg td { background-color: #d1d5db !important; }
         
@@ -328,10 +351,34 @@
                 </div>
             </div>
             
-            <!-- باقي التبويبات لا يوجد بحث -->
+            <!-- ميزان المراجعة: لا يوجد بحث -->
             <div id="trialBalanceSearch" class="tab-content"></div>
+            
+            <!-- الأرصدة: لا يوجد بحث -->
             <div id="balancesSearch" class="tab-content"></div>
-            <div id="cashSearch" class="tab-content"></div>
+
+            <!-- بحث تبويب كاش -->
+            <div id="cashSearch" class="tab-content">
+                <div class="grid grid-cols-5 gap-2 pb-2 mt-2">
+                    <div class="search-wrapper">
+                        <input type="date" id="searchCashDateFrom" class="input-glass cash-search-input" placeholder="من تاريخ">
+                    </div>
+                    <div class="search-wrapper">
+                        <input type="date" id="searchCashDateTo" class="input-glass cash-search-input" placeholder="إلى تاريخ">
+                    </div>
+                    <div class="search-wrapper">
+                        <input type="text" id="searchCashCompany" placeholder="الشركة" class="input-glass cash-search-input" autocomplete="off">
+                        <div id="suggestCashCompany" class="suggestions-list"></div>
+                    </div>
+                    <div class="search-wrapper">
+                        <input type="text" id="searchCashCustomer" placeholder="العميل" class="input-glass cash-search-input" autocomplete="off">
+                        <div id="suggestCashCustomer" class="suggestions-list"></div>
+                    </div>
+                    <div class="search-wrapper">
+                        <input type="text" id="searchCashNumber" placeholder="الرقم" class="input-glass cash-search-input" autocomplete="off">
+                    </div>
+                </div>
+            </div>
         </div>
     </header>
 
@@ -443,7 +490,9 @@
                         </tr>
                     </thead>
                     <tbody id="cashTableBody"></tbody>
-                    <tfoot id="cashTableFoot"></tfoot>
+                    <tfoot id="cashTableFoot">
+                        <!-- سيتم تعبئة صف الإجمالي هنا عبر JavaScript -->
+                    </tfoot>
                 </table>
             </div>
         </div>
@@ -470,13 +519,14 @@
         const CASH_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS2QXsIxQchkIgs6bY9lHOXqyLUBklNAx8-R1ej04yTxAiBWCIhMxA4rHFxVmfOi1y2AzZPOmhvigpZ/pub?gid=489150929&single=true&output=csv';
 
         // بيانات عامة
-        let allSalesData = [], allPurchasesData = [], allJournalData = [], allAccountsData = [];
+        let allSalesData = [], allPurchasesData = [], allJournalData = [];
         let allTrialBalanceData = [], allBalancesData = [], allCashData = [];
         let currentMainTab = 'trialBalance';
         let lastUpdateTime = null, syncInterval;
         let printSettings = { statement: {} };
         let currentFocusIndex = -1, currentSuggestItems = [];
         let isRefreshing = false;
+        let dataLoaded = false;
 
         const statementColumns = [
             {id:'index',label:'#'}, {id:'date',label:'التاريخ'}, {id:'type',label:'النوع'},
@@ -495,8 +545,8 @@
                 
                 const timestamp = Date.now();
                 
-                // جلب جميع البيانات بشكل متوازي
-                await Promise.all([
+                // جلب جميع البيانات بشكل متوازي مع معالجة الأخطاء لكل طلب على حدة
+                await Promise.allSettled([
                     // بيانات اليومية
                     fetch(JOURNAL_CSV_URL + '&t=' + timestamp)
                         .then(res => res.text())
@@ -508,9 +558,12 @@
                                     complete: (res) => { 
                                         allJournalData = res.data.filter(r => r['التاريخ']); 
                                         resolve();
-                                    } 
+                                    }
                                 });
                             });
+                        }).catch(err => {
+                            console.warn('Error loading journal data:', err);
+                            allJournalData = [];
                         }),
                     
                     // بيانات المبيعات
@@ -524,9 +577,12 @@
                                     complete: (res) => { 
                                         allSalesData = res.data.filter(r => r['التاريخ']); 
                                         resolve();
-                                    } 
+                                    }
                                 });
                             });
+                        }).catch(err => {
+                            console.warn('Error loading sales data:', err);
+                            allSalesData = [];
                         }),
                     
                     // بيانات المشتريات
@@ -540,16 +596,12 @@
                                     complete: (res) => { 
                                         allPurchasesData = res.data.filter(r => r['التاريخ']); 
                                         resolve();
-                                    } 
+                                    }
                                 });
                             });
-                        }),
-                    
-                    // بيانات الحسابات
-                    fetch('') // تم إزالة رابط الحسابات لأنه غير موجود في الروابط الجديدة
-                        .then(() => {
-                            allAccountsData = [];
-                            return Promise.resolve();
+                        }).catch(err => {
+                            console.warn('Error loading purchases data:', err);
+                            allPurchasesData = [];
                         }),
                     
                     // بيانات ميزان المراجعة
@@ -563,9 +615,12 @@
                                     complete: (res) => { 
                                         allTrialBalanceData = res.data; 
                                         resolve();
-                                    } 
+                                    }
                                 });
                             });
+                        }).catch(err => {
+                            console.warn('Error loading trial balance data:', err);
+                            allTrialBalanceData = [];
                         }),
                     
                     // بيانات الأرصدة
@@ -579,9 +634,12 @@
                                     complete: (res) => { 
                                         allBalancesData = res.data.filter(r => r['الحساب']); 
                                         resolve();
-                                    } 
+                                    }
                                 });
                             });
+                        }).catch(err => {
+                            console.warn('Error loading balances data:', err);
+                            allBalancesData = [];
                         }),
                     
                     // بيانات الكاش
@@ -629,10 +687,14 @@
                                     }
                                 });
                             });
+                        }).catch(err => {
+                            console.warn('Error loading cash data:', err);
+                            allCashData = [];
                         })
                 ]);
 
                 lastUpdateTime = new Date();
+                dataLoaded = true;
                 
                 // تحديث العرض حسب التبويب الحالي
                 if (currentMainTab === 'statement') {
@@ -644,12 +706,14 @@
                     renderBalances();
                 } else if (currentMainTab === 'cash') {
                     renderCashTable();
+                    setupCashDropdowns();
                 }
                 
                 document.getElementById('loader').classList.add('hidden');
                 
             } catch (e) { 
-                console.error('Error fetching data:', e); 
+                console.warn('Error in fetchAllData:', e); 
+                // لا نعرض أي alert للمستخدم
             } finally {
                 isRefreshing = false;
                 if (showSyncIndicator) {
@@ -662,7 +726,7 @@
             if (syncInterval) clearInterval(syncInterval); 
             syncInterval = setInterval(() => {
                 if (!isRefreshing) fetchAllData(true);
-            }, 5000);
+            }, 30000); // 30 ثانية بدلاً من 5 ثواني
         }
 
         // دوال مساعدة
@@ -977,7 +1041,7 @@
             }
         }
 
-        // عرض جدول الكاش
+        // عرض جدول الكاش مع الفلاتر
         function renderCashTable() {
             const tbody = document.getElementById('cashTableBody');
             const tfoot = document.getElementById('cashTableFoot');
@@ -989,14 +1053,53 @@
             
             if (!allCashData || allCashData.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="9" class="text-center py-4 text-gray-500">لا توجد بيانات</td></tr>';
-                tfoot.innerHTML = '<tr><td colspan="9" class="text-center font-bold">الإجمالي: 0.00</td></tr>';
+                return;
+            }
+            
+            // قراءة قيم الفلاتر
+            const dateFrom = parseHtmlDate(document.getElementById('searchCashDateFrom')?.value);
+            const dateTo = parseHtmlDate(document.getElementById('searchCashDateTo')?.value);
+            const companyFilter = document.getElementById('searchCashCompany')?.value.trim().toLowerCase() || '';
+            const customerFilter = document.getElementById('searchCashCustomer')?.value.trim().toLowerCase() || '';
+            const numberFilter = document.getElementById('searchCashNumber')?.value.trim().toLowerCase() || '';
+            
+            let filteredData = allCashData.filter(row => {
+                // فلتر التاريخ
+                if (dateFrom || dateTo) {
+                    const dateStr = row['التاريخ'] || '';
+                    if (!isDateInRange(dateStr, dateFrom, dateTo)) return false;
+                }
+                
+                // فلتر الشركة
+                if (companyFilter) {
+                    const company = String(row['الشركة'] || '').trim().toLowerCase();
+                    if (!company.includes(companyFilter)) return false;
+                }
+                
+                // فلتر العميل
+                if (customerFilter) {
+                    const customer = String(row['العميل'] || '').trim().toLowerCase();
+                    if (!customer.includes(customerFilter)) return false;
+                }
+                
+                // فلتر الرقم
+                if (numberFilter) {
+                    const number = String(row['الرقم'] || '').trim().toLowerCase();
+                    if (!number.includes(numberFilter)) return false;
+                }
+                
+                return true;
+            });
+            
+            if (filteredData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" class="text-center py-4 text-gray-500">لا توجد نتائج للبحث</td></tr>';
                 return;
             }
             
             let totalQty = 0, totalPurchase = 0, totalSell = 0, totalProfit = 0;
             
-            for (let i = 0; i < allCashData.length; i++) {
-                const row = allCashData[i];
+            for (let i = 0; i < filteredData.length; i++) {
+                const row = filteredData[i];
                 
                 let date = row['التاريخ'] || '';
                 let company = row['الشركة'] || '';
@@ -1034,12 +1137,13 @@
                 tbody.appendChild(tr);
             }
             
+            // صف الإجمالي في tfoot (مجمّد في الأسفل)
             let totalRow = document.createElement('tr');
             totalRow.innerHTML = `<td colspan="5" class="text-center font-bold">الإجمالي</td>
-                                 <td class="text-center">${totalQty !== 0 ? totalQty.toString() : '0'}</td>
-                                 <td class="text-center">${totalPurchase.toFixed(2)}</td>
-                                 <td class="text-center">${totalSell.toFixed(2)}</td>
-                                 <td class="text-center ${totalProfit >= 0 ? 'positive-balance' : 'negative-balance'}">${totalProfit.toFixed(2)}</td>`;
+                                 <td class="text-center font-bold">${totalQty !== 0 ? totalQty.toString() : '0'}</td>
+                                 <td class="text-center font-bold">${totalPurchase.toFixed(2)}</td>
+                                 <td class="text-center font-bold">${totalSell.toFixed(2)}</td>
+                                 <td class="text-center font-bold ${totalProfit >= 0 ? 'positive-balance' : 'negative-balance'}">${totalProfit.toFixed(2)}</td>`;
             tfoot.appendChild(totalRow);
         }
 
@@ -1103,6 +1207,103 @@
             });
         }
 
+        // إعداد القوائم المنسدلة لتبويب كاش
+        function setupCashDropdowns() {
+            const inputs = {
+                'searchCashCompany': 'suggestCashCompany',
+                'searchCashCustomer': 'suggestCashCustomer'
+            };
+            
+            Object.keys(inputs).forEach(inputId => {
+                const input = document.getElementById(inputId);
+                const list = document.getElementById(inputs[inputId]);
+                if (!input || !list) return;
+                
+                const updateList = () => {
+                    const val = input.value.toLowerCase();
+                    let uniqueValues = [];
+                    
+                    if (inputId === 'searchCashCompany') {
+                        uniqueValues = [...new Set(allCashData.map(r => String(r['الشركة'] || '').trim()))]
+                            .filter(n => n && n !== '');
+                    } else if (inputId === 'searchCashCustomer') {
+                        uniqueValues = [...new Set(allCashData.map(r => String(r['العميل'] || '').trim()))]
+                            .filter(n => n && n !== '');
+                    }
+                    
+                    const filtered = uniqueValues.filter(v => v.toLowerCase().includes(val)).slice(0, 15);
+                    list.innerHTML = '';
+                    currentSuggestItems = [];
+                    
+                    if (filtered.length) {
+                        filtered.forEach(v => {
+                            const div = document.createElement('div');
+                            div.className = 'suggestion-item';
+                            div.textContent = v;
+                            div.onclick = () => { 
+                                input.value = v; 
+                                hideAllSuggestLists(); 
+                                renderCashTable(); 
+                            };
+                            list.appendChild(div);
+                            currentSuggestItems.push(div);
+                        });
+                        list.style.display = 'block';
+                        currentFocusIndex = -1;
+                    } else {
+                        list.style.display = 'none';
+                        currentSuggestItems = [];
+                    }
+                };
+                
+                input.onfocus = function() { 
+                    hideAllSuggestLists(); 
+                    updateList(); 
+                };
+                input.oninput = function() { 
+                    updateList(); 
+                    clearTimeout(this.searchTimeout); 
+                    this.searchTimeout = setTimeout(renderCashTable, 500); 
+                };
+                input.onkeydown = function(e) {
+                    if (e.key === 'ArrowDown') { 
+                        e.preventDefault(); 
+                        if (currentSuggestItems.length) { 
+                            currentFocusIndex = Math.min(currentFocusIndex + 1, currentSuggestItems.length - 1); 
+                            updateActiveItem(); 
+                        } 
+                    } else if (e.key === 'ArrowUp') { 
+                        e.preventDefault(); 
+                        if (currentSuggestItems.length) { 
+                            currentFocusIndex = Math.max(currentFocusIndex - 1, 0); 
+                            updateActiveItem(); 
+                        } 
+                    } else if (e.key === 'Enter') { 
+                        e.preventDefault(); 
+                        if (currentFocusIndex >= 0 && currentSuggestItems[currentFocusIndex]) 
+                            currentSuggestItems[currentFocusIndex].click(); 
+                        else if (currentSuggestItems.length) 
+                            currentSuggestItems[0].click(); 
+                        else 
+                            renderCashTable(); 
+                    } else if (e.key === 'Escape') 
+                        hideAllSuggestLists();
+                };
+            });
+            
+            // إضافة مستمعي الأحداث لحقول التاريخ والرقم
+            ['searchCashDateFrom', 'searchCashDateTo', 'searchCashNumber'].forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener('change', renderCashTable);
+                    element.addEventListener('input', function() { 
+                        clearTimeout(this.searchTimeout); 
+                        this.searchTimeout = setTimeout(renderCashTable, 500); 
+                    });
+                }
+            });
+        }
+
         function updateActiveItem() {
             currentSuggestItems.forEach(i => i.classList.remove('active'));
             if (currentFocusIndex>=0 && currentSuggestItems[currentFocusIndex]) {
@@ -1118,7 +1319,7 @@
         }
         
         document.addEventListener('click', (e) => { 
-            if (!e.target.classList.contains('statement-search-input') && !e.target.classList.contains('suggestion-item')) 
+            if (!e.target.classList.contains('statement-search-input') && !e.target.classList.contains('cash-search-input') && !e.target.classList.contains('suggestion-item')) 
                 hideAllSuggestLists(); 
         });
 
@@ -1148,6 +1349,7 @@
                 renderBalances();
             } else if (tab === 'cash') {
                 renderCashTable();
+                setupCashDropdowns();
             }
         }
 
