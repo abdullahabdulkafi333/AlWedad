@@ -45,27 +45,6 @@
             border-bottom: 2px solid #1d4ed8;
         }
 
-        /* تثبيت الصف الأخير في جدول الكاش فقط - مع لون مطابق لباقي التبويبات */
-        .cash-table tbody tr:last-child {
-            position: sticky;
-            bottom: 0;
-            z-index: 15;
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
-            color: white !important;
-            font-weight: 800 !important;
-            border-top: 3px solid #1d4ed8;
-            box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-        
-        .cash-table tbody tr:last-child td {
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
-            color: white !important;
-            font-weight: 800 !important;
-            font-size: 0.9rem !important;
-            padding: 10px 4px !important;
-            border-bottom: none;
-        }
-
         td { padding: 6px 4px; border-bottom: 1px solid #f1f5f9; font-size: 0.75rem; }
 
         /* تكبير خط الأرقام في ميزان المراجعة */
@@ -267,6 +246,24 @@
         /* تنسيق خاص لجدول الكاش */
         .cash-table th {
             background-color: #059669;
+        }
+        
+        /* إزالة تثبيت الصف الأخير من جدول الكاش */
+        .cash-table tbody tr:last-child {
+            position: static;
+            background: transparent;
+            color: inherit;
+            font-weight: normal;
+            border-top: none;
+            box-shadow: none;
+        }
+        
+        .cash-table tbody tr:last-child td {
+            background: transparent !important;
+            color: inherit !important;
+            font-weight: normal !important;
+            font-size: inherit !important;
+            padding: 6px 4px !important;
         }
     </style>
 </head>
@@ -1025,7 +1022,7 @@
             }
         }
 
-        // عرض جدول الكاش مع الفلاتر - الصف الأخير مجمد وملون
+        // عرض جدول الكاش مع الفلاتر - يظهر صف الإجمالي فقط عند وجود بحث
         function renderCashTable() {
             const tbody = document.getElementById('cashTableBody');
             
@@ -1044,6 +1041,9 @@
             const companyFilter = document.getElementById('searchCashCompany')?.value.trim().toLowerCase() || '';
             const customerFilter = document.getElementById('searchCashCustomer')?.value.trim().toLowerCase() || '';
             const numberFilter = document.getElementById('searchCashNumber')?.value.trim().toLowerCase() || '';
+            
+            // التحقق مما إذا كان هناك بحث نشط
+            const isSearchActive = dateFrom || dateTo || companyFilter || customerFilter || numberFilter;
             
             let filteredData = allCashData.filter(row => {
                 // فلتر التاريخ
@@ -1078,6 +1078,12 @@
                 return;
             }
             
+            // متغيرات للإجمالي (سنستخدمها فقط إذا كان هناك بحث نشط)
+            let totalQty = 0;
+            let totalPurchase = 0;
+            let totalSell = 0;
+            let totalProfit = 0;
+            
             for (let i = 0; i < filteredData.length; i++) {
                 const row = filteredData[i];
                 
@@ -1089,6 +1095,14 @@
                 let purchaseNum = parseNumber(row['شراء']);
                 let sellNum = parseNumber(row['مبيع']);
                 let profitNum = parseNumber(row['الأرباح']);
+                
+                // جمع الإجمالي فقط إذا كان هناك بحث نشط
+                if (isSearchActive) {
+                    totalQty += qtyNum;
+                    totalPurchase += purchaseNum;
+                    totalSell += sellNum;
+                    totalProfit += profitNum;
+                }
                 
                 let tr = document.createElement('tr');
                 tr.className = i % 2 === 0 ? '' : 'bg-gray-50';
@@ -1112,8 +1126,24 @@
                 tbody.appendChild(tr);
             }
             
-            // ملاحظة: لا نضيف صف إجمالي إضافي، نعتمد على الصف الأخير من البيانات
-            // الصف الأخير من البيانات سيتم تثبيته وتلوينه تلقائياً بواسطة CSS
+            // إضافة صف الإجمالي فقط إذا كان هناك بحث نشط
+            if (isSearchActive) {
+                let totalRow = document.createElement('tr');
+                totalRow.className = 'total-row';
+                
+                let totalQtyStr = totalQty !== 0 ? totalQty.toString() : '';
+                let totalPurchaseStr = totalPurchase !== 0 ? totalPurchase.toFixed(2) : '';
+                let totalSellStr = totalSell !== 0 ? totalSell.toFixed(2) : '';
+                let totalProfitStr = totalProfit !== 0 ? totalProfit.toFixed(2) : '';
+                
+                totalRow.innerHTML = `<td colspan="5" class="text-center font-bold">الإجمالي</td>
+                                     <td class="text-center">${totalQtyStr}</td>
+                                     <td class="text-center">${totalPurchaseStr}</td>
+                                     <td class="text-center">${totalSellStr}</td>
+                                     <td class="text-center">${totalProfitStr}</td>`;
+                
+                tbody.appendChild(totalRow);
+            }
         }
 
         // إعداد القوائم المنسدلة لكشف الحساب
@@ -1401,5 +1431,3 @@
     </script>
 </body>
 </html>
-
-
