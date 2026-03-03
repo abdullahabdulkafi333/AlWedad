@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Accounting</title>
+    <title>Accounting System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -19,7 +19,7 @@
         }
 
         .table-container { 
-            max-height: 80vh; /* زيادة الارتفاع قليلاً */
+            max-height: 85vh;
             overflow-y: auto; 
             background: white; 
             border-radius: 8px; 
@@ -33,7 +33,7 @@
         thead th { 
             position: sticky; top: 0; z-index: 20; 
             background-color: #2563eb; color: white; 
-            padding: 12px 6px; /* زيادة padding قليلاً */
+            padding: 12px 6px;
             font-weight: 700;
             font-size: 0.8rem;
             border-bottom: 2px solid #1d4ed8;
@@ -49,14 +49,15 @@
             font-weight: bold;
             font-size: 0.9rem !important;
             border-top: 2px solid #1d4ed8;
-            padding: 10px 4px; /* زيادة padding قليلاً */
+            padding: 10px 4px;
             text-align: center !important;
         }
 
-        td { padding: 8px 4px; border-bottom: 1px solid #f1f5f9; font-size: 0.75rem; } /* زيادة padding قليلاً */
+        td { padding: 8px 4px; border-bottom: 1px solid #f1f5f9; font-size: 0.75rem; }
 
         /* تكبير خط الأرقام */
-        #trialBalanceTableBody td:not(:first-child) {
+        #trialBalanceTableBody td:not(:first-child),
+        #cashTableBody td {
             font-size: 0.85rem !important;
         }
         
@@ -249,6 +250,11 @@
         .account-sub2 { padding-right: 40px !important; }
         .bg-white { background-color: white !important; }
         .bg-white td { background-color: white !important; }
+        
+        /* تنسيق خاص لجدول الكاش */
+        .cash-table th {
+            background-color: #059669;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -279,6 +285,9 @@
                     </button>
                     <button onclick="switchMainTab('balances')" class="main-tab-button bg-green-500 hover:bg-green-400 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1">
                         <i class="fas fa-chart-line text-[10px]"></i> الأرصدة
+                    </button>
+                    <button onclick="switchMainTab('cash')" class="main-tab-button bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1">
+                        <i class="fas fa-money-bill-wave text-[10px]"></i> كاش
                     </button>
                 </div>
                 
@@ -324,6 +333,9 @@
             
             <!-- الأرصدة: لا يوجد بحث -->
             <div id="balancesSearch" class="tab-content"></div>
+            
+            <!-- الكاش: لا يوجد بحث حالياً -->
+            <div id="cashSearch" class="tab-content"></div>
         </div>
     </header>
 
@@ -392,7 +404,7 @@
             </div>
         </div>
         
-        <!-- الأرصدة - مع إضافة أعمدة مبيعات كاش وأرباح كاش -->
+        <!-- الأرصدة -->
         <div id="balancesTable" class="tab-content">
             <div class="table-container">
                 <table id="balancesTableContent">
@@ -416,23 +428,48 @@
                 </table>
             </div>
         </div>
+        
+        <!-- جدول الكاش الجديد بالأعمدة المطلوبة -->
+        <div id="cashTable" class="tab-content">
+            <div class="table-container">
+                <table class="cash-table">
+                    <thead>
+                        <tr>
+                            <th class="w-10">#</th>
+                            <th>التاريخ</th>
+                            <th>الشركة</th>
+                            <th>العميل</th>
+                            <th>الرقم</th>
+                            <th>الكمية</th>
+                            <th>شراء</th>
+                            <th>مبيع</th>
+                            <th>الأرباح</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cashTableBody"></tbody>
+                    <tfoot id="cashTableFoot">
+                        <!-- سيتم تعبئة صف الإجمالي هنا عبر JavaScript -->
+                    </tfoot>
+                </table>
+            </div>
+        </div>
     </main>
 
     <script>
-        // رابط المشاركة للملف بأكمله
-        const SPREADSHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS2QXsIxQchkIgs6bY9lHOXqyLUBklNAx8-R1ej04yTxAiBWCIhMxA4rHFxVmfOi1y2AzZPOmhvigpZ/pub?output=csv';
-        
-        // روابط الأوراق الفردية
+        // روابط الأوراق المطلوبة فقط (تم حذف روابط A.Cash القديمة)
         const JOURNAL_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS2QXsIxQchkIgs6bY9lHOXqyLUBklNAx8-R1ej04yTxAiBWCIhMxA4rHFxVmfOi1y2AzZPOmhvigpZ/pub?gid=210521495&single=true&output=csv';
         const SALES_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS2QXsIxQchkIgs6bY9lHOXqyLUBklNAx8-R1ej04yTxAiBWCIhMxA4rHFxVmfOi1y2AzZPOmhvigpZ/pub?gid=1183647784&single=true&output=csv';
         const PURCHASES_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS2QXsIxQchkIgs6bY9lHOXqyLUBklNAx8-R1ej04yTxAiBWCIhMxA4rHFxVmfOi1y2AzZPOmhvigpZ/pub?gid=515286016&single=true&output=csv';
         const ACCOUNTS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS2QXsIxQchkIgs6bY9lHOXqyLUBklNAx8-R1ej04yTxAiBWCIhMxA4rHFxVmfOi1y2AzZPOmhvigpZ/pub?gid=1244180750&single=true&output=csv';
         const TRIAL_BALANCE_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS2QXsIxQchkIgs6bY9lHOXqyLUBklNAx8-R1ej04yTxAiBWCIhMxA4rHFxVmfOi1y2AzZPOmhvigpZ/pub?gid=0&single=true&output=csv';
         const BALANCES_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS2QXsIxQchkIgs6bY9lHOXqyLUBklNAx8-R1ej04yTxAiBWCIhMxA4rHFxVmfOi1y2AzZPOmhvigpZ/pub?gid=344170194&single=true&output=csv';
+        
+        // رابط ورقة الكاش الجديدة (مبيعات A.Cash) - العمود المطلوب
+        const CASH_SALES_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRg-nYGccEUM-Rp1ct50XZEsVoGpBPb2l1OnRXF3ib6-u1bmM12A-9DMZHXl9oVs-cf6VUsLUZ4dPDZ/pub?gid=1966555614&single=true&output=csv';
 
-        // بيانات عامة
+        // بيانات عامة - تم حذف allAcashTrialBalanceData و allAcashBalancesData
         let allSalesData = [], allPurchasesData = [], allJournalData = [], allAccountsData = [];
-        let allTrialBalanceData = [], allBalancesData = [];
+        let allTrialBalanceData = [], allBalancesData = [], allCashSalesData = [];
         let currentMainTab = 'trialBalance';
         let lastUpdateTime = null, syncInterval;
         let printSettings = { statement: {} };
@@ -552,6 +589,73 @@
                                     } 
                                 });
                             });
+                        }),
+                    
+                    // جلب بيانات مبيعات الكاش (A.Cash Sales)
+                    fetch(CASH_SALES_CSV_URL + '&t=' + timestamp)
+                        .then(res => res.text())
+                        .then(text => {
+                            return new Promise((resolve) => {
+                                Papa.parse(text, { 
+                                    header: true, 
+                                    skipEmptyLines: false, 
+                                    complete: (res) => { 
+                                        let rawData = res.data;
+                                        let filteredData = rawData.filter(row => {
+                                            const values = Object.values(row);
+                                            return values.some(v => v && v.trim && v.trim() !== '');
+                                        });
+                                        
+                                        let cashSalesData = [];
+                                        
+                                        for (let i = 0; i < filteredData.length; i++) {
+                                            const row = filteredData[i];
+                                            const columns = Object.keys(row);
+                                            
+                                            // ترتيب الأعمدة حسب المطلوب: التاريخ - الشركة - العميل - الرقم - الكمية - شراء - مبيع - الأرباح
+                                            let dateField = columns[0] || '';
+                                            let companyField = columns[1] || '';
+                                            let customerField = columns[2] || '';
+                                            let numberField = columns[3] || '';
+                                            let qtyField = columns[4] || '';
+                                            let purchaseField = columns[5] || '';
+                                            let sellField = columns[6] || '';
+                                            let profitField = columns[7] || '';
+                                            
+                                            let date = row[dateField] || '';
+                                            let company = row[companyField] || '';
+                                            let customer = row[customerField] || '';
+                                            let number = row[numberField] || '';
+                                            let qty = row[qtyField] || '';
+                                            let purchase = row[purchaseField] || '';
+                                            let sell = row[sellField] || '';
+                                            let profit = row[profitField] || '';
+                                            
+                                            // تخطي صفوف العنوان
+                                            if (date === 'التاريخ' || date === 'Date' || date.includes('تاريخ')) {
+                                                continue;
+                                            }
+                                            
+                                            if (date === '' && company === '' && customer === '') continue;
+                                            
+                                            cashSalesData.push({
+                                                'التاريخ': date,
+                                                'الشركة': company,
+                                                'العميل': customer,
+                                                'الرقم': number,
+                                                'الكمية': qty,
+                                                'شراء': purchase,
+                                                'مبيع': sell,
+                                                'الأرباح': profit,
+                                                '_raw': row
+                                            });
+                                        }
+                                        
+                                        allCashSalesData = cashSalesData;
+                                        resolve();
+                                    }
+                                });
+                            });
                         })
                 ]);
 
@@ -565,6 +669,8 @@
                     renderTrialBalance();
                 } else if (currentMainTab === 'balances') {
                     renderBalances();
+                } else if (currentMainTab === 'cash') {
+                    renderCashSalesTable();
                 }
                 
                 document.getElementById('loader').classList.add('hidden');
@@ -899,7 +1005,7 @@
             }
         }
 
-        // عرض الأرصدة - مع إضافة أعمدة مبيعات كاش وأرباح كاش
+        // عرض الأرصدة
         function renderBalances() {
             const tbody = document.getElementById('balancesTableBody');
             
@@ -925,8 +1031,7 @@
             filtered.forEach((row,i)=>{
                 let acc = row['الحساب']||'';
                 
-                // محاولة قراءة قيم مبيعات كاش وأرباح كاش من البيانات (قد تكون غير موجودة في المصدر)
-                // نستخدم قيماً افتراضية أو نحسبها من البيانات المتاحة
+                // محاولة قراءة قيم مبيعات كاش وأرباح كاش من البيانات
                 let cashSales = parseNumber(row['مبيعات كاش'] || row['مبيعات'] || 0);
                 let cashProfit = parseNumber(row['أرباح كاش'] || row['الارباح'] || 0);
                 
@@ -984,6 +1089,95 @@
             }
         }
 
+        // عرض جدول مبيعات الكاش - بالأعمدة المطلوبة
+        function renderCashSalesTable() {
+            const tbody = document.getElementById('cashTableBody');
+            const tfoot = document.getElementById('cashTableFoot');
+            
+            if (!tbody || !tfoot) return;
+            
+            tbody.innerHTML = '';
+            tfoot.innerHTML = '';
+            
+            if (!allCashSalesData || allCashSalesData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" class="text-center py-4 text-gray-500">لا توجد بيانات</td></tr>';
+                tfoot.innerHTML = `<tr><td colspan="9" class="text-center font-bold">الإجمالي: 0.00</td></tr>`;
+                return;
+            }
+            
+            // متغيرات لحساب المجاميع
+            let totalQty = 0;
+            let totalPurchase = 0;
+            let totalSell = 0;
+            let totalProfit = 0;
+            let rowCount = 0;
+            
+            for (let i = 0; i < allCashSalesData.length; i++) {
+                const row = allCashSalesData[i];
+                if (!row) continue;
+                
+                let date = row['التاريخ'] || '';
+                let company = row['الشركة'] || '';
+                let customer = row['العميل'] || '';
+                let number = row['الرقم'] || '';
+                let qty = row['الكمية'] || '';
+                let purchase = row['شراء'] || '';
+                let sell = row['مبيع'] || '';
+                let profit = row['الأرباح'] || '';
+                
+                // تخطي الصفوف الفارغة
+                if (date === '' && company === '' && customer === '') continue;
+                
+                // تحويل الأرقام للحساب
+                let qtyNum = parseNumber(qty);
+                let purchaseNum = parseNumber(purchase);
+                let sellNum = parseNumber(sell);
+                let profitNum = parseNumber(profit);
+                
+                // إضافة إلى المجاميع
+                totalQty += qtyNum;
+                totalPurchase += purchaseNum;
+                totalSell += sellNum;
+                totalProfit += profitNum;
+                
+                let tr = document.createElement('tr');
+                tr.className = i % 2 === 0 ? '' : 'bg-gray-50';
+                
+                // تنسيق الأرقام للعرض
+                let qtyStr = qtyNum !== 0 ? qtyNum.toString() : '';
+                let purchaseStr = purchaseNum !== 0 ? purchaseNum.toFixed(2) : '';
+                let sellStr = sellNum !== 0 ? sellNum.toFixed(2) : '';
+                let profitStr = profitNum !== 0 ? profitNum.toFixed(2) : '';
+                
+                // إضافة كلاس للألوان للأرباح
+                let profitClass = profitNum >= 0 ? 'positive-balance' : 'negative-balance';
+                
+                tr.innerHTML = `<td class="text-gray-400">${i+1}</td>
+                               <td>${date}</td>
+                               <td>${company}</td>
+                               <td>${customer}</td>
+                               <td>${number}</td>
+                               <td class="text-center">${qtyStr}</td>
+                               <td class="text-center">${purchaseStr}</td>
+                               <td class="text-center">${sellStr}</td>
+                               <td class="${profitClass} text-center">${profitStr}</td>`;
+                
+                tbody.appendChild(tr);
+                rowCount++;
+            }
+            
+            // إضافة صف الإجمالي في tfoot
+            if (rowCount > 0) {
+                let totalRow = document.createElement('tr');
+                totalRow.innerHTML = `<td colspan="5" class="text-center font-bold">الإجمالي</td>
+                                     <td class="text-center">${totalQty !== 0 ? totalQty.toString() : '0'}</td>
+                                     <td class="text-center">${totalPurchase.toFixed(2)}</td>
+                                     <td class="text-center">${totalSell.toFixed(2)}</td>
+                                     <td class="text-center ${totalProfit >= 0 ? 'positive-balance' : 'negative-balance'}">${totalProfit.toFixed(2)}</td>`;
+                tfoot.appendChild(totalRow);
+            }
+        }
+
         // تبديل التبويبات الرئيسية
         function switchMainTab(tab) {
             currentMainTab = tab;
@@ -999,6 +1193,7 @@
             document.getElementById('statementSearch').classList.remove('active');
             document.getElementById('trialBalanceSearch').classList.remove('active');
             document.getElementById('balancesSearch').classList.remove('active');
+            document.getElementById('cashSearch').classList.remove('active');
             
             document.getElementById(tab + 'Search').classList.add('active');
             
@@ -1008,6 +1203,7 @@
             }
             else if (tab === 'trialBalance') renderTrialBalance();
             else if (tab === 'balances') renderBalances();
+            else if (tab === 'cash') renderCashSalesTable();
         }
 
         // طباعة
