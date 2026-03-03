@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Accounting</title>
+    <title>Accounting System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -19,7 +19,7 @@
         }
 
         .table-container { 
-            max-height: 90vh;
+            max-height: 70vh; /* تقليل الارتفاع لعرض 15 صف تقريباً */
             overflow-y: auto; 
             background: white; 
             border-radius: 8px; 
@@ -39,20 +39,20 @@
             border-bottom: 2px solid #1d4ed8;
         }
 
-        /* تثبيت الصف الأخير في جدول الكاش فقط */
+        /* تثبيت الصف الأخير في جدول الكاش فقط - مع لون أفتح قليلاً */
         .cash-table tbody tr:last-child {
             position: sticky;
             bottom: 0;
             z-index: 15;
-            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%) !important;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
             color: white !important;
             font-weight: 800 !important;
-            border-top: 3px solid #1e3a8a;
+            border-top: 3px solid #1d4ed8;
             box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
         }
         
         .cash-table tbody tr:last-child td {
-            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%) !important;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
             color: white !important;
             font-weight: 800 !important;
             font-size: 0.9rem !important;
@@ -525,8 +525,16 @@
                 
                 const timestamp = Date.now();
                 
+                // حفظ البيانات الحالية كنسخة احتياطية
+                const oldCashData = [...allCashData];
+                const oldSalesData = [...allSalesData];
+                const oldPurchasesData = [...allPurchasesData];
+                const oldJournalData = [...allJournalData];
+                const oldTrialBalanceData = [...allTrialBalanceData];
+                const oldBalancesData = [...allBalancesData];
+                
                 // جلب جميع البيانات بشكل متوازي مع معالجة الأخطاء لكل طلب على حدة
-                await Promise.allSettled([
+                const results = await Promise.allSettled([
                     // بيانات اليومية
                     fetch(JOURNAL_CSV_URL + '&t=' + timestamp)
                         .then(res => res.text())
@@ -541,9 +549,6 @@
                                     }
                                 });
                             });
-                        }).catch(err => {
-                            console.warn('Error loading journal data:', err);
-                            allJournalData = [];
                         }),
                     
                     // بيانات المبيعات
@@ -560,9 +565,6 @@
                                     }
                                 });
                             });
-                        }).catch(err => {
-                            console.warn('Error loading sales data:', err);
-                            allSalesData = [];
                         }),
                     
                     // بيانات المشتريات
@@ -579,9 +581,6 @@
                                     }
                                 });
                             });
-                        }).catch(err => {
-                            console.warn('Error loading purchases data:', err);
-                            allPurchasesData = [];
                         }),
                     
                     // بيانات ميزان المراجعة
@@ -598,9 +597,6 @@
                                     }
                                 });
                             });
-                        }).catch(err => {
-                            console.warn('Error loading trial balance data:', err);
-                            allTrialBalanceData = [];
                         }),
                     
                     // بيانات الأرصدة
@@ -617,9 +613,6 @@
                                     }
                                 });
                             });
-                        }).catch(err => {
-                            console.warn('Error loading balances data:', err);
-                            allBalancesData = [];
                         }),
                     
                     // بيانات الكاش
@@ -667,11 +660,15 @@
                                     }
                                 });
                             });
-                        }).catch(err => {
-                            console.warn('Error loading cash data:', err);
-                            allCashData = [];
                         })
                 ]);
+                
+                // التحقق من نجاح كل طلب
+                results.forEach((result, index) => {
+                    if (result.status === 'rejected') {
+                        console.warn(`Request ${index} failed:`, result.reason);
+                    }
+                });
 
                 lastUpdateTime = new Date();
                 
@@ -692,6 +689,7 @@
                 
             } catch (e) { 
                 console.warn('Error in fetchAllData:', e); 
+                // في حالة الخطأ، نحتفظ بالبيانات القديمة
             } finally {
                 isRefreshing = false;
                 if (showSyncIndicator) {
@@ -703,8 +701,10 @@
         function startAutoSync() { 
             if (syncInterval) clearInterval(syncInterval); 
             syncInterval = setInterval(() => {
-                if (!isRefreshing) fetchAllData(true);
-            }, 30000);
+                if (!isRefreshing) {
+                    fetchAllData(true);
+                }
+            }, 60000); // زيادة المدة إلى 60 ثانية لتقليل التحميل
         }
 
         // دوال مساعدة
