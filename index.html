@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Accounting System</title>
+    <title>Accounting</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -19,7 +19,7 @@
         }
 
         .table-container { 
-            max-height: 75vh; 
+            max-height: 90vh;
             overflow-y: auto; 
             background: white; 
             border-radius: 8px; 
@@ -39,53 +39,38 @@
             border-bottom: 2px solid #1d4ed8;
         }
 
-        /* تثبيت صف الإجمالي في الأسفل */
-        tfoot td {
+        /* تثبيت الصف الأخير في جدول الكاش فقط */
+        .cash-table tbody tr:last-child {
             position: sticky;
             bottom: 0;
-            z-index: 20;
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+            z-index: 15;
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%) !important;
             color: white !important;
-            font-weight: bold;
+            font-weight: 800 !important;
+            border-top: 3px solid #1e3a8a;
+            box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .cash-table tbody tr:last-child td {
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%) !important;
+            color: white !important;
+            font-weight: 800 !important;
             font-size: 0.9rem !important;
-            border-top: 2px solid #1d4ed8;
-            padding: 8px 4px;
-            text-align: center !important;
+            padding: 10px 4px !important;
+            border-bottom: none;
         }
 
         td { padding: 6px 4px; border-bottom: 1px solid #f1f5f9; font-size: 0.75rem; }
 
         /* تكبير خط الأرقام في ميزان المراجعة */
-        #trialBalanceTableBody td:not(:first-child),
-        #acashTrialBalanceTableBody td:not(:first-child) {
+        #trialBalanceTableBody td:not(:first-child) {
             font-size: 0.85rem !important;
         }
         
-        /* توضيح وتكبير خط الأرقام في أرصدة A.Cash - حجم متوسط */
-        #acashBalancesTableBody td {
-            font-size: 0.85rem !important;
-            font-weight: 600;
-        }
-        
-        /* توضيح وتكبير خط الأرقام في أرصدة Accounting - حجم متوسط */
+        /* توضيح وتكبير خط الأرقام في الأرصدة */
         #balancesTableBody td {
             font-size: 0.85rem !important;
             font-weight: 600;
-        }
-        
-        /* تنسيق خاص لصف الإجمالي في A.Cash Balances - توسيط جميع الخلايا */
-        #acashBalancesTableBody .total-row td {
-            text-align: center !important;
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
-            color: white !important;
-            font-weight: bold;
-            font-size: 0.9rem !important;
-        }
-        
-        /* إخفاء جميع الترويسات التي تحتوي على عناوين ومعلومات التحديث */
-        .trial-balance-header, .acash-trial-balance-header, .acash-balances-header, .balances-header,
-        #trialBalanceInfo, #balancesInfo, #acashTrialBalanceInfo, #acashBalancesInfo, #acashSalesInfo {
-            display: none !important;
         }
         
         /* توسيط جميع خلايا الجدول بشكل افتراضي */
@@ -165,14 +150,14 @@
 
         .main-tab-button { transition: all 0.3s ease; }
         .main-tab-button.active { background: #2563eb; transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3); }
-        .sub-tab-button { transition: all 0.3s ease; }
-        .sub-tab-button.active { background: #3b82f6; transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2); }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
         @media print {
             @page { size: A4; margin: 1cm; }
-            header, .no-print, #loader, .print-settings-btn, .suggestions-list, .main-tab-button, .sub-tab-button { display: none !important; }
+            header, .no-print, #loader, .print-settings-btn, .suggestions-list, .main-tab-button {
+                display: none !important;
+            }
             .table-container { max-height: none !important; overflow: visible !important; border: none !important; box-shadow: none !important; margin-bottom: 0 !important; }
             table { width: 100%; border-collapse: collapse; }
             th { position: static !important; background-color: #eee !important; color: black !important; border: 1px solid #000 !important; }
@@ -253,11 +238,10 @@
         .negative { color: #dc2626; }
         .positive { color: #059669; }
         
-        /* تنسيقات المجموعات - محسنة */
+        /* تنسيقات المجموعات */
         .group-title { background: #e5e7eb !important; font-weight: bold; color: #374151 !important; }
         .group-title td { background: #e5e7eb !important; font-weight: bold; color: #374151 !important; }
         
-        /* فقط صفوف الإجمالي تكون فضية */
         .silver-bg { background-color: #d1d5db !important; }
         .silver-bg td { background-color: #d1d5db !important; }
         
@@ -490,9 +474,6 @@
                         </tr>
                     </thead>
                     <tbody id="cashTableBody"></tbody>
-                    <tfoot id="cashTableFoot">
-                        <!-- سيتم تعبئة صف الإجمالي هنا عبر JavaScript -->
-                    </tfoot>
                 </table>
             </div>
         </div>
@@ -526,7 +507,6 @@
         let printSettings = { statement: {} };
         let currentFocusIndex = -1, currentSuggestItems = [];
         let isRefreshing = false;
-        let dataLoaded = false;
 
         const statementColumns = [
             {id:'index',label:'#'}, {id:'date',label:'التاريخ'}, {id:'type',label:'النوع'},
@@ -694,7 +674,6 @@
                 ]);
 
                 lastUpdateTime = new Date();
-                dataLoaded = true;
                 
                 // تحديث العرض حسب التبويب الحالي
                 if (currentMainTab === 'statement') {
@@ -713,7 +692,6 @@
                 
             } catch (e) { 
                 console.warn('Error in fetchAllData:', e); 
-                // لا نعرض أي alert للمستخدم
             } finally {
                 isRefreshing = false;
                 if (showSyncIndicator) {
@@ -726,7 +704,7 @@
             if (syncInterval) clearInterval(syncInterval); 
             syncInterval = setInterval(() => {
                 if (!isRefreshing) fetchAllData(true);
-            }, 30000); // 30 ثانية بدلاً من 5 ثواني
+            }, 30000);
         }
 
         // دوال مساعدة
@@ -1041,15 +1019,13 @@
             }
         }
 
-        // عرض جدول الكاش مع الفلاتر
+        // عرض جدول الكاش مع الفلاتر - الصف الأخير مجمد وملون
         function renderCashTable() {
             const tbody = document.getElementById('cashTableBody');
-            const tfoot = document.getElementById('cashTableFoot');
             
-            if (!tbody || !tfoot) return;
+            if (!tbody) return;
             
             tbody.innerHTML = '';
-            tfoot.innerHTML = '';
             
             if (!allCashData || allCashData.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="9" class="text-center py-4 text-gray-500">لا توجد بيانات</td></tr>';
@@ -1096,8 +1072,6 @@
                 return;
             }
             
-            let totalQty = 0, totalPurchase = 0, totalSell = 0, totalProfit = 0;
-            
             for (let i = 0; i < filteredData.length; i++) {
                 const row = filteredData[i];
                 
@@ -1109,11 +1083,6 @@
                 let purchaseNum = parseNumber(row['شراء']);
                 let sellNum = parseNumber(row['مبيع']);
                 let profitNum = parseNumber(row['الأرباح']);
-                
-                totalQty += qtyNum;
-                totalPurchase += purchaseNum;
-                totalSell += sellNum;
-                totalProfit += profitNum;
                 
                 let tr = document.createElement('tr');
                 tr.className = i % 2 === 0 ? '' : 'bg-gray-50';
@@ -1137,14 +1106,8 @@
                 tbody.appendChild(tr);
             }
             
-            // صف الإجمالي في tfoot (مجمّد في الأسفل)
-            let totalRow = document.createElement('tr');
-            totalRow.innerHTML = `<td colspan="5" class="text-center font-bold">الإجمالي</td>
-                                 <td class="text-center font-bold">${totalQty !== 0 ? totalQty.toString() : '0'}</td>
-                                 <td class="text-center font-bold">${totalPurchase.toFixed(2)}</td>
-                                 <td class="text-center font-bold">${totalSell.toFixed(2)}</td>
-                                 <td class="text-center font-bold ${totalProfit >= 0 ? 'positive-balance' : 'negative-balance'}">${totalProfit.toFixed(2)}</td>`;
-            tfoot.appendChild(totalRow);
+            // ملاحظة: لا نضيف صف إجمالي إضافي، نعتمد على الصف الأخير من البيانات
+            // الصف الأخير من البيانات سيتم تثبيته وتلوينه تلقائياً بواسطة CSS
         }
 
         // إعداد القوائم المنسدلة لكشف الحساب
