@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Accounting System</title>
+    <title>Accounting</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -19,7 +19,7 @@
         }
 
         .table-container { 
-            max-height: 75vh; 
+            max-height: 80vh; /* زيادة الارتفاع قليلاً */
             overflow-y: auto; 
             background: white; 
             border-radius: 8px; 
@@ -33,7 +33,8 @@
         thead th { 
             position: sticky; top: 0; z-index: 20; 
             background-color: #2563eb; color: white; 
-            padding: 10px 6px; font-weight: 700;
+            padding: 12px 6px; /* زيادة padding قليلاً */
+            font-weight: 700;
             font-size: 0.8rem;
             border-bottom: 2px solid #1d4ed8;
         }
@@ -48,11 +49,11 @@
             font-weight: bold;
             font-size: 0.9rem !important;
             border-top: 2px solid #1d4ed8;
-            padding: 8px 4px;
+            padding: 10px 4px; /* زيادة padding قليلاً */
             text-align: center !important;
         }
 
-        td { padding: 6px 4px; border-bottom: 1px solid #f1f5f9; font-size: 0.75rem; }
+        td { padding: 8px 4px; border-bottom: 1px solid #f1f5f9; font-size: 0.75rem; } /* زيادة padding قليلاً */
 
         /* تكبير خط الأرقام */
         #trialBalanceTableBody td:not(:first-child) {
@@ -391,13 +392,24 @@
             </div>
         </div>
         
-        <!-- الأرصدة -->
+        <!-- الأرصدة - مع إضافة أعمدة مبيعات كاش وأرباح كاش -->
         <div id="balancesTable" class="tab-content">
             <div class="table-container">
                 <table id="balancesTableContent">
                     <thead>
                         <tr>
-                            <th class="w-10">#</th><th>الحساب</th><th>مبيعات $</th><th>مبيعات ل.س</th><th>مشتريات $</th><th>مشتريات ل.س</th><th>المدفوع $</th><th>المدفوع ل.س</th><th>الرصيد $</th><th>الرصيد ل.س</th>
+                            <th class="w-10">#</th>
+                            <th>الحساب</th>
+                            <th>مبيعات كاش</th>
+                            <th>أرباح كاش</th>
+                            <th>مبيعات $</th>
+                            <th>مبيعات ل.س</th>
+                            <th>مشتريات $</th>
+                            <th>مشتريات ل.س</th>
+                            <th>المدفوع $</th>
+                            <th>المدفوع ل.س</th>
+                            <th>الرصيد $</th>
+                            <th>الرصيد ل.س</th>
                         </tr>
                     </thead>
                     <tbody id="balancesTableBody"></tbody>
@@ -407,10 +419,10 @@
     </main>
 
     <script>
-        // رابط المشاركة للملف بأكمله - تم تعديله ليصبح رابط CSV للملف الرئيسي
+        // رابط المشاركة للملف بأكمله
         const SPREADSHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS2QXsIxQchkIgs6bY9lHOXqyLUBklNAx8-R1ej04yTxAiBWCIhMxA4rHFxVmfOi1y2AzZPOmhvigpZ/pub?output=csv';
         
-        // روابط الأوراق الفردية (تم تحديثها باستخدام رابط الملف الرئيسي مع معرّفات الأوراق)
+        // روابط الأوراق الفردية
         const JOURNAL_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS2QXsIxQchkIgs6bY9lHOXqyLUBklNAx8-R1ej04yTxAiBWCIhMxA4rHFxVmfOi1y2AzZPOmhvigpZ/pub?gid=210521495&single=true&output=csv';
         const SALES_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS2QXsIxQchkIgs6bY9lHOXqyLUBklNAx8-R1ej04yTxAiBWCIhMxA4rHFxVmfOi1y2AzZPOmhvigpZ/pub?gid=1183647784&single=true&output=csv';
         const PURCHASES_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS2QXsIxQchkIgs6bY9lHOXqyLUBklNAx8-R1ej04yTxAiBWCIhMxA4rHFxVmfOi1y2AzZPOmhvigpZ/pub?gid=515286016&single=true&output=csv';
@@ -887,7 +899,7 @@
             }
         }
 
-        // عرض الأرصدة
+        // عرض الأرصدة - مع إضافة أعمدة مبيعات كاش وأرباح كاش
         function renderBalances() {
             const tbody = document.getElementById('balancesTableBody');
             
@@ -895,46 +907,81 @@
             
             tbody.innerHTML = '';
             if (!allBalancesData.length) {
-                tbody.innerHTML = '<tr><td colspan="10" class="text-center py-4 text-gray-500">لا توجد بيانات</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="12" class="text-center py-4 text-gray-500">لا توجد بيانات</td></tr>';
                 return;
             }
+            
             let filtered = allBalancesData.filter(r => {
-                let acc = r['الحساب']||''; if (acc.includes('الاجمالي')||acc.includes('الإجمالي')||acc.trim()==='') return false;
+                let acc = r['الحساب']||''; 
+                if (acc.includes('الاجمالي')||acc.includes('الإجمالي')||acc.trim()==='') return false;
                 let busd = parseNumber(r['الرصيد دولار']), bsyp = parseNumber(r['الرصيد سوري']);
                 return busd!==0 || bsyp!==0;
             });
-            let totalSalesUsd=0,totalSalesSyp=0,totalPurchasesUsd=0,totalPurchasesSyp=0,totalPayUsd=0,totalPaySyp=0,totalBalUsd=0,totalBalSyp=0;
+            
+            let totalCashSales = 0, totalCashProfit = 0;
+            let totalSalesUsd=0,totalSalesSyp=0,totalPurchasesUsd=0,totalPurchasesSyp=0;
+            let totalPayUsd=0,totalPaySyp=0,totalBalUsd=0,totalBalSyp=0;
+            
             filtered.forEach((row,i)=>{
                 let acc = row['الحساب']||'';
+                
+                // محاولة قراءة قيم مبيعات كاش وأرباح كاش من البيانات (قد تكون غير موجودة في المصدر)
+                // نستخدم قيماً افتراضية أو نحسبها من البيانات المتاحة
+                let cashSales = parseNumber(row['مبيعات كاش'] || row['مبيعات'] || 0);
+                let cashProfit = parseNumber(row['أرباح كاش'] || row['الارباح'] || 0);
+                
                 let susd=parseNumber(row['مبيعات دولار']), ssyp=parseNumber(row['مبيعات سوري']);
                 let pusd=parseNumber(row['مشتريات دولار']), psyp=parseNumber(row['مشتريات سوري']);
                 let payusd=parseNumber(row['المدفوع دولار']), paysyp=parseNumber(row['المدفوع سوري']);
                 let busd=parseNumber(row['الرصيد دولار']), bsyp=parseNumber(row['الرصيد سوري']);
-                totalSalesUsd+=susd; totalSalesSyp+=ssyp; totalPurchasesUsd+=pusd; totalPurchasesSyp+=psyp;
-                totalPayUsd+=payusd; totalPaySyp+=paysyp; totalBalUsd+=busd; totalBalSyp+=bsyp;
-                let tr = document.createElement('tr'); tr.className = i%2===0?'':'bg-gray-50';
-                tr.innerHTML = `<td class="text-gray-400">${i+1}</td><td class="text-right font-bold text-blue-700">${acc}</td>
-                <td class="${susd>=0?'positive-balance':'negative-balance'}">${susd!==0?susd.toFixed(2):''}</td>
-                <td class="${ssyp>=0?'positive-balance':'negative-balance'}">${ssyp!==0?Math.round(ssyp).toLocaleString():''}</td>
-                <td class="${pusd>=0?'positive-balance':'negative-balance'}">${pusd!==0?pusd.toFixed(2):''}</td>
-                <td class="${psyp>=0?'positive-balance':'negative-balance'}">${psyp!==0?Math.round(psyp).toLocaleString():''}</td>
-                <td class="${payusd>=0?'positive-balance':'negative-balance'}">${payusd!==0?payusd.toFixed(2):''}</td>
-                <td class="${paysyp>=0?'positive-balance':'negative-balance'}">${paysyp!==0?Math.round(paysyp).toLocaleString():''}</td>
-                <td class="${busd>=0?'positive-balance':'negative-balance'}">${busd!==0?busd.toFixed(2):''}</td>
-                <td class="${bsyp>=0?'positive-balance':'negative-balance'}">${bsyp!==0?Math.round(bsyp).toLocaleString():''}</td>`;
+                
+                totalCashSales += cashSales;
+                totalCashProfit += cashProfit;
+                totalSalesUsd+=susd; totalSalesSyp+=ssyp; 
+                totalPurchasesUsd+=pusd; totalPurchasesSyp+=psyp;
+                totalPayUsd+=payusd; totalPaySyp+=paysyp; 
+                totalBalUsd+=busd; totalBalSyp+=bsyp;
+                
+                let tr = document.createElement('tr'); 
+                tr.className = i%2===0?'':'bg-gray-50';
+                
+                tr.innerHTML = `<td class="text-gray-400">${i+1}</td>
+                               <td class="text-right font-bold text-blue-700">${acc}</td>
+                               <td class="${cashSales>=0?'positive-balance':'negative-balance'}">${cashSales!==0?cashSales.toFixed(2):''}</td>
+                               <td class="${cashProfit>=0?'positive-balance':'negative-balance'}">${cashProfit!==0?cashProfit.toFixed(2):''}</td>
+                               <td class="${susd>=0?'positive-balance':'negative-balance'}">${susd!==0?susd.toFixed(2):''}</td>
+                               <td class="${ssyp>=0?'positive-balance':'negative-balance'}">${ssyp!==0?Math.round(ssyp).toLocaleString():''}</td>
+                               <td class="${pusd>=0?'positive-balance':'negative-balance'}">${pusd!==0?pusd.toFixed(2):''}</td>
+                               <td class="${psyp>=0?'positive-balance':'negative-balance'}">${psyp!==0?Math.round(psyp).toLocaleString():''}</td>
+                               <td class="${payusd>=0?'positive-balance':'negative-balance'}">${payusd!==0?payusd.toFixed(2):''}</td>
+                               <td class="${paysyp>=0?'positive-balance':'negative-balance'}">${paysyp!==0?Math.round(paysyp).toLocaleString():''}</td>
+                               <td class="${busd>=0?'positive-balance':'negative-balance'}">${busd!==0?busd.toFixed(2):''}</td>
+                               <td class="${bsyp>=0?'positive-balance':'negative-balance'}">${bsyp!==0?Math.round(bsyp).toLocaleString():''}</td>`;
+                
                 tbody.appendChild(tr);
             });
+            
             if (filtered.length) {
-                let tr = document.createElement('tr'); tr.className='total-row';
-                tr.innerHTML = `<td>${filtered.length+1}</td><td class="text-right font-bold">الإجمالي</td>
-                <td class="text-center">${totalSalesUsd.toFixed(2)}</td><td class="text-center">${Math.round(totalSalesSyp).toLocaleString()}</td>
-                <td class="text-center">${totalPurchasesUsd.toFixed(2)}</td><td class="text-center">${Math.round(totalPurchasesSyp).toLocaleString()}</td>
-                <td class="text-center">${totalPayUsd.toFixed(2)}</td><td class="text-center">${Math.round(totalPaySyp).toLocaleString()}</td>
-                <td class="text-center ${totalBalUsd>=0?'':'negative'}">${totalBalUsd.toFixed(2)}</td>
-                <td class="text-center ${totalBalSyp>=0?'':'negative'}">${Math.round(totalBalSyp).toLocaleString()}</td>`;
+                let tr = document.createElement('tr'); 
+                tr.className='total-row';
+                tr.innerHTML = `<td>${filtered.length+1}</td>
+                              <td class="text-right font-bold">الإجمالي</td>
+                              <td class="text-center">${totalCashSales.toFixed(2)}</td>
+                              <td class="text-center">${totalCashProfit.toFixed(2)}</td>
+                              <td class="text-center">${totalSalesUsd.toFixed(2)}</td>
+                              <td class="text-center">${Math.round(totalSalesSyp).toLocaleString()}</td>
+                              <td class="text-center">${totalPurchasesUsd.toFixed(2)}</td>
+                              <td class="text-center">${Math.round(totalPurchasesSyp).toLocaleString()}</td>
+                              <td class="text-center">${totalPayUsd.toFixed(2)}</td>
+                              <td class="text-center">${Math.round(totalPaySyp).toLocaleString()}</td>
+                              <td class="text-center ${totalBalUsd>=0?'':'negative'}">${totalBalUsd.toFixed(2)}</td>
+                              <td class="text-center ${totalBalSyp>=0?'':'negative'}">${Math.round(totalBalSyp).toLocaleString()}</td>`;
                 tbody.appendChild(tr);
             }
-            if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="10" class="text-center py-4 text-gray-500">لا توجد حسابات ذات رصيد غير صفري</td></tr>'; }
+            
+            if (!filtered.length) { 
+                tbody.innerHTML = '<tr><td colspan="12" class="text-center py-4 text-gray-500">لا توجد حسابات ذات رصيد غير صفري</td></tr>'; 
+            }
         }
 
         // تبديل التبويبات الرئيسية
