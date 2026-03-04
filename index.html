@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Accounting1</title>
+    <title>Accounting</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -43,6 +43,27 @@
             padding: 10px 6px; font-weight: 700;
             font-size: 0.8rem;
             border-bottom: 2px solid #1d4ed8;
+        }
+
+        /* تثبيت الصف الأخير في جدول الكاش فقط عندما لا يكون هناك بحث */
+        .cash-table tbody tr:last-child.cash-last-row-frozen {
+            position: sticky;
+            bottom: 0;
+            z-index: 15;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+            color: white !important;
+            font-weight: 800 !important;
+            border-top: 3px solid #1d4ed8;
+            box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .cash-table tbody tr:last-child.cash-last-row-frozen td {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+            color: white !important;
+            font-weight: 800 !important;
+            font-size: 0.9rem !important;
+            padding: 10px 4px !important;
+            border-bottom: none;
         }
 
         td { padding: 6px 4px; border-bottom: 1px solid #f1f5f9; font-size: 0.75rem; }
@@ -246,24 +267,6 @@
         /* تنسيق خاص لجدول الكاش */
         .cash-table th {
             background-color: #059669;
-        }
-        
-        /* إزالة تثبيت الصف الأخير من جدول الكاش */
-        .cash-table tbody tr:last-child {
-            position: static;
-            background: transparent;
-            color: inherit;
-            font-weight: normal;
-            border-top: none;
-            box-shadow: none;
-        }
-        
-        .cash-table tbody tr:last-child td {
-            background: transparent !important;
-            color: inherit !important;
-            font-weight: normal !important;
-            font-size: inherit !important;
-            padding: 6px 4px !important;
         }
     </style>
 </head>
@@ -1022,7 +1025,7 @@
             }
         }
 
-        // عرض جدول الكاش مع الفلاتر - يظهر صف الإجمالي فقط عند وجود بحث
+        // عرض جدول الكاش مع الفلاتر
         function renderCashTable() {
             const tbody = document.getElementById('cashTableBody');
             
@@ -1078,7 +1081,7 @@
                 return;
             }
             
-            // متغيرات للإجمالي (سنستخدمها فقط إذا كان هناك بحث نشط)
+            // متغيرات للإجمالي
             let totalQty = 0;
             let totalPurchase = 0;
             let totalSell = 0;
@@ -1096,13 +1099,11 @@
                 let sellNum = parseNumber(row['مبيع']);
                 let profitNum = parseNumber(row['الأرباح']);
                 
-                // جمع الإجمالي فقط إذا كان هناك بحث نشط
-                if (isSearchActive) {
-                    totalQty += qtyNum;
-                    totalPurchase += purchaseNum;
-                    totalSell += sellNum;
-                    totalProfit += profitNum;
-                }
+                // جمع الإجمالي
+                totalQty += qtyNum;
+                totalPurchase += purchaseNum;
+                totalSell += sellNum;
+                totalProfit += profitNum;
                 
                 let tr = document.createElement('tr');
                 tr.className = i % 2 === 0 ? '' : 'bg-gray-50';
@@ -1126,7 +1127,7 @@
                 tbody.appendChild(tr);
             }
             
-            // إضافة صف الإجمالي فقط إذا كان هناك بحث نشط
+            // إذا كان هناك بحث نشط، نضيف صف الإجمالي
             if (isSearchActive) {
                 let totalRow = document.createElement('tr');
                 totalRow.className = 'total-row';
@@ -1143,6 +1144,12 @@
                                      <td class="text-center">${totalProfitStr}</td>`;
                 
                 tbody.appendChild(totalRow);
+            } else {
+                // إذا لم يكن هناك بحث نشط، نضيف كلاس التجميد للصف الأخير
+                const lastRow = tbody.lastChild;
+                if (lastRow) {
+                    lastRow.classList.add('cash-last-row-frozen');
+                }
             }
         }
 
