@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>النظام المحاسبي · النسخة الكاملة</title>
+    <title>اAccounting</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -723,7 +723,7 @@
                             });
                         }),
                     
-                    // بيانات الافتراضية (الرابط الجديد)
+                    // بيانات الافتراضية (الرابط الجديد) - تم التعديل هنا
                     fetch(DEFAULT_CSV_URL + '&t=' + timestamp)
                         .then(res => res.text())
                         .then(text => {
@@ -747,12 +747,14 @@
                                             let delivery = row['التسليم'] || row['E'] || '';
                                             let statement = row['البيان'] || row['F'] || '';
                                             let priceSyp = row['السعر سوري'] || row['G'] || '';
-                                            let totalSyp = row['الاجمالي سوري'] || row['H'] || '';
+                                            let totalSyp = row['الإجمالي سوري'] || row['H'] || '';
                                             let priceUsd = row['السعر دولار'] || row['I'] || '';
-                                            let totalUsd = row['الاجمالي دولار'] || row['J'] || '';
+                                            let totalUsd = row['الإجمالي دولار'] || row['J'] || '';
                                             
                                             if (date === 'التاريخ' || date === 'A') continue;
-                                            if (!date && !customer) continue;
+                                            
+                                            // إزالة الشرط !date && !customer للسماح بظهور الصفوف الفارغة أو صفوف الإجمالي
+                                            // نسمح بكل الصفوف حتى لو كانت فارغة لأن الصف الأخير قد يكون إجمالي
                                             
                                             defaultData.push({
                                                 'التاريخ': date,
