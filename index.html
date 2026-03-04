@@ -938,7 +938,7 @@
                     console.log('Auto sync started at:', new Date().toLocaleTimeString());
                     fetchAllData(true);
                 }
-            }, 15000); // 15 ثانية
+            }, 5000); // 5 ثواني
         }
 
         // دوال مساعدة
@@ -1463,6 +1463,10 @@
                 let priceUsdNum = parseNumber(row['السعر دولار']);
                 let totalUsdNum = parseNumber(row['الإجمالي دولار']);
                 
+                // التحقق مما إذا كان الصف فارغاً (جميع الأعمدة المهمة فارغة)
+                const isRowEmpty = !date && !customer && !material && !qtyNum && !delivery && !statement;
+                if (isRowEmpty) continue; // تخطي الصف الفارغ
+                
                 // جمع الإجمالي
                 totalQty += qtyNum;
                 totalPriceSyp += priceSypNum;
@@ -1913,4 +1917,3 @@
     </script>
 </body>
 </html>
-
