@@ -577,6 +577,33 @@
         let currentFocusIndex = -1, currentSuggestItems = [];
         let isRefreshing = false;
 
+        // متغيرات لحفظ حالة الفلاتر الحالية لمنع فقدانها
+        let currentStatementFilters = {
+            account: '',
+            dateFrom: '',
+            dateTo: '',
+            type: '',
+            item: '',
+            description: ''
+        };
+        
+        let currentCashFilters = {
+            dateFrom: '',
+            dateTo: '',
+            company: '',
+            customer: '',
+            number: ''
+        };
+        
+        let currentDefaultFilters = {
+            dateFrom: '',
+            dateTo: '',
+            customer: '',
+            material: '',
+            delivery: '',
+            statement: ''
+        };
+
         const statementColumns = [
             {id:'index',label:'#'}, {id:'date',label:'التاريخ'}, {id:'type',label:'النوع'},
             {id:'description',label:'البيان'}, {id:'account',label:'الحساب'}, {id:'qty',label:'الكمية'},
@@ -586,13 +613,19 @@
         ];
 
         async function fetchAllData(showSyncIndicator = false) {
-            if (isRefreshing) return;
+            if (isRefreshing) {
+                console.log('Sync already in progress, skipping...');
+                return;
+            }
             
             try {
                 isRefreshing = true;
                 if (showSyncIndicator) document.getElementById('syncIndicator').style.display = 'block';
                 
                 const timestamp = Date.now();
+                
+                // حفظ حالة الفلاتر الحالية قبل التحديث
+                saveCurrentFilters();
                 
                 // جلب جميع البيانات بشكل متوازي مع معالجة الأخطاء لكل طلب على حدة
                 const results = await Promise.allSettled([
@@ -723,7 +756,7 @@
                             });
                         }),
                     
-                    // بيانات الافتراضية (الرابط الجديد) - تم التعديل هنا
+                    // بيانات الافتراضية (الرابط الجديد)
                     fetch(DEFAULT_CSV_URL + '&t=' + timestamp)
                         .then(res => res.text())
                         .then(text => {
@@ -752,9 +785,6 @@
                                             let totalUsd = row['الإجمالي دولار'] || row['J'] || '';
                                             
                                             if (date === 'التاريخ' || date === 'A') continue;
-                                            
-                                            // إزالة الشرط !date && !customer للسماح بظهور الصفوف الفارغة أو صفوف الإجمالي
-                                            // نسمح بكل الصفوف حتى لو كانت فارغة لأن الصف الأخير قد يكون إجمالي
                                             
                                             defaultData.push({
                                                 'التاريخ': date,
@@ -787,21 +817,8 @@
 
                 lastUpdateTime = new Date();
                 
-                // تحديث العرض حسب التبويب الحالي
-                if (currentMainTab === 'statement') {
-                    renderStatement();
-                    setupStatementDropdowns();
-                } else if (currentMainTab === 'trialBalance') {
-                    renderTrialBalance();
-                } else if (currentMainTab === 'balances') {
-                    renderBalances();
-                } else if (currentMainTab === 'cash') {
-                    renderCashTable();
-                    setupCashDropdowns();
-                } else if (currentMainTab === 'default') {
-                    renderDefaultTable();
-                    setupDefaultDropdowns();
-                }
+                // استعادة حالة الفلاتر وإعادة العرض
+                restoreFilters();
                 
                 document.getElementById('loader').classList.add('hidden');
                 
@@ -810,8 +827,107 @@
             } finally {
                 isRefreshing = false;
                 if (showSyncIndicator) {
-                    setTimeout(() => document.getElementById('syncIndicator').style.display = 'none', 2000);
+                    setTimeout(() => document.getElementById('syncIndicator').style.display = 'none', 1000);
                 }
+            }
+        }
+
+        // دالة لحفظ الفلاتر الحالية
+        function saveCurrentFilters() {
+            // حفظ فلاتر كشف الحساب
+            currentStatementFilters.account = document.getElementById('searchStatementAccount')?.value || '';
+            currentStatementFilters.dateFrom = document.getElementById('searchStatementDateFrom')?.value || '';
+            currentStatementFilters.dateTo = document.getElementById('searchStatementDateTo')?.value || '';
+            currentStatementFilters.type = document.getElementById('searchStatementType')?.value || '';
+            currentStatementFilters.item = document.getElementById('searchStatementItem')?.value || '';
+            currentStatementFilters.description = document.getElementById('searchStatementDescription')?.value || '';
+            
+            // حفظ فلاتر الكاش
+            currentCashFilters.dateFrom = document.getElementById('searchCashDateFrom')?.value || '';
+            currentCashFilters.dateTo = document.getElementById('searchCashDateTo')?.value || '';
+            currentCashFilters.company = document.getElementById('searchCashCompany')?.value || '';
+            currentCashFilters.customer = document.getElementById('searchCashCustomer')?.value || '';
+            currentCashFilters.number = document.getElementById('searchCashNumber')?.value || '';
+            
+            // حفظ فلاتر الافتراضية
+            currentDefaultFilters.dateFrom = document.getElementById('searchDefaultDateFrom')?.value || '';
+            currentDefaultFilters.dateTo = document.getElementById('searchDefaultDateTo')?.value || '';
+            currentDefaultFilters.customer = document.getElementById('searchDefaultCustomer')?.value || '';
+            currentDefaultFilters.material = document.getElementById('searchDefaultMaterial')?.value || '';
+            currentDefaultFilters.delivery = document.getElementById('searchDefaultDelivery')?.value || '';
+            currentDefaultFilters.statement = document.getElementById('searchDefaultStatement')?.value || '';
+        }
+
+        // دالة لاستعادة الفلاتر المحفوظة
+        function restoreFilters() {
+            // استعادة فلاتر كشف الحساب
+            if (document.getElementById('searchStatementAccount')) {
+                document.getElementById('searchStatementAccount').value = currentStatementFilters.account;
+            }
+            if (document.getElementById('searchStatementDateFrom')) {
+                document.getElementById('searchStatementDateFrom').value = currentStatementFilters.dateFrom;
+            }
+            if (document.getElementById('searchStatementDateTo')) {
+                document.getElementById('searchStatementDateTo').value = currentStatementFilters.dateTo;
+            }
+            if (document.getElementById('searchStatementType')) {
+                document.getElementById('searchStatementType').value = currentStatementFilters.type;
+            }
+            if (document.getElementById('searchStatementItem')) {
+                document.getElementById('searchStatementItem').value = currentStatementFilters.item;
+            }
+            if (document.getElementById('searchStatementDescription')) {
+                document.getElementById('searchStatementDescription').value = currentStatementFilters.description;
+            }
+            
+            // استعادة فلاتر الكاش
+            if (document.getElementById('searchCashDateFrom')) {
+                document.getElementById('searchCashDateFrom').value = currentCashFilters.dateFrom;
+            }
+            if (document.getElementById('searchCashDateTo')) {
+                document.getElementById('searchCashDateTo').value = currentCashFilters.dateTo;
+            }
+            if (document.getElementById('searchCashCompany')) {
+                document.getElementById('searchCashCompany').value = currentCashFilters.company;
+            }
+            if (document.getElementById('searchCashCustomer')) {
+                document.getElementById('searchCashCustomer').value = currentCashFilters.customer;
+            }
+            if (document.getElementById('searchCashNumber')) {
+                document.getElementById('searchCashNumber').value = currentCashFilters.number;
+            }
+            
+            // استعادة فلاتر الافتراضية
+            if (document.getElementById('searchDefaultDateFrom')) {
+                document.getElementById('searchDefaultDateFrom').value = currentDefaultFilters.dateFrom;
+            }
+            if (document.getElementById('searchDefaultDateTo')) {
+                document.getElementById('searchDefaultDateTo').value = currentDefaultFilters.dateTo;
+            }
+            if (document.getElementById('searchDefaultCustomer')) {
+                document.getElementById('searchDefaultCustomer').value = currentDefaultFilters.customer;
+            }
+            if (document.getElementById('searchDefaultMaterial')) {
+                document.getElementById('searchDefaultMaterial').value = currentDefaultFilters.material;
+            }
+            if (document.getElementById('searchDefaultDelivery')) {
+                document.getElementById('searchDefaultDelivery').value = currentDefaultFilters.delivery;
+            }
+            if (document.getElementById('searchDefaultStatement')) {
+                document.getElementById('searchDefaultStatement').value = currentDefaultFilters.statement;
+            }
+            
+            // تحديث العرض حسب التبويب الحالي
+            if (currentMainTab === 'statement') {
+                renderStatement();
+            } else if (currentMainTab === 'trialBalance') {
+                renderTrialBalance();
+            } else if (currentMainTab === 'balances') {
+                renderBalances();
+            } else if (currentMainTab === 'cash') {
+                renderCashTable();
+            } else if (currentMainTab === 'default') {
+                renderDefaultTable();
             }
         }
 
@@ -819,9 +935,10 @@
             if (syncInterval) clearInterval(syncInterval); 
             syncInterval = setInterval(() => {
                 if (!isRefreshing) {
+                    console.log('Auto sync started at:', new Date().toLocaleTimeString());
                     fetchAllData(true);
                 }
-            }, 60000); // 60 ثانية
+            }, 15000); // 15 ثانية
         }
 
         // دوال مساعدة
