@@ -624,9 +624,6 @@
                 
                 const timestamp = Date.now();
                 
-                // حفظ حالة الفلاتر الحالية قبل التحديث
-                saveCurrentFilters();
-                
                 // جلب جميع البيانات بشكل متوازي مع معالجة الأخطاء لكل طلب على حدة
                 const results = await Promise.allSettled([
                     // بيانات اليومية
@@ -817,8 +814,8 @@
 
                 lastUpdateTime = new Date();
                 
-                // استعادة حالة الفلاتر وإعادة العرض
-                restoreFilters();
+                // إعادة عرض البيانات الحالية بناءً على التبويب المفتوح
+                refreshCurrentTab();
                 
                 document.getElementById('loader').classList.add('hidden');
                 
@@ -832,92 +829,8 @@
             }
         }
 
-        // دالة لحفظ الفلاتر الحالية
-        function saveCurrentFilters() {
-            // حفظ فلاتر كشف الحساب
-            currentStatementFilters.account = document.getElementById('searchStatementAccount')?.value || '';
-            currentStatementFilters.dateFrom = document.getElementById('searchStatementDateFrom')?.value || '';
-            currentStatementFilters.dateTo = document.getElementById('searchStatementDateTo')?.value || '';
-            currentStatementFilters.type = document.getElementById('searchStatementType')?.value || '';
-            currentStatementFilters.item = document.getElementById('searchStatementItem')?.value || '';
-            currentStatementFilters.description = document.getElementById('searchStatementDescription')?.value || '';
-            
-            // حفظ فلاتر الكاش
-            currentCashFilters.dateFrom = document.getElementById('searchCashDateFrom')?.value || '';
-            currentCashFilters.dateTo = document.getElementById('searchCashDateTo')?.value || '';
-            currentCashFilters.company = document.getElementById('searchCashCompany')?.value || '';
-            currentCashFilters.customer = document.getElementById('searchCashCustomer')?.value || '';
-            currentCashFilters.number = document.getElementById('searchCashNumber')?.value || '';
-            
-            // حفظ فلاتر الافتراضية
-            currentDefaultFilters.dateFrom = document.getElementById('searchDefaultDateFrom')?.value || '';
-            currentDefaultFilters.dateTo = document.getElementById('searchDefaultDateTo')?.value || '';
-            currentDefaultFilters.customer = document.getElementById('searchDefaultCustomer')?.value || '';
-            currentDefaultFilters.material = document.getElementById('searchDefaultMaterial')?.value || '';
-            currentDefaultFilters.delivery = document.getElementById('searchDefaultDelivery')?.value || '';
-            currentDefaultFilters.statement = document.getElementById('searchDefaultStatement')?.value || '';
-        }
-
-        // دالة لاستعادة الفلاتر المحفوظة
-        function restoreFilters() {
-            // استعادة فلاتر كشف الحساب
-            if (document.getElementById('searchStatementAccount')) {
-                document.getElementById('searchStatementAccount').value = currentStatementFilters.account;
-            }
-            if (document.getElementById('searchStatementDateFrom')) {
-                document.getElementById('searchStatementDateFrom').value = currentStatementFilters.dateFrom;
-            }
-            if (document.getElementById('searchStatementDateTo')) {
-                document.getElementById('searchStatementDateTo').value = currentStatementFilters.dateTo;
-            }
-            if (document.getElementById('searchStatementType')) {
-                document.getElementById('searchStatementType').value = currentStatementFilters.type;
-            }
-            if (document.getElementById('searchStatementItem')) {
-                document.getElementById('searchStatementItem').value = currentStatementFilters.item;
-            }
-            if (document.getElementById('searchStatementDescription')) {
-                document.getElementById('searchStatementDescription').value = currentStatementFilters.description;
-            }
-            
-            // استعادة فلاتر الكاش
-            if (document.getElementById('searchCashDateFrom')) {
-                document.getElementById('searchCashDateFrom').value = currentCashFilters.dateFrom;
-            }
-            if (document.getElementById('searchCashDateTo')) {
-                document.getElementById('searchCashDateTo').value = currentCashFilters.dateTo;
-            }
-            if (document.getElementById('searchCashCompany')) {
-                document.getElementById('searchCashCompany').value = currentCashFilters.company;
-            }
-            if (document.getElementById('searchCashCustomer')) {
-                document.getElementById('searchCashCustomer').value = currentCashFilters.customer;
-            }
-            if (document.getElementById('searchCashNumber')) {
-                document.getElementById('searchCashNumber').value = currentCashFilters.number;
-            }
-            
-            // استعادة فلاتر الافتراضية
-            if (document.getElementById('searchDefaultDateFrom')) {
-                document.getElementById('searchDefaultDateFrom').value = currentDefaultFilters.dateFrom;
-            }
-            if (document.getElementById('searchDefaultDateTo')) {
-                document.getElementById('searchDefaultDateTo').value = currentDefaultFilters.dateTo;
-            }
-            if (document.getElementById('searchDefaultCustomer')) {
-                document.getElementById('searchDefaultCustomer').value = currentDefaultFilters.customer;
-            }
-            if (document.getElementById('searchDefaultMaterial')) {
-                document.getElementById('searchDefaultMaterial').value = currentDefaultFilters.material;
-            }
-            if (document.getElementById('searchDefaultDelivery')) {
-                document.getElementById('searchDefaultDelivery').value = currentDefaultFilters.delivery;
-            }
-            if (document.getElementById('searchDefaultStatement')) {
-                document.getElementById('searchDefaultStatement').value = currentDefaultFilters.statement;
-            }
-            
-            // تحديث العرض حسب التبويب الحالي
+        // دالة جديدة لتحديث التبويب الحالي فقط بدون تغيير الفلاتر
+        function refreshCurrentTab() {
             if (currentMainTab === 'statement') {
                 renderStatement();
             } else if (currentMainTab === 'trialBalance') {
