@@ -663,15 +663,22 @@
         const CASH_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS2QXsIxQchkIgs6bY9lHOXqyLUBklNAx8-R1ej04yTxAiBWCIhMxA4rHFxVmfOi1y2AzZPOmhvigpZ/pub?gid=489150929&single=true&output=csv';
         const DEFAULT_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS2QXsIxQchkIgs6bY9lHOXqyLUBklNAx8-R1ej04yTxAiBWCIhMxA4rHFxVmfOi1y2AzZPOmhvigpZ/pub?gid=743652672&single=true&output=csv';
 
+        // ==================== نظام المزامنة المحسن ====================
+        
         // بيانات عامة
         let allSalesData = [], allPurchasesData = [], allJournalData = [];
         let allTrialBalanceData = [], allBalancesData = [], allCashData = [];
         let allDefaultData = [];
         let currentMainTab = 'trialBalance';
-        let lastUpdateTime = null, syncInterval;
-        let currentFocusIndex = -1, currentSuggestItems = [];
+        
+        // نظام المزامنة
         let isRefreshing = false;
-
+        let lastSuccessfulUpdate = 0;
+        let pendingUpdate = null;
+        let updateTimer = null;
+        let dataVersion = 0;
+        let displayedVersion = 0;
+        
         // متغيرات لحفظ حالة الفلاتر الحالية
         let currentStatementFilters = {
             account: '',
@@ -699,106 +706,7 @@
             statement: ''
         };
 
-        async function fetchAllData(showSyncIndicator = false) {
-            if (isRefreshing) {
-                console.log('Sync already in progress, skipping...');
-                return;
-            }
-            
-            try {
-                isRefreshing = true;
-                if (showSyncIndicator) document.getElementById('syncIndicator').style.display = 'block';
-                
-                const timestamp = Date.now();
-                
-                const results = await Promise.allSettled([
-                    fetch(JOURNAL_CSV_URL + '&t=' + timestamp).then(res => res.text()).then(text => new Promise((resolve) => { Papa.parse(text, { header: true, skipEmptyLines: true, complete: (res) => { allJournalData = res.data.filter(r => r['التاريخ']); resolve(); } }); })),
-                    fetch(SALES_CSV_URL + '&t=' + timestamp).then(res => res.text()).then(text => new Promise((resolve) => { Papa.parse(text, { header: true, skipEmptyLines: true, complete: (res) => { allSalesData = res.data.filter(r => r['التاريخ']); resolve(); } }); })),
-                    fetch(PURCHASES_CSV_URL + '&t=' + timestamp).then(res => res.text()).then(text => new Promise((resolve) => { Papa.parse(text, { header: true, skipEmptyLines: true, complete: (res) => { allPurchasesData = res.data.filter(r => r['التاريخ']); resolve(); } }); })),
-                    fetch(TRIAL_BALANCE_CSV_URL + '&t=' + timestamp).then(res => res.text()).then(text => new Promise((resolve) => { Papa.parse(text, { header: true, skipEmptyLines: false, complete: (res) => { allTrialBalanceData = res.data; resolve(); } }); })),
-                    fetch(BALANCES_CSV_URL + '&t=' + timestamp).then(res => res.text()).then(text => new Promise((resolve) => { Papa.parse(text, { header: true, skipEmptyLines: true, complete: (res) => { allBalancesData = res.data.filter(r => r['الحساب']); resolve(); } }); })),
-                    fetch(CASH_CSV_URL + '&t=' + timestamp).then(res => res.text()).then(text => new Promise((resolve) => { Papa.parse(text, { header: true, skipEmptyLines: false, complete: (res) => { 
-                        let rawData = res.data;
-                        let cashData = [];
-                        for (let i = 0; i < rawData.length; i++) {
-                            const row = rawData[i];
-                            if (!row || Object.keys(row).length === 0) continue;
-                            let date = row['التاريخ'] || row['A'] || '';
-                            let company = row['الشركة'] || row['B'] || '';
-                            let customer = row['العميل'] || row['C'] || '';
-                            let number = row['الرقم'] || row['D'] || '';
-                            let qty = row['الكمية'] || row['E'] || '';
-                            let purchase = row['شراء'] || row['F'] || '';
-                            let sell = row['مبيع'] || row['G'] || '';
-                            let profit = row['الأرباح'] || row['H'] || '';
-                            if (date === 'التاريخ' || date === 'A') continue;
-                            if (!date && !company && !customer) continue;
-                            cashData.push({ 'التاريخ': date, 'الشركة': company, 'العميل': customer, 'الرقم': number, 'الكمية': qty, 'شراء': purchase, 'مبيع': sell, 'الأرباح': profit });
-                        }
-                        allCashData = cashData;
-                        resolve();
-                    } }); })),
-                    fetch(DEFAULT_CSV_URL + '&t=' + timestamp).then(res => res.text()).then(text => new Promise((resolve) => { Papa.parse(text, { header: true, skipEmptyLines: false, complete: (res) => { 
-                        let rawData = res.data;
-                        let defaultData = [];
-                        for (let i = 0; i < rawData.length; i++) {
-                            const row = rawData[i];
-                            if (!row || Object.keys(row).length === 0) continue;
-                            let date = row['التاريخ'] || row['A'] || '';
-                            let customer = row['العميل'] || row['B'] || '';
-                            let material = row['المادة'] || row['C'] || '';
-                            let qty = row['الكمية'] || row['D'] || '';
-                            let delivery = row['التسليم'] || row['E'] || '';
-                            let statement = row['البيان'] || row['F'] || '';
-                            let priceSyp = row['السعر سوري'] || row['G'] || '';
-                            let totalSyp = row['الإجمالي سوري'] || row['H'] || '';
-                            let priceUsd = row['السعر دولار'] || row['I'] || '';
-                            let totalUsd = row['الإجمالي دولار'] || row['J'] || '';
-                            if (date === 'التاريخ' || date === 'A') continue;
-                            defaultData.push({ 'التاريخ': date, 'العميل': customer, 'المادة': material, 'الكمية': qty, 'التسليم': delivery, 'البيان': statement, 'السعر سوري': priceSyp, 'الإجمالي سوري': totalSyp, 'السعر دولار': priceUsd, 'الإجمالي دولار': totalUsd });
-                        }
-                        allDefaultData = defaultData;
-                        resolve();
-                    } }); }))
-                ]);
-                
-                lastUpdateTime = new Date();
-                refreshCurrentTab();
-                document.getElementById('loader').classList.add('hidden');
-                
-            } catch (e) { 
-                console.warn('Error in fetchAllData:', e); 
-            } finally {
-                isRefreshing = false;
-                if (showSyncIndicator) {
-                    setTimeout(() => document.getElementById('syncIndicator').style.display = 'none', 1000);
-                }
-            }
-        }
-
-        function refreshCurrentTab() {
-            if (currentMainTab === 'statement') {
-                renderStatement();
-            } else if (currentMainTab === 'trialBalance') {
-                renderTrialBalance();
-            } else if (currentMainTab === 'balances') {
-                renderBalances();
-            } else if (currentMainTab === 'cash') {
-                renderCashTable();
-            } else if (currentMainTab === 'default') {
-                renderDefaultTable();
-            }
-        }
-
-        function startAutoSync() { 
-            if (syncInterval) clearInterval(syncInterval); 
-            syncInterval = setInterval(() => {
-                if (!isRefreshing) {
-                    fetchAllData(true);
-                }
-            }, 5000);
-        }
-
+        // ==================== دوال مساعدة ====================
         function parseNumber(v) { 
             if (!v || v === '' || v === 'FALSE') return 0; 
             const cleaned = String(v).replace(/[^\d.-]/g, ''); 
@@ -840,70 +748,280 @@
             return {usd: 0, syp: 0}; 
         }
 
+        // ==================== نظام المزامنة الجديد ====================
+        
+        // دالة لجلب البيانات مع التحقق من الإصدار
+        async function fetchDataWithVersion(url, parser) {
+            try {
+                const timestamp = Date.now();
+                const response = await fetch(url + '&t=' + timestamp);
+                const text = await response.text();
+                
+                return new Promise((resolve) => {
+                    parser(text, (result) => {
+                        resolve(result);
+                    });
+                });
+            } catch (error) {
+                console.warn('Error fetching:', url, error);
+                return null;
+            }
+        }
+
+        // دالة التحديث الرئيسية
+        async function refreshData(showIndicator = false) {
+            // إذا كان هناك تحديث جارٍ، نسجل طلب تحديث pending
+            if (isRefreshing) {
+                pendingUpdate = true;
+                return;
+            }
+
+            try {
+                isRefreshing = true;
+                if (showIndicator) {
+                    document.getElementById('syncIndicator').style.display = 'block';
+                }
+
+                const newVersion = Date.now();
+                
+                // جلب جميع البيانات بشكل متوازي
+                const results = await Promise.all([
+                    // اليومية
+                    fetchDataWithVersion(JOURNAL_CSV_URL, (text, done) => {
+                        Papa.parse(text, { header: true, skipEmptyLines: true, complete: (res) => { done(res.data.filter(r => r['التاريخ'])); } });
+                    }),
+                    
+                    // المبيعات
+                    fetchDataWithVersion(SALES_CSV_URL, (text, done) => {
+                        Papa.parse(text, { header: true, skipEmptyLines: true, complete: (res) => { done(res.data.filter(r => r['التاريخ'])); } });
+                    }),
+                    
+                    // المشتريات
+                    fetchDataWithVersion(PURCHASES_CSV_URL, (text, done) => {
+                        Papa.parse(text, { header: true, skipEmptyLines: true, complete: (res) => { done(res.data.filter(r => r['التاريخ'])); } });
+                    }),
+                    
+                    // ميزان المراجعة
+                    fetchDataWithVersion(TRIAL_BALANCE_CSV_URL, (text, done) => {
+                        Papa.parse(text, { header: true, skipEmptyLines: false, complete: (res) => { done(res.data); } });
+                    }),
+                    
+                    // الأرصدة
+                    fetchDataWithVersion(BALANCES_CSV_URL, (text, done) => {
+                        Papa.parse(text, { header: true, skipEmptyLines: true, complete: (res) => { done(res.data.filter(r => r['الحساب'])); } });
+                    }),
+                    
+                    // الكاش
+                    fetchDataWithVersion(CASH_CSV_URL, (text, done) => {
+                        Papa.parse(text, { header: true, skipEmptyLines: false, complete: (res) => { 
+                            let rawData = res.data;
+                            let cashData = [];
+                            for (let i = 0; i < rawData.length; i++) {
+                                const row = rawData[i];
+                                if (!row || Object.keys(row).length === 0) continue;
+                                let date = row['التاريخ'] || row['A'] || '';
+                                let company = row['الشركة'] || row['B'] || '';
+                                let customer = row['العميل'] || row['C'] || '';
+                                let number = row['الرقم'] || row['D'] || '';
+                                let qty = row['الكمية'] || row['E'] || '';
+                                let purchase = row['شراء'] || row['F'] || '';
+                                let sell = row['مبيع'] || row['G'] || '';
+                                let profit = row['الأرباح'] || row['H'] || '';
+                                if (date === 'التاريخ' || date === 'A') continue;
+                                if (!date && !company && !customer) continue;
+                                cashData.push({ 'التاريخ': date, 'الشركة': company, 'العميل': customer, 'الرقم': number, 'الكمية': qty, 'شراء': purchase, 'مبيع': sell, 'الأرباح': profit });
+                            }
+                            done(cashData);
+                        } });
+                    }),
+                    
+                    // الافتراضية
+                    fetchDataWithVersion(DEFAULT_CSV_URL, (text, done) => {
+                        Papa.parse(text, { header: true, skipEmptyLines: false, complete: (res) => { 
+                            let rawData = res.data;
+                            let defaultData = [];
+                            for (let i = 0; i < rawData.length; i++) {
+                                const row = rawData[i];
+                                if (!row || Object.keys(row).length === 0) continue;
+                                let date = row['التاريخ'] || row['A'] || '';
+                                let customer = row['العميل'] || row['B'] || '';
+                                let material = row['المادة'] || row['C'] || '';
+                                let qty = row['الكمية'] || row['D'] || '';
+                                let delivery = row['التسليم'] || row['E'] || '';
+                                let statement = row['البيان'] || row['F'] || '';
+                                let priceSyp = row['السعر سوري'] || row['G'] || '';
+                                let totalSyp = row['الإجمالي سوري'] || row['H'] || '';
+                                let priceUsd = row['السعر دولار'] || row['I'] || '';
+                                let totalUsd = row['الإجمالي دولار'] || row['J'] || '';
+                                if (date === 'التاريخ' || date === 'A') continue;
+                                defaultData.push({ 'التاريخ': date, 'العميل': customer, 'المادة': material, 'الكمية': qty, 'التسليم': delivery, 'البيان': statement, 'السعر سوري': priceSyp, 'الإجمالي سوري': totalSyp, 'السعر دولار': priceUsd, 'الإجمالي دولار': totalUsd });
+                            }
+                            done(defaultData);
+                        } });
+                    })
+                ]);
+
+                // التحقق من صحة البيانات وتحديثها
+                if (results[0]) allJournalData = results[0];
+                if (results[1]) allSalesData = results[1];
+                if (results[2]) allPurchasesData = results[2];
+                if (results[3]) allTrialBalanceData = results[3];
+                if (results[4]) allBalancesData = results[4];
+                if (results[5]) allCashData = results[5];
+                if (results[6]) allDefaultData = results[6];
+
+                // تحديث الإصدار
+                dataVersion = newVersion;
+                lastSuccessfulUpdate = Date.now();
+
+                // إعادة رسم التبويب الحالي فقط إذا كان الإصدار المعروض قديماً
+                if (displayedVersion !== dataVersion) {
+                    refreshCurrentTab();
+                    displayedVersion = dataVersion;
+                }
+
+            } catch (error) {
+                console.warn('Error in refreshData:', error);
+            } finally {
+                isRefreshing = false;
+                if (showIndicator) {
+                    setTimeout(() => {
+                        document.getElementById('syncIndicator').style.display = 'none';
+                    }, 500);
+                }
+
+                // إذا كان هناك تحديث pending، نبدأ تحديثاً جديداً
+                if (pendingUpdate) {
+                    pendingUpdate = false;
+                    setTimeout(() => refreshData(showIndicator), 100);
+                }
+            }
+        }
+
+        // دالة التحديث الدوري المحسنة
+        function startAutoSync() {
+            // نوقف أي مؤقت سابق
+            if (updateTimer) {
+                clearInterval(updateTimer);
+            }
+            
+            // نبدأ مؤقت جديد مع تأخير أطول (10 ثواني)
+            updateTimer = setInterval(() => {
+                // نتحقق من آخر تحديث ناجح
+                const timeSinceLastUpdate = Date.now() - lastSuccessfulUpdate;
+                
+                // إذا كان آخر تحديث منذ أكثر من 8 ثواني وليس هناك تحديث جارٍ
+                if (timeSinceLastUpdate > 8000 && !isRefreshing) {
+                    refreshData(true);
+                }
+            }, 10000); // 10 ثواني
+        }
+
+        function refreshCurrentTab() {
+            if (currentMainTab === 'statement') {
+                renderStatement();
+            } else if (currentMainTab === 'trialBalance') {
+                renderTrialBalance();
+            } else if (currentMainTab === 'balances') {
+                renderBalances();
+            } else if (currentMainTab === 'cash') {
+                renderCashTable();
+            } else if (currentMainTab === 'default') {
+                renderDefaultTable();
+            }
+        }
+
         // عرض كشف الحساب
         function renderStatement() {
-            const accName = document.getElementById('searchStatementAccount').value.trim();
+            const accName = document.getElementById('searchStatementAccount')?.value.trim() || '';
             const tbody = document.getElementById('statementTableBody');
             const header = document.getElementById('statementHeader');
             const summary = document.getElementById('statementSummary');
-            const from = parseHtmlDate(document.getElementById('searchStatementDateFrom').value);
-            const to = parseHtmlDate(document.getElementById('searchStatementDateTo').value);
-            const typeFilter = document.getElementById('searchStatementType').value.toLowerCase();
-            const itemFilter = document.getElementById('searchStatementItem').value.toLowerCase();
-            const descFilter = document.getElementById('searchStatementDescription').value.toLowerCase();
+            const from = parseHtmlDate(document.getElementById('searchStatementDateFrom')?.value);
+            const to = parseHtmlDate(document.getElementById('searchStatementDateTo')?.value);
+            const typeFilter = document.getElementById('searchStatementType')?.value.toLowerCase() || '';
+            const itemFilter = document.getElementById('searchStatementItem')?.value.toLowerCase() || '';
+            const descFilter = document.getElementById('searchStatementDescription')?.value.toLowerCase() || '';
 
             if (!tbody) return;
             
             let data = [], totalSalesUsd=0,totalPurchasesUsd=0,totalReceiptsUsd=0,totalPaymentsUsd=0;
             let totalSalesSyp=0,totalPurchasesSyp=0,totalReceiptsSyp=0,totalPaymentsSyp=0;
 
-            allSalesData.filter(r=> (accName?String(r['العميل']||'').trim()===accName:true) && isDateInRange(r['التاريخ'],from,to) && (!itemFilter||(r['الصنف']||'').toLowerCase().includes(itemFilter)) ).forEach(r=>{
-                let usd=parseNumber(r['السعر دولار']), syp=parseNumber(r['السعر سوري']);
-                totalSalesUsd+=usd; totalSalesSyp+=syp;
-                data.push({date:r['التاريخ'], type:'مبيعات', typeClass:'type-sales', description:r['الصنف']||'', account:r['العميل']||'', qty:parseNumber(r['الكمية']), price_usd:usd, price_syp:syp, debit_usd:usd, debit_syp:syp, credit_usd:0, credit_syp:0, rawDate:parseDate(r['التاريخ'])});
-            });
-            allPurchasesData.filter(r=> (accName?String(r['المورد']||'').trim()===accName:true) && isDateInRange(r['التاريخ'],from,to) && (!itemFilter||(r['الصنف']||'').toLowerCase().includes(itemFilter)) ).forEach(r=>{
-                let usd=parseNumber(r['السعر دولار']), syp=parseNumber(r['السعر سوري']);
-                totalPurchasesUsd+=usd; totalPurchasesSyp+=syp;
-                data.push({date:r['التاريخ'], type:'مشتريات', typeClass:'type-purchase', description:r['الصنف']||'', account:r['المورد']||'', qty:parseNumber(r['الكمية']), price_usd:usd, price_syp:syp, debit_usd:0, debit_syp:0, credit_usd:usd, credit_syp:syp, rawDate:parseDate(r['التاريخ'])});
-            });
-            allJournalData.filter(r=> {
-                if (!accName) return isDateInRange(r['التاريخ'],from,to) && (!descFilter||(r['البيان']||'').toLowerCase().includes(descFilter));
-                return (String(r['دائن']||'').trim()===accName || String(r['مدين']||'').trim()===accName) && isDateInRange(r['التاريخ'],from,to) && (!descFilter||(r['البيان']||'').toLowerCase().includes(descFilter));
-            }).forEach(r=>{
-                let usd=parseNumber(r['دولار']), syp=parseNumber(r['سوري']), cred=String(r['دائن']||'').trim(), deb=String(r['مدين']||'').trim();
-                if (cred===accName || (!accName && cred)) {
-                    totalReceiptsUsd+=usd; totalReceiptsSyp+=syp;
-                    if (!typeFilter || typeFilter==='' || typeFilter==='مقبوضات'||typeFilter==='يومية')
-                        data.push({date:r['التاريخ'], type:'مقبوضات', typeClass:'type-receipt', description:r['البيان']||'', account:cred, qty:1, price_usd:usd, price_syp:syp, debit_usd:0, debit_syp:0, credit_usd:usd, credit_syp:syp, rawDate:parseDate(r['التاريخ'])});
-                } else if (deb===accName || (!accName && deb)) {
-                    totalPaymentsUsd+=usd; totalPaymentsSyp+=syp;
-                    if (!typeFilter || typeFilter==='' || typeFilter==='مدفوعات'||typeFilter==='يومية')
-                        data.push({date:r['التاريخ'], type:'مدفوعات', typeClass:'type-payment', description:r['البيان']||'', account:deb, qty:1, price_usd:usd, price_syp:syp, debit_usd:usd, debit_syp:syp, credit_usd:0, credit_syp:0, rawDate:parseDate(r['التاريخ'])});
-                }
-            });
+            // استخدام forEach مع التحقق من وجود البيانات
+            if (allSalesData && allSalesData.length) {
+                allSalesData.filter(r=> (accName?String(r['العميل']||'').trim()===accName:true) && isDateInRange(r['التاريخ'],from,to) && (!itemFilter||(r['الصنف']||'').toLowerCase().includes(itemFilter)) ).forEach(r=>{
+                    let usd=parseNumber(r['السعر دولار']), syp=parseNumber(r['السعر سوري']);
+                    totalSalesUsd+=usd; totalSalesSyp+=syp;
+                    data.push({date:r['التاريخ'], type:'مبيعات', typeClass:'type-sales', description:r['الصنف']||'', account:r['العميل']||'', qty:parseNumber(r['الكمية']), price_usd:usd, price_syp:syp, debit_usd:usd, debit_syp:syp, credit_usd:0, credit_syp:0, rawDate:parseDate(r['التاريخ'])});
+                });
+            }
+            
+            if (allPurchasesData && allPurchasesData.length) {
+                allPurchasesData.filter(r=> (accName?String(r['المورد']||'').trim()===accName:true) && isDateInRange(r['التاريخ'],from,to) && (!itemFilter||(r['الصنف']||'').toLowerCase().includes(itemFilter)) ).forEach(r=>{
+                    let usd=parseNumber(r['السعر دولار']), syp=parseNumber(r['السعر سوري']);
+                    totalPurchasesUsd+=usd; totalPurchasesSyp+=syp;
+                    data.push({date:r['التاريخ'], type:'مشتريات', typeClass:'type-purchase', description:r['الصنف']||'', account:r['المورد']||'', qty:parseNumber(r['الكمية']), price_usd:usd, price_syp:syp, debit_usd:0, debit_syp:0, credit_usd:usd, credit_syp:syp, rawDate:parseDate(r['التاريخ'])});
+                });
+            }
+            
+            if (allJournalData && allJournalData.length) {
+                allJournalData.filter(r=> {
+                    if (!accName) return isDateInRange(r['التاريخ'],from,to) && (!descFilter||(r['البيان']||'').toLowerCase().includes(descFilter));
+                    return (String(r['دائن']||'').trim()===accName || String(r['مدين']||'').trim()===accName) && isDateInRange(r['التاريخ'],from,to) && (!descFilter||(r['البيان']||'').toLowerCase().includes(descFilter));
+                }).forEach(r=>{
+                    let usd=parseNumber(r['دولار']), syp=parseNumber(r['سوري']), cred=String(r['دائن']||'').trim(), deb=String(r['مدين']||'').trim();
+                    if (cred===accName || (!accName && cred)) {
+                        totalReceiptsUsd+=usd; totalReceiptsSyp+=syp;
+                        if (!typeFilter || typeFilter==='' || typeFilter==='مقبوضات'||typeFilter==='يومية')
+                            data.push({date:r['التاريخ'], type:'مقبوضات', typeClass:'type-receipt', description:r['البيان']||'', account:cred, qty:1, price_usd:usd, price_syp:syp, debit_usd:0, debit_syp:0, credit_usd:usd, credit_syp:syp, rawDate:parseDate(r['التاريخ'])});
+                    } else if (deb===accName || (!accName && deb)) {
+                        totalPaymentsUsd+=usd; totalPaymentsSyp+=syp;
+                        if (!typeFilter || typeFilter==='' || typeFilter==='مدفوعات'||typeFilter==='يومية')
+                            data.push({date:r['التاريخ'], type:'مدفوعات', typeClass:'type-payment', description:r['البيان']||'', account:deb, qty:1, price_usd:usd, price_syp:syp, debit_usd:usd, debit_syp:syp, credit_usd:0, credit_syp:0, rawDate:parseDate(r['التاريخ'])});
+                    }
+                });
+            }
+            
             data.sort((a,b)=>a.rawDate-b.rawDate);
             tbody.innerHTML = '';
+            
             if (accName) {
-                header.style.display='block'; summary.style.display='grid';
-                document.getElementById('statementAccountName').textContent = `كشف حساب: ${accName}`;
+                if (header) header.style.display='block';
+                if (summary) summary.style.display='grid';
+                const nameEl = document.getElementById('statementAccountName');
+                if (nameEl) nameEl.textContent = `كشف حساب: ${accName}`;
+                
                 let op = getOpeningBalance(accName);
                 let finalUsd = op.usd + totalSalesUsd - totalPurchasesUsd + totalPaymentsUsd - totalReceiptsUsd;
                 let finalSyp = op.syp + totalSalesSyp - totalPurchasesSyp + totalPaymentsSyp - totalReceiptsSyp;
-                document.getElementById('summarySalesTotalUsd').textContent = totalSalesUsd.toFixed(2)+' $';
-                document.getElementById('summaryPurchasesTotalUsd').textContent = totalPurchasesUsd.toFixed(2)+' $';
-                document.getElementById('summaryReceiptsTotalUsd').textContent = totalReceiptsUsd.toFixed(2)+' $';
-                document.getElementById('summaryPaymentsTotalUsd').textContent = totalPaymentsUsd.toFixed(2)+' $';
+                
+                const salesEl = document.getElementById('summarySalesTotalUsd');
+                if (salesEl) salesEl.textContent = totalSalesUsd.toFixed(2)+' $';
+                
+                const purchasesEl = document.getElementById('summaryPurchasesTotalUsd');
+                if (purchasesEl) purchasesEl.textContent = totalPurchasesUsd.toFixed(2)+' $';
+                
+                const receiptsEl = document.getElementById('summaryReceiptsTotalUsd');
+                if (receiptsEl) receiptsEl.textContent = totalReceiptsUsd.toFixed(2)+' $';
+                
+                const paymentsEl = document.getElementById('summaryPaymentsTotalUsd');
+                if (paymentsEl) paymentsEl.textContent = totalPaymentsUsd.toFixed(2)+' $';
+                
                 let balElem = document.getElementById('summaryCurrentBalanceUsd');
-                balElem.textContent = finalUsd.toFixed(2)+' $';
-                balElem.className = 'summary-value ' + (finalUsd>=0?'summary-positive':'summary-negative');
+                if (balElem) {
+                    balElem.textContent = finalUsd.toFixed(2)+' $';
+                    balElem.className = 'summary-value ' + (finalUsd>=0?'summary-positive':'summary-negative');
+                }
 
                 let runUsd=op.usd, runSyp=op.syp;
+                
                 if (op.usd!==0 || op.syp!==0) {
                     let opRow = document.createElement('tr'); opRow.className='bg-white font-bold';
                     opRow.innerHTML = `<td>-</td><td class="text-[11px]">رصيد افتتاحي</td><td><span class="statement-type type-journal">افتتاحي</span></td><td>الرصيد الافتتاحي</td><td class="font-bold" style="color: #0078D4;">${accName}</td><td>-</td><td class="usd-amount">${op.usd!==0?op.usd.toFixed(2):''}</td><td class="syp-amount">${op.syp!==0?Math.round(op.syp).toLocaleString():''}</td><td class="${op.usd>=0?'debit-cell':''}">${op.usd>=0?op.usd.toFixed(2):''}</td><td class="${op.usd<0?'credit-cell':''}">${op.usd<0?Math.abs(op.usd).toFixed(2):''}</td><td class="font-bold ${runUsd>=0?'positive':'negative'}">${runUsd.toFixed(2)}</td><td class="${op.syp>=0?'debit-cell':''}">${op.syp>=0?Math.round(op.syp).toLocaleString():''}</td><td class="${op.syp<0?'credit-cell':''}">${op.syp<0?Math.round(Math.abs(op.syp)).toLocaleString():''}</td><td class="font-bold ${runSyp>=0?'positive':'negative'}">${Math.round(runSyp).toLocaleString()}</td>`;
                     tbody.appendChild(opRow);
                 }
+                
                 data.forEach((item,i)=>{
                     runUsd += item.debit_usd - item.credit_usd;
                     runSyp += item.debit_syp - item.credit_syp;
@@ -911,16 +1029,20 @@
                     tr.innerHTML = `<td class="text-gray-400">${i+1}</td><td class="text-[11px]">${item.date}</td><td><span class="statement-type ${item.typeClass}">${item.type}</span></td><td>${item.description}</td><td class="font-bold" style="color: #0078D4;">${item.account}</td><td class="text-center">${item.type==='مقبوضات'||item.type==='مدفوعات'?'-':item.qty}</td><td class="usd-amount text-center">${item.type==='مقبوضات'||item.type==='مدفوعات'?'-':item.price_usd.toFixed(2)}</td><td class="syp-amount text-center">${item.type==='مقبوضات'||item.type==='مدفوعات'?'-':Math.round(item.price_syp).toLocaleString()}</td><td class="debit-cell">${item.debit_usd>0?item.debit_usd.toFixed(2):''}</td><td class="credit-cell">${item.credit_usd>0?item.credit_usd.toFixed(2):''}</td><td class="font-bold ${runUsd>=0?'positive':'negative'}">${runUsd.toFixed(2)}</td><td class="debit-cell">${item.debit_syp>0?Math.round(item.debit_syp).toLocaleString():''}</td><td class="credit-cell">${item.credit_syp>0?Math.round(item.credit_syp).toLocaleString():''}</td><td class="font-bold ${runSyp>=0?'positive':'negative'}">${Math.round(runSyp).toLocaleString()}</td>`;
                     tbody.appendChild(tr);
                 });
+                
                 let totalRow = document.createElement('tr'); totalRow.className='bg-white font-bold';
                 totalRow.innerHTML = `<td colspan="8" class="text-right">الإجمالي</td><td class="debit-cell">${totalSalesUsd.toFixed(2)}</td><td class="credit-cell">${totalPurchasesUsd.toFixed(2)}</td><td class="font-bold ${finalUsd>=0?'positive':'negative'}">${finalUsd.toFixed(2)}</td><td class="debit-cell">${Math.round(totalSalesSyp).toLocaleString()}</td><td class="credit-cell">${Math.round(totalPurchasesSyp).toLocaleString()}</td><td class="font-bold ${finalSyp>=0?'positive':'negative'}">${Math.round(finalSyp).toLocaleString()}</td>`;
                 tbody.appendChild(totalRow);
             } else {
-                header.style.display='none'; summary.style.display='none';
+                if (header) header.style.display='none';
+                if (summary) summary.style.display='none';
+                
                 data.forEach((item,i)=>{
                     let tr = document.createElement('tr');
                     tr.innerHTML = `<td class="text-gray-400">${i+1}</td><td>${item.date}</td><td><span class="statement-type ${item.typeClass}">${item.type}</span></td><td>${item.description}</td><td class="font-bold" style="color: #0078D4;">${item.account}</td><td class="text-center">${item.type==='مقبوضات'||item.type==='مدفوعات'?'-':item.qty}</td><td class="usd-amount text-center">${item.type==='مقبوضات'||item.type==='مدفوعات'?'-':item.price_usd.toFixed(2)}</td><td class="syp-amount text-center">${item.type==='مقبوضات'||item.type==='مدفوعات'?'-':Math.round(item.price_syp).toLocaleString()}</td><td class="debit-cell">${item.debit_usd>0?item.debit_usd.toFixed(2):''}</td><td class="credit-cell">${item.credit_usd>0?item.credit_usd.toFixed(2):''}</td><td class="text-gray-500">-</td><td class="debit-cell">${item.debit_syp>0?Math.round(item.debit_syp).toLocaleString():''}</td><td class="credit-cell">${item.credit_syp>0?Math.round(item.credit_syp).toLocaleString():''}</td><td class="text-gray-500">-</td>`;
                     tbody.appendChild(tr);
                 });
+                
                 if (data.length===0) tbody.innerHTML = '<tr><td colspan="14" class="text-center py-4 text-gray-500"><i class="fas fa-search mr-2"></i> لا توجد حركات</td></tr>';
             }
         }
@@ -1034,7 +1156,7 @@
             if (!tbody) return;
             
             tbody.innerHTML = '';
-            if (!allBalancesData.length) {
+            if (!allBalancesData || !allBalancesData.length) {
                 tbody.innerHTML = '<tr><td colspan="12" class="text-center py-4 text-gray-500">لا توجد بيانات</td></tr>';
                 return;
             }
@@ -1664,7 +1786,16 @@
 
         // بدء التطبيق
         window.onload = () => {
-            fetchAllData();
+            // إظهار شاشة التحميل
+            document.getElementById('loader').classList.remove('hidden');
+            
+            // تحميل البيانات لأول مرة
+            refreshData(false).then(() => {
+                // إخفاء شاشة التحميل بعد التحميل الأول
+                document.getElementById('loader').classList.add('hidden');
+            });
+            
+            // بدء المزامنة التلقائية
             startAutoSync();
             
             let today = new Date().toISOString().split('T')[0];
