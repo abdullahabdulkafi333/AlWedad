@@ -3,186 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة تحكم</title>
+    <title>شاشة العرض المحاسبية الفورية</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        body {
-            font-family: 'IBM Plex Sans Arabic', sans-serif;
-            background: #f8fafc;
-            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
-            background-size: 20px 20px;
+        body { 
+            font-family: 'Cairo', sans-serif; 
+            background-color: #0f172a; /* خلفية داكنة فخمة */
+            color: #f8fafc;
         }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+        .table-container {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
         }
-        .table-row-hover:hover {
-            background-color: #f1f5f9;
-            transform: scale(1.001);
-            transition: all 0.2s;
+        /* تنسيق قسم (العناوين داخل الجدول) */
+        .category-header {
+            background: linear-gradient(90deg, #1e40af 0%, #1e1b4b 100%);
+            color: #ffffff;
+            font-weight: 900;
+            font-size: 1.1rem;
         }
-        .header-gradient {
-            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        .data-row:hover {
+            background-color: rgba(51, 65, 85, 0.5);
         }
-        /* مخصص للسكرول بار */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .amount-positive { color: #4ade80; font-family: sans-serif; }
+        .amount-negative { color: #f87171; font-family: sans-serif; }
         
-        /* تأثير النبض للتحديث */
-        .live-indicator {
-            width: 8px; height: 8px;
-            background: #10b981;
-            border-radius: 50%;
-            display: inline-block;
-            box-shadow: 0 0 0 rgba(16, 185, 129, 0.4);
-            animation: pulse 2s infinite;
+        /* تأثير النبض للتحديث الفوري */
+        .live-tag {
+            background: #dc2626;
+            animation: blink 1s infinite;
         }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        
+        /* إلغاء السكرول بار الممل */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
     </style>
 </head>
 <body class="p-4 md:p-8">
 
-    <div class="max-w-7xl mx-auto">
-        <div class="header-gradient rounded-2xl p-6 mb-8 text-white flex flex-col md:flex-row justify-between items-center shadow-lg">
-            <div>
-                <div class="flex items-center gap-3">
-                    <div class="bg-blue-500 p-3 rounded-lg shadow-inner">
-                        <i class="fas fa-file-invoice-dollar text-2xl"></i>
-                    </div>
-                    <div>
-                        <h1 class="text-2xl font-bold tracking-tight">نظام ميزان المراجعة المباشر</h1>
-                        <p class="text-blue-100 text-sm opacity-80">مركز البيانات المحاسبي الموحد</p>
-                    </div>
+    <div class="max-w-full mx-auto">
+        <div class="flex justify-between items-center mb-8 bg-slate-800 p-5 rounded-2xl border-b-4 border-blue-600 shadow-2xl">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center shadow-lg shadow-blue-500/50">
+                    <i class="fas fa-bolt text-xl text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-black tracking-wide">ميزان المراجعة <span class="text-blue-400">LIVE</span></h1>
+                    <p class="text-slate-400 text-xs uppercase tracking-widest">نظام المزامنة اللحظية الشامل</p>
                 </div>
             </div>
             
-            <div class="mt-4 md:mt-0 flex flex-col items-end">
-                <div class="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full border border-white/20">
-                    <span class="live-indicator"></span>
-                    <span class="text-sm font-medium" id="sync-status">مزامنة نشطة</span>
+            <div class="flex flex-col items-end">
+                <div class="flex items-center gap-2 px-3 py-1 rounded-md bg-red-950 border border-red-500/30">
+                    <span class="live-tag w-2 h-2 rounded-full"></span>
+                    <span class="text-red-500 text-[10px] font-bold">بث مباشر للبيانات</span>
                 </div>
-                <p class="text-xs mt-2 text-blue-200" id="last-update">آخر تحديث: جاري التحميل...</p>
+                <div id="last-sync" class="text-slate-500 text-[11px] mt-2 font-mono">جاري الربط...</div>
             </div>
         </div>
 
-        <div class="mb-6 flex flex-col md:flex-row gap-4 justify-between">
-            <div class="relative w-full md:w-96">
-                <i class="fas fa-search absolute right-4 top-3 text-gray-400"></i>
-                <input type="text" id="searchInput" placeholder="بحث سريع في الحسابات..." 
-                       class="w-full pr-12 pl-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:outline-none glass-card">
-            </div>
-            <button onclick="fetchData()" class="flex items-center gap-2 bg-white px-5 py-2.5 rounded-xl border border-gray-200 hover:bg-gray-50 transition-all font-semibold shadow-sm">
-                <i class="fas fa-sync-alt text-blue-600"></i>
-                تحديث الآن
-            </button>
-        </div>
-
-        <div class="glass-card rounded-2xl overflow-hidden border border-gray-200">
+        <div class="table-container overflow-hidden shadow-2xl">
             <div class="overflow-x-auto">
-                <table class="w-full text-right" id="mainTable">
-                    <thead class="bg-gray-50 border-b border-gray-200">
-                        <tr id="tableHead" class="text-gray-600 font-bold text-sm">
+                <table class="w-full text-right border-collapse" id="accountingTable">
+                    <thead>
+                        <tr id="tableHead" class="bg-slate-900/50 border-b border-slate-700 text-blue-300">
                             </tr>
                     </thead>
-                    <tbody id="tableBody" class="divide-y divide-gray-100 text-gray-700 text-sm">
+                    <tbody id="tableBody">
                         </tbody>
                 </table>
-                
-                <div id="loading" class="py-20 text-center">
-                    <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
-                    <p class="mt-4 text-gray-500 font-medium">جاري معالجة البيانات المالية...</p>
-                </div>
             </div>
         </div>
-        
-        <footer class="mt-6 text-center text-gray-400 text-xs">
-            <p>جميع البيانات تُسحب مباشرة من Google Sheets بمجرد حفظها هناك</p>
-        </footer>
     </div>
 
     <script>
-        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS2QXsIxQchkIgs6bY9lHOXqyLUBklNAx8-R1ej04yTxAiBWCIhMxA4rHFxVmfOi1y2AzZPOmhvigpZ/pub?gid=0&single=true&output=csv';
-        let allData = [];
+        const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS2QXsIxQchkIgs6bY9lHOXqyLUBklNAx8-R1ej04yTxAiBWCIhMxA4rHFxVmfOi1y2AzZPOmhvigpZ/pub?gid=0&single=true&output=csv';
 
-        async function fetchData() {
-            document.getElementById('sync-status').innerText = 'جاري التحديث...';
+        async function streamData() {
             try {
-                // إضافة متغير عشوائي لكسر الكاش وضمان الحصول على آخر تعديل
-                const response = await fetch(`${CSV_URL}&cachebust=${Date.now()}`);
-                const csvData = await response.text();
-                
-                // معالجة CSV مع مراعاة الفواصل داخل الحقول (بسيط)
-                const rows = csvData.split('\n').map(row => {
-                    return row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.replace(/"/g, '').trim());
-                });
-
-                allData = rows.filter(r => r.length > 1);
-                renderTable(allData);
-                
-                const now = new Date();
-                document.getElementById('last-update').innerText = 'آخر مزامنة: ' + now.toLocaleTimeString('ar-SA');
-                document.getElementById('sync-status').innerText = 'مزامنة نشطة';
-            } catch (error) {
-                console.error('Error:', error);
-                document.getElementById('sync-status').innerText = 'خطأ في الاتصال';
+                // استخدام timestamp لضمان جلب بيانات جديدة تماماً في كل ثانية
+                const response = await fetch(`${SHEET_CSV_URL}&nocache=${new Date().getTime()}`);
+                const rawData = await response.text();
+                renderLiveTable(rawData);
+                document.getElementById('last-sync').innerText = "آخر تحديث: " + new Date().toLocaleTimeString();
+            } catch (err) {
+                console.error("Connection Error:", err);
             }
         }
 
-        function renderTable(rows) {
+        function renderLiveTable(csvText) {
+            const rows = csvText.split('\n').map(r => r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/"/g, '').trim()));
             const head = document.getElementById('tableHead');
             const body = document.getElementById('tableBody');
-            const loading = document.getElementById('loading');
-            
-            loading.style.display = 'none';
-            head.innerHTML = '';
-            body.innerHTML = '';
 
-            rows.forEach((row, index) => {
-                const tr = document.createElement('tr');
-                if (index === 0) {
-                    row.forEach(col => {
-                        const th = document.createElement('th');
-                        th.className = "px-6 py-4 whitespace-nowrap";
-                        th.innerText = col;
-                        head.appendChild(th);
-                    });
+            if (rows.length === 0) return;
+
+            // 1. معالجة الرأس (الأعمدة)
+            if (head.children.length === 0) {
+                rows[0].forEach(col => {
+                    const th = document.createElement('th');
+                    th.className = "px-6 py-4 text-sm font-bold border-b border-slate-700";
+                    th.innerText = col;
+                    head.appendChild(th);
+                });
+            }
+
+            // 2. معالجة البيانات والأقسام
+            let newBodyContent = '';
+            for (let i = 1; i < rows.length; i++) {
+                const row = rows[i];
+                if (row.length < 2 || row.every(cell => cell === "")) continue;
+
+                // فحص هل السطر يمثل "عنوان قسم"
+                // المعيار: الخانات من الثانية إلى الأخيرة فارغة
+                const isSectionHeader = row.slice(1).every(cell => cell === "" || cell === "0" || cell === "0.00");
+
+                if (isSectionHeader) {
+                    newBodyContent += `
+                        <tr class="category-header">
+                            <td colspan="${row.length}" class="px-6 py-3 shadow-inner">
+                                <i class="fas fa-layer-group ml-2 text-blue-400"></i> ${row[0]}
+                            </td>
+                        </tr>`;
                 } else {
-                    tr.className = "table-row-hover transition-colors";
-                    row.forEach((col, i) => {
-                        const td = document.createElement('td');
-                        td.className = "px-6 py-4 whitespace-nowrap border-b border-gray-50";
+                    let rowHtml = `<tr class="data-row border-b border-slate-800/50 transition-all">`;
+                    row.forEach((cell, index) => {
+                        let displayCell = cell;
+                        let cellClass = "px-6 py-3 text-sm";
                         
-                        // تمييز الأرقام وتنسيقها
-                        if (!isNaN(col) && col !== '') {
-                            td.innerHTML = `<span class="font-mono font-bold ${parseFloat(col) < 0 ? 'text-red-500' : 'text-blue-700'}">${parseFloat(col).toLocaleString()}</span>`;
-                        } else {
-                            td.innerText = col;
+                        if (index === 0) {
+                            cellClass += " font-bold text-slate-200";
+                        } else if (!isNaN(cell) && cell !== "") {
+                            const num = parseFloat(cell);
+                            cellClass += num >= 0 ? " amount-positive" : " amount-negative";
+                            displayCell = num.toLocaleString(undefined, {minimumFractionDigits: 2});
                         }
-                        tr.appendChild(td);
+                        
+                        rowHtml += `<td class="${cellClass}">${displayCell}</td>`;
                     });
-                    body.appendChild(tr);
+                    rowHtml += `</tr>`;
+                    newBodyContent += rowHtml;
                 }
-            });
+            }
+            
+            // تحديث الـ DOM فقط إذا تغيرت البيانات (اختياري لتحسين الأداء)
+            body.innerHTML = newBodyContent;
         }
 
-        // البحث الفوري
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            const term = e.target.value.toLowerCase();
-            const filtered = allData.filter((row, index) => {
-                if (index === 0) return true;
-                return row.some(cell => cell.toLowerCase().includes(term));
-            });
-            renderTable(filtered);
-        });
-
-        // تشغيل الجلب التلقائي كل 15 ثانية
-        fetchData();
-        setInterval(fetchData, 15000);
+        // التحديث كل ثانية واحدة (Live Stream)
+        setInterval(streamData, 1000);
+        streamData(); // تشغيل فوري عند الفتح
     </script>
 </body>
 </html>
