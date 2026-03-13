@@ -3,167 +3,152 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة ميزان المراجعة المباشرة</title>
+    <title>ميزان المراجعة - عرض مباشر</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         body { 
             font-family: 'Alexandria', sans-serif; 
-            background-color: #f8fafc; /* خلفية رمادية فاتحة جداً */
-            color: #1e293b;
+            background-color: #f8fafc; 
+            padding: 10px;
+            font-size: 11.5px; /* خط أصغر ليناسب الحجم الجديد */
+            color: #334155;
         }
-        /* تنسيق القسم (الجدول الفرعي) */
-        .section-row {
-            background: linear-gradient(90deg, #e0f2fe 0%, #f1f5f9 100%);
-            border-right: 5px solid #3b82f6; /* تحديد أزرق قوي */
-            color: #0369a1;
-            font-weight: 700;
+        .container-box {
+            max-width: 700px; /* عرض مدمج مثل الورقة */
+            margin: 0 auto;
         }
-        .table-wrapper {
+        .accounting-table {
+            width: 100%;
+            margin-bottom: 12px;
             background: white;
+            border: 1px solid #cbd5e1;
+        }
+        .accounting-table th {
+            background-color: #f1f5f9; /* أزرق رمادي فاتح */
+            color: #1e293b;
+            padding: 2px 6px; /* أسطر صغيرة جداً */
+            border: 1px solid #cbd5e1;
+            font-weight: 700;
+            text-align: center;
+        }
+        .accounting-table td {
+            padding: 2px 6px; /* أسطر صغيرة جداً */
             border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            vertical-align: middle;
         }
-        th {
-            background-color: #f1f5f9;
-            color: #475569;
+        .total-row {
+            background-color: #f8fafc;
+            font-weight: 700;
+            border-top: 1.5px solid #64748b;
+        }
+        .num-font {
+            font-family: 'Arial', sans-serif;
+            direction: ltr;
+            text-align: center;
             font-weight: 600;
-            font-size: 0.85rem;
-            text-transform: uppercase;
         }
-        .num-cell {
-            font-family: sans-serif; /* لسهولة قراءة الأرقام */
-            font-weight: 500;
+        .header-strip {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #3b82f6;
+            padding-bottom: 5px;
         }
-        /* وميض التحديث */
-        .flash-update {
-            animation: flash 0.8s ease-out;
-        }
-        @keyframes flash {
-            0% { background-color: #dbeafe; }
-            100% { background-color: transparent; }
-        }
+        .negative { color: #dc2626; } /* أحمر للقيم السالبة */
+        .positive { color: #2563eb; } /* أزرق للقيم الموجبة */
     </style>
 </head>
-<body class="p-6">
+<body>
 
-    <div class="max-w-[1500px] mx-auto">
-        <div class="flex justify-between items-center mb-6 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-            <div class="flex items-center gap-3">
-                <div class="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                    <i class="fas fa-file-invoice-dollar text-xl"></i>
-                </div>
-                <h1 class="text-xl font-bold text-slate-800">ميزان المراجعة الذكي</h1>
-            </div>
-            <div class="flex items-center gap-4 text-sm">
-                <div class="flex items-center gap-2">
-                    <span class="relative flex h-3 w-3">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
-                    </span>
-                    <span id="sync-status" class="text-blue-600 font-medium text-xs">اتصال حي</span>
-                </div>
-                <div id="last-time" class="bg-slate-100 px-3 py-1 rounded text-slate-500">--:--:--</div>
+    <div class="container-box">
+        <div class="header-strip">
+            <h1 class="text-sm font-bold">ميزان المراجعة المباشر </h1>
+            <div class="flex items-center gap-2">
+                <span class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
+                <span id="clock" class="text-[10px] text-slate-500">--:--:--</span>
             </div>
         </div>
 
-        <div class="table-wrapper overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full text-right border-collapse" id="mainTable">
-                    <thead>
-                        <tr id="tableHead" class="border-b border-slate-200">
-                            </tr>
-                    </thead>
-                    <tbody id="tableBody">
-                        </tbody>
-                </table>
+        <div id="data-render-area">
             </div>
-        </div>
     </div>
 
     <script>
-        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS2QXsIxQchkIgs6bY9lHOXqyLUBklNAx8-R1ej04yTxAiBWCIhMxA4rHFxVmfOi1y2AzZPOmhvigpZ/pub?gid=0&single=true&output=csv';
-        
-        // قائمة الأقسام التي طلبتها
-        const targetSections = ["الصناديق", "البنوك", "الارصدة", "الايرادات", "المصاريف", "المسحوبات", "قائمة الدخل", "راس المال"];
-        let lastRaw = "";
+        const GOOGLE_SHEET_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS2QXsIxQchkIgs6bY9lHOXqyLUBklNAx8-R1ej04yTxAiBWCIhMxA4rHFxVmfOi1y2AzZPOmhvigpZ/pub?gid=0&single=true&output=csv';
 
-        async function fetchLive() {
+        async function syncData() {
             try {
-                const response = await fetch(`${CSV_URL}&v=${Date.now()}`);
-                const data = await response.text();
-                
-                if (data !== lastRaw) {
-                    lastRaw = data;
-                    render(data);
-                }
-                document.getElementById('last-time').innerText = new Date().toLocaleTimeString('ar-SA');
-            } catch (e) { console.error("Update Error"); }
+                const response = await fetch(`${GOOGLE_SHEET_CSV}&ignoreCache=${Date.now()}`);
+                const text = await response.text();
+                processAndDisplay(text);
+                document.getElementById('clock').innerText = 'تحديث: ' + new Date().toLocaleTimeString('ar-SA');
+            } catch (err) {
+                console.error("Connection failed");
+            }
         }
 
-        function render(csv) {
-            const rows = csv.split('\n').map(r => r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/"/g, '').trim()));
-            const head = document.getElementById('tableHead');
-            const body = document.getElementById('tableBody');
+        function processAndDisplay(csvText) {
+            const rows = csvText.split('\n').map(line => 
+                line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.replace(/"/g, '').trim())
+            );
 
-            head.innerHTML = '';
-            body.innerHTML = '';
+            const container = document.getElementById('data-render-area');
+            container.innerHTML = '';
+            let currentTable = null;
+            let currentBody = null;
 
-            rows.forEach((row, idx) => {
-                if (row.length < 2) return;
+            rows.forEach((row) => {
+                if (row.length < 2 || row.every(c => c === "")) return;
 
-                const tr = document.createElement('tr');
-                
-                // الرأس الأول (أسماء الأعمدة)
-                if (idx === 0) {
-                    row.forEach(h => {
+                // إذا وجدنا كلمة "الحساب" نفتح جدولاً جديداً 
+                if (row.includes("الحساب")) {
+                    currentTable = document.createElement('table');
+                    currentTable.className = 'accounting-table';
+                    
+                    const head = document.createElement('thead');
+                    const hRow = document.createElement('tr');
+                    row.forEach(cell => {
                         const th = document.createElement('th');
-                        th.className = "px-6 py-4 border-l border-slate-100";
-                        th.innerText = h;
-                        head.appendChild(th);
+                        th.innerText = cell;
+                        hRow.appendChild(th);
                     });
-                    return;
-                }
+                    head.appendChild(hRow);
+                    currentTable.appendChild(head);
+                    
+                    currentBody = document.createElement('tbody');
+                    currentTable.appendChild(currentBody);
+                    container.appendChild(currentTable);
+                } else if (currentBody) {
+                    const tr = document.createElement('tr');
+                    
+                    // تمييز أسطر الإجماليات 
+                    if (row.some(c => c.includes("الاجمالي") || c.includes("الصافي") || c.includes("الأجمالي"))) {
+                        tr.className = 'total-row';
+                    }
 
-                // فحص إذا كان السطر هو أحد الأقسام المطلوبة
-                const firstCell = row[0];
-                const isSectionHeader = targetSections.some(s => firstCell.includes(s));
-
-                if (isSectionHeader) {
-                    tr.className = "section-row";
-                    const td = document.createElement('td');
-                    td.setAttribute('colspan', row.length);
-                    td.className = "px-6 py-3 text-base border-b border-blue-100";
-                    td.innerHTML = `<i class="fas fa-folder-open ml-2"></i> ${firstCell}`;
-                    tr.appendChild(td);
-                } else {
-                    tr.className = "data-row border-b border-slate-50 hover:bg-blue-50/30 flash-update";
-                    row.forEach((cell, i) => {
+                    row.forEach((cell, idx) => {
                         const td = document.createElement('td');
-                        td.className = "px-6 py-3 border-l border-slate-50";
-                        
-                        if (!isNaN(cell) && cell !== "" && i !== 0) {
-                            const val = parseFloat(cell);
-                            td.className += " num-cell text-center";
-                            td.innerText = val.toLocaleString(undefined, {minimumFractionDigits: 2});
-                            td.style.color = val < 0 ? '#ef4444' : '#1e40af';
-                        } else {
-                            td.innerText = cell;
-                            if(i === 0) td.className += " font-medium text-slate-700";
+                        if (idx !== 2) { // خانات الأرقام
+                            td.className = 'num-font';
+                            const numVal = cell.replace(/,/g, '');
+                            if (!isNaN(numVal) && numVal !== "") {
+                                if (parseFloat(numVal) < 0) td.classList.add('negative');
+                                else if (parseFloat(numVal) > 0) td.classList.add('positive');
+                            }
                         }
+                        td.innerText = cell || "0.00";
                         tr.appendChild(td);
                     });
+                    currentBody.appendChild(tr);
                 }
-                body.appendChild(tr);
             });
         }
 
-        // تحديث لحظي كل ثانية (أقصى سرعة ممكنة)
-        fetchLive();
-        setInterval(fetchLive, 1000);
+        // تحديث لحظي كل ثانية واحدة
+        syncData();
+        setInterval(syncData, 1000);
     </script>
 </body>
 </html>
