@@ -3,202 +3,186 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام عرض ميزان المراجعة الذكي</title>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>لوحة تحكم</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        :root {
-            --primary-color: #2c3e50;
-            --accent-color: #3498db;
-            --success-color: #27ae60;
-            --bg-color: #f4f7f6;
-            --card-bg: #ffffff;
-        }
-
         body {
-            font-family: 'Tajawal', sans-serif;
-            background-color: var(--bg-color);
-            margin: 0;
-            padding: 20px;
-            color: var(--primary-color);
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
+            background: #f8fafc;
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+            background-size: 20px 20px;
         }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
         }
-
-        /* رأس الصفحة */
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: var(--primary-color);
-            color: white;
-            padding: 20px 30px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
+        .table-row-hover:hover {
+            background-color: #f1f5f9;
+            transform: scale(1.001);
+            transition: all 0.2s;
         }
-
-        .logo h1 { margin: 0; font-size: 24px; }
-        .status { font-size: 14px; display: flex; align-items: center; }
-        .dot {
-            height: 10px; width: 10px; background-color: #2ecc71;
-            border-radius: 50%; display: inline-block; margin-left: 8px;
-            animation: pulse 1.5s infinite;
+        .header-gradient {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
         }
-
-        @keyframes pulse {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7); }
-            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(46, 204, 113, 0); }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
+        /* مخصص للسكرول بار */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        
+        /* تأثير النبض للتحديث */
+        .live-indicator {
+            width: 8px; height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 0 rgba(16, 185, 129, 0.4);
+            animation: pulse 2s infinite;
         }
-
-        /* جدول البيانات */
-        .table-container {
-            background: var(--card-bg);
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-            animation: fadeIn 1s ease;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: right;
-        }
-
-        th {
-            background-color: #f8f9fa;
-            color: var(--primary-color);
-            padding: 15px;
-            font-weight: 700;
-            border-bottom: 2px solid var(--accent-color);
-        }
-
-        td {
-            padding: 12px 15px;
-            border-bottom: 1px solid #eee;
-            transition: background 0.3s;
-        }
-
-        tr:hover td {
-            background-color: #f1f7ff;
-        }
-
-        /* تنسيق الأرقام والمبالغ */
-        .amount {
-            font-family: 'Courier New', Courier, monospace;
-            font-weight: bold;
-            color: var(--success-color);
-        }
-
-        /* رسالة التحميل */
-        #loader {
-            text-align: center;
-            padding: 50px;
-            font-size: 20px;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* استجابة للهواتف */
-        @media (max-width: 768px) {
-            header { flex-direction: column; text-align: center; gap: 10px; }
-            .table-container { overflow-x: auto; }
-        }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
     </style>
 </head>
-<body>
+<body class="p-4 md:p-8">
 
-    <div class="container">
-        <header>
-            <div class="logo">
-                <h1><i class="fas fa-calculator"></i> ميزان المراجعة المحاسبي</h1>
+    <div class="max-w-7xl mx-auto">
+        <div class="header-gradient rounded-2xl p-6 mb-8 text-white flex flex-col md:flex-row justify-between items-center shadow-lg">
+            <div>
+                <div class="flex items-center gap-3">
+                    <div class="bg-blue-500 p-3 rounded-lg shadow-inner">
+                        <i class="fas fa-file-invoice-dollar text-2xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold tracking-tight">نظام ميزان المراجعة المباشر</h1>
+                        <p class="text-blue-100 text-sm opacity-80">مركز البيانات المحاسبي الموحد</p>
+                    </div>
+                </div>
             </div>
-            <div class="status">
-                <span id="last-update">جاري التحديث...</span>
-                <span class="dot"></span>
+            
+            <div class="mt-4 md:mt-0 flex flex-col items-end">
+                <div class="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full border border-white/20">
+                    <span class="live-indicator"></span>
+                    <span class="text-sm font-medium" id="sync-status">مزامنة نشطة</span>
+                </div>
+                <p class="text-xs mt-2 text-blue-200" id="last-update">آخر تحديث: جاري التحميل...</p>
             </div>
-        </header>
-
-        <div class="table-container">
-            <div id="loader">
-                <i class="fas fa-spinner fa-spin"></i> جاري جلب البيانات من Google Sheets...
-            </div>
-            <table id="balance-table" style="display: none;">
-                <thead id="table-head"></thead>
-                <tbody id="table-body"></tbody>
-            </table>
         </div>
+
+        <div class="mb-6 flex flex-col md:flex-row gap-4 justify-between">
+            <div class="relative w-full md:w-96">
+                <i class="fas fa-search absolute right-4 top-3 text-gray-400"></i>
+                <input type="text" id="searchInput" placeholder="بحث سريع في الحسابات..." 
+                       class="w-full pr-12 pl-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:outline-none glass-card">
+            </div>
+            <button onclick="fetchData()" class="flex items-center gap-2 bg-white px-5 py-2.5 rounded-xl border border-gray-200 hover:bg-gray-50 transition-all font-semibold shadow-sm">
+                <i class="fas fa-sync-alt text-blue-600"></i>
+                تحديث الآن
+            </button>
+        </div>
+
+        <div class="glass-card rounded-2xl overflow-hidden border border-gray-200">
+            <div class="overflow-x-auto">
+                <table class="w-full text-right" id="mainTable">
+                    <thead class="bg-gray-50 border-b border-gray-200">
+                        <tr id="tableHead" class="text-gray-600 font-bold text-sm">
+                            </tr>
+                    </thead>
+                    <tbody id="tableBody" class="divide-y divide-gray-100 text-gray-700 text-sm">
+                        </tbody>
+                </table>
+                
+                <div id="loading" class="py-20 text-center">
+                    <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
+                    <p class="mt-4 text-gray-500 font-medium">جاري معالجة البيانات المالية...</p>
+                </div>
+            </div>
+        </div>
+        
+        <footer class="mt-6 text-center text-gray-400 text-xs">
+            <p>جميع البيانات تُسحب مباشرة من Google Sheets بمجرد حفظها هناك</p>
+        </footer>
     </div>
 
     <script>
-        const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS2QXsIxQchkIgs6bY9lHOXqyLUBklNAx8-R1ej04yTxAiBWCIhMxA4rHFxVmfOi1y2AzZPOmhvigpZ/pub?gid=0&single=true&output=csv';
+        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS2QXsIxQchkIgs6bY9lHOXqyLUBklNAx8-R1ej04yTxAiBWCIhMxA4rHFxVmfOi1y2AzZPOmhvigpZ/pub?gid=0&single=true&output=csv';
+        let allData = [];
 
         async function fetchData() {
+            document.getElementById('sync-status').innerText = 'جاري التحديث...';
             try {
-                const response = await fetch(sheetUrl);
-                const data = await response.text();
-                parseCSV(data);
+                // إضافة متغير عشوائي لكسر الكاش وضمان الحصول على آخر تعديل
+                const response = await fetch(`${CSV_URL}&cachebust=${Date.now()}`);
+                const csvData = await response.text();
                 
-                // تحديث وقت المزامنة
+                // معالجة CSV مع مراعاة الفواصل داخل الحقول (بسيط)
+                const rows = csvData.split('\n').map(row => {
+                    return row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.replace(/"/g, '').trim());
+                });
+
+                allData = rows.filter(r => r.length > 1);
+                renderTable(allData);
+                
                 const now = new Date();
-                document.getElementById('last-update').innerText = 'تحديث مباشر: ' + now.toLocaleTimeString('ar-SA');
+                document.getElementById('last-update').innerText = 'آخر مزامنة: ' + now.toLocaleTimeString('ar-SA');
+                document.getElementById('sync-status').innerText = 'مزامنة نشطة';
             } catch (error) {
-                console.error('خطأ في جلب البيانات:', error);
-                document.getElementById('loader').innerHTML = '<i class="fas fa-exclamation-triangle"></i> فشل الاتصال بالبيانات.';
+                console.error('Error:', error);
+                document.getElementById('sync-status').innerText = 'خطأ في الاتصال';
             }
         }
 
-        function parseCSV(csvText) {
-            const rows = csvText.split('\n').map(row => row.split(','));
-            const tableHead = document.getElementById('table-head');
-            const tableBody = document.getElementById('table-body');
-            const loader = document.getElementById('loader');
-            const table = document.getElementById('balance-table');
-
-            // تفريغ الجدول قبل التحديث
-            tableHead.innerHTML = '';
-            tableBody.innerHTML = '';
+        function renderTable(rows) {
+            const head = document.getElementById('tableHead');
+            const body = document.getElementById('tableBody');
+            const loading = document.getElementById('loading');
+            
+            loading.style.display = 'none';
+            head.innerHTML = '';
+            body.innerHTML = '';
 
             rows.forEach((row, index) => {
-                if (row.length < 2) return; // تخطي السطور الفارغة
-
                 const tr = document.createElement('tr');
-                
-                row.forEach(cell => {
-                    const el = index === 0 ? document.createElement('th') : document.createElement('td');
-                    el.textContent = cell.replace(/"/g, ''); // إزالة علامات الاقتباس إن وجدت
-                    
-                    // تمييز الأرقام
-                    if (index !== 0 && !isNaN(el.textContent) && el.textContent !== '') {
-                        el.classList.add('amount');
-                    }
-                    
-                    tr.appendChild(el);
-                });
-
                 if (index === 0) {
-                    tableHead.appendChild(tr);
+                    row.forEach(col => {
+                        const th = document.createElement('th');
+                        th.className = "px-6 py-4 whitespace-nowrap";
+                        th.innerText = col;
+                        head.appendChild(th);
+                    });
                 } else {
-                    tableBody.appendChild(tr);
+                    tr.className = "table-row-hover transition-colors";
+                    row.forEach((col, i) => {
+                        const td = document.createElement('td');
+                        td.className = "px-6 py-4 whitespace-nowrap border-b border-gray-50";
+                        
+                        // تمييز الأرقام وتنسيقها
+                        if (!isNaN(col) && col !== '') {
+                            td.innerHTML = `<span class="font-mono font-bold ${parseFloat(col) < 0 ? 'text-red-500' : 'text-blue-700'}">${parseFloat(col).toLocaleString()}</span>`;
+                        } else {
+                            td.innerText = col;
+                        }
+                        tr.appendChild(td);
+                    });
+                    body.appendChild(tr);
                 }
             });
-
-            loader.style.display = 'none';
-            table.style.display = 'table';
         }
 
-        // التحديث التلقائي كل 30 ثانية
-        fetchData(); 
-        setInterval(fetchData, 30000); 
+        // البحث الفوري
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = allData.filter((row, index) => {
+                if (index === 0) return true;
+                return row.some(cell => cell.toLowerCase().includes(term));
+            });
+            renderTable(filtered);
+        });
+
+        // تشغيل الجلب التلقائي كل 15 ثانية
+        fetchData();
+        setInterval(fetchData, 15000);
     </script>
 </body>
 </html>
