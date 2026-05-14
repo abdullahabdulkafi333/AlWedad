@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>الوداد للتجارة</title>
+    <title>معرض ال.جي - كشف الحساب والأرصدة</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -372,12 +372,14 @@
             sales: { url: `${BASE_URL}1169303046&single=true&output=csv`, gid: '1169303046' },
             purchases: { url: `${BASE_URL}1461133672&single=true&output=csv`, gid: '1461133672' },
             journal: { url: `${BASE_URL}209051289&single=true&output=csv`, gid: '209051289' },
+            balances: { url: `${BASE_URL}1938588271&single=true&output=csv`, gid: '1938588271' },
             opening: { url: `${BASE_URL}107333903&single=true&output=csv`, gid: '107333903' }
         };
 
         let allSalesData = [];
         let allPurchasesData = [];
         let allJournalData = [];
+        let allBalancesData = [];
         let allOpeningBalancesData = [];
         let currentTab = 'statement';
         let syncInterval;
@@ -405,16 +407,18 @@
         async function fetchAllData(showSyncIndicator = false) {
             if (showSyncIndicator) document.getElementById('syncIndicator').style.display = 'block';
             try {
-                const [sales, purchases, journal, opening] = await Promise.all([
+                const [sales, purchases, journal, balances, opening] = await Promise.all([
                     fetchCSV(LINKS.sales.url),
                     fetchCSV(LINKS.purchases.url),
                     fetchCSV(LINKS.journal.url),
+                    fetchCSV(LINKS.balances.url),
                     fetchCSV(LINKS.opening.url)
                 ]);
                 
                 allSalesData = sales.data.filter(r => Object.values(r).some(v => v && v.trim()));
                 allPurchasesData = purchases.data.filter(r => Object.values(r).some(v => v && v.trim()));
                 allJournalData = journal.data.filter(r => Object.values(r).some(v => v && v.trim()));
+                allBalancesData = balances.data.filter(r => Object.values(r).some(v => v && v.trim()));
                 allOpeningBalancesData = opening.data.filter(r => Object.values(r).some(v => v && v.trim()));
                 
                 renderBalances();
@@ -480,78 +484,39 @@
             return row ? parseNumber(row['رصيد افتتاحي سوري'] || row['Opening Balance SYP']) : 0; 
         }
 
-        // عرض الأرصدة بشكل صحيح
+        // عرض الأرصدة - مباشرة من ملف الارصدة
         function renderBalances() {
             let accFilter = document.getElementById('searchBalancesAccount').value.toLowerCase();
             let tbody = document.getElementById('balancesTableBody');
             tbody.innerHTML = '';
             
-            // تجميع بيانات المبيعات لكل حساب
-            let salesMap = new Map();
-            allSalesData.forEach(row => {
-                let account = String(row['العميل'] || '').trim();
-                if(account) {
-                    if(!salesMap.has(account)) {
-                        salesMap.set(account, { usd: 0, syp: 0 });
-                    }
-                    let qty = parseNumber(row['الكمية']);
-                    let priceUsd = parseNumber(row['السعر دولار']);
-                    let priceSyp = parseNumber(row['السعر سوري']);
-                    salesMap.get(account).usd += qty * priceUsd;
-                    salesMap.get(account).syp += qty * priceSyp;
-                }
-            });
-            
-            // تجميع بيانات المشتريات لكل حساب
-            let purchasesMap = new Map();
-            allPurchasesData.forEach(row => {
-                let account = String(row['المورد'] || '').trim();
-                if(account) {
-                    if(!purchasesMap.has(account)) {
-                        purchasesMap.set(account, { usd: 0, syp: 0 });
-                    }
-                    let qty = parseNumber(row['الكمية']);
-                    let priceUsd = parseNumber(row['السعر']);
-                    let discount = parseNumber(row['الحسم']);
-                    let priceAfter = priceUsd - (priceUsd * discount / 100);
-                    purchasesMap.get(account).usd += qty * priceAfter;
-                    // المشتريات ليس لها سعر سوري
-                }
-            });
-            
-            // تجميع جميع الحسابات
-            let allAccounts = new Set([...salesMap.keys(), ...purchasesMap.keys()]);
-            
-            // إضافة الأرصدة الافتتاحية
-            allOpeningBalancesData.forEach(row => {
+            // فلترة البيانات وعرضها مباشرة من allBalancesData
+            let filteredData = allBalancesData.filter(row => {
                 let account = String(row['الحساب'] || '').trim();
-                if(account) {
-                    allAccounts.add(account);
-                }
+                if(!accFilter) return true;
+                return account.toLowerCase().includes(accFilter);
             });
+            
+            if(filteredData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-gray-500">لا توجد بيانات للأرصدة</td></tr>';
+                return;
+            }
             
             let index = 1;
-            for(let account of allAccounts) {
-                if(accFilter && !account.toLowerCase().includes(accFilter)) continue;
+            filteredData.forEach(row => {
+                let account = String(row['الحساب'] || '').trim();
+                if(!account) return;
                 
-                let salesUsd = salesMap.get(account)?.usd || 0;
-                let salesSyp = salesMap.get(account)?.syp || 0;
-                let purchasesUsd = purchasesMap.get(account)?.usd || 0;
-                let purchasesSyp = purchasesMap.get(account)?.syp || 0;
+                // قراءة البيانات مباشرة من ملف الارصدة
+                let salesUsd = parseNumber(row['مبيعات دولار']);
+                let salesSyp = parseNumber(row['مبيعات سوري']);
+                let purchasesUsd = parseNumber(row['مشتريات دولار']);
+                let purchasesSyp = parseNumber(row['مشتريات سوري']);
+                let balanceUsd = parseNumber(row['الرصيد دولار']);
+                let balanceSyp = parseNumber(row['الرصيد سوري']);
                 
-                // إضافة الرصيد الافتتاحي
-                let openingUsd = getOpeningBalance(account);
-                let openingSyp = getOpeningBalanceSyp(account);
-                
-                // حساب الرصيد النهائي: الرصيد الافتتاحي + المبيعات - المشتريات
-                let balanceUsd = openingUsd + salesUsd - purchasesUsd;
-                let balanceSyp = openingSyp + salesSyp - purchasesSyp;
-                
-                // إجمالي المبيعات مع الرصيد الافتتاحي
-                let totalSalesUsd = openingUsd + salesUsd;
-                let totalSalesSyp = openingSyp + salesSyp;
-                
-                if(balanceUsd === 0 && balanceSyp === 0 && salesUsd === 0 && purchasesUsd === 0 && openingUsd === 0) continue;
+                // تخطي الحسابات التي ليس لها رصيد
+                if(balanceUsd === 0 && balanceSyp === 0 && salesUsd === 0 && purchasesUsd === 0) return;
                 
                 let balanceClass = balanceUsd >= 0 ? 'balance-positive' : 'balance-negative';
                 let balanceSypClass = balanceSyp >= 0 ? 'balance-positive' : 'balance-negative';
@@ -560,15 +525,15 @@
                     <tr>
                         <td class="text-gray-400 text-[10px]">${index++}</td>
                         <td class="text-right font-bold text-gray-800">${account}</td>
-                        <td class="text-green-600 font-bold">${totalSalesUsd.toFixed(2)}</td>
-                        <td class="text-green-600 font-bold">${Math.round(totalSalesSyp).toLocaleString()}</td>
+                        <td class="text-green-600 font-bold">${salesUsd.toFixed(2)}</td>
+                        <td class="text-green-600 font-bold">${Math.round(salesSyp).toLocaleString()}</td>
                         <td class="text-red-600 font-bold">${purchasesUsd.toFixed(2)}</td>
                         <td class="text-red-600 font-bold">${Math.round(purchasesSyp).toLocaleString()}</td>
                         <td class="${balanceClass} font-bold">${balanceUsd.toFixed(2)}</td>
                         <td class="${balanceSypClass} font-bold">${Math.round(balanceSyp).toLocaleString()}</td>
                     </tr>
                 `;
-            }
+            });
             
             if(index === 1) {
                 tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-gray-500">لا توجد بيانات للأرصدة</td></tr>';
@@ -910,9 +875,10 @@
                 let val = inp.value.toLowerCase();
                 let accounts = new Set();
                 
-                allSalesData.forEach(r => { let a = String(r['العميل'] || '').trim(); if(a) accounts.add(a); });
-                allPurchasesData.forEach(r => { let a = String(r['المورد'] || '').trim(); if(a) accounts.add(a); });
-                allOpeningBalancesData.forEach(r => { let a = String(r['الحساب'] || '').trim(); if(a) accounts.add(a); });
+                allBalancesData.forEach(row => {
+                    let acc = String(row['الحساب'] || '').trim();
+                    if(acc) accounts.add(acc);
+                });
                 
                 let names = [...accounts].filter(n => n && n.toLowerCase().includes(val)).slice(0, 15);
                 list.innerHTML = '';
