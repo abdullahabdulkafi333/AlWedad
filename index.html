@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>الوداد للتجارة</title>
+    <title>معرض ال.جي - نظام المبيعات والمشتريات</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -113,7 +113,7 @@
             .tab-content.active { display: block !important; }
         }
 
-        #printOptions, #journalPrintOptions, #balancesPrintOptions, #statementPrintOptions {
+        #printOptions {
             display: none;
             position: absolute;
             top: 70px; left: 20px;
@@ -141,55 +141,6 @@
 
         .usd-total { background: #dbeafe; color: #1e40af; }
         .syp-total { background: #dcfce7; color: #166534; }
-        
-        .journal-description {
-            text-align: center !important;
-            padding: 8px 12px !important;
-            font-size: 0.75rem;
-            color: #374151;
-        }
-        
-        .credit-cell { color: #059669 !important; font-weight: 600; }
-        .debit-cell { color: #dc2626 !important; font-weight: 600; }
-        
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-        
-        .title-section { display: flex; align-items: center; gap: 1rem; }
-        .tabs-section { display: flex; gap: 0.5rem; flex-grow: 1; justify-content: center; }
-        .controls-section { display: flex; gap: 0.75rem; align-items: center; }
-        
-        .sync-indicator {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            background: #10b981;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            display: none;
-            z-index: 1000;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2);
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.7; }
-            100% { opacity: 1; }
-        }
-        
-        .balance-usd-positive { color: #059669 !important; font-weight: 700; }
-        .balance-usd-negative { color: #dc2626 !important; font-weight: 700; }
-        .balance-syp-positive { color: #059669 !important; font-weight: 700; }
-        .balance-syp-negative { color: #dc2626 !important; font-weight: 700; }
         
         .statement-header {
             background: #1e3a8a;
@@ -235,9 +186,33 @@
         
         .type-sales { background: #dbeafe; color: #1e40af; }
         .type-purchase { background: #f3e8ff; color: #6b21a8; }
-        .type-journal { background: #fef3c7; color: #92400e; }
         .type-payment { background: #dcfce7; color: #166534; }
         .type-receipt { background: #fee2e2; color: #991b1b; }
+        
+        .credit-cell { color: #059669 !important; font-weight: 600; }
+        .debit-cell { color: #dc2626 !important; font-weight: 600; }
+        
+        .sync-indicator {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: #10b981;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: none;
+            z-index: 1000;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -253,33 +228,22 @@
 
     <header class="bg-blue-600 text-white shadow-lg mb-4 sticky top-0 z-30 no-print">
         <div class="container mx-auto">
-            <div class="header-content mb-3">
-                <div class="title-section">
-                    <h1 class="text-xl font-bold">الوداد للتجارة</h1>
+            <div class="flex justify-between items-center flex-wrap gap-3 mb-3">
+                <div class="flex items-center gap-3">
+                    <h1 class="text-xl font-bold">معرض ال.جي</h1>
                 </div>
                 
-                <div class="tabs-section">
-                    <button onclick="switchTab('items')" class="tab-button active bg-blue-500 hover:bg-blue-400 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1">
-                        <i class="fas fa-boxes text-[10px]"></i> الأصناف
+                <div class="flex gap-2">
+                    <button onclick="switchTab('statement')" class="tab-button active bg-blue-500 hover:bg-blue-400 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2">
+                        <i class="fas fa-file-invoice-dollar"></i> كشف الحساب
                     </button>
-                    <button onclick="switchTab('journal')" class="tab-button bg-blue-500 hover:bg-blue-400 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1">
-                        <i class="fas fa-book text-[10px]"></i> اليومية
-                    </button>
-                    <button onclick="switchTab('balances')" class="tab-button bg-blue-500 hover:bg-blue-400 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1">
-                        <i class="fas fa-balance-scale text-[10px]"></i> الأرصدة
-                    </button>
-                    <button onclick="switchTab('statement')" class="tab-button bg-blue-500 hover:bg-blue-400 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1">
-                        <i class="fas fa-file-invoice-dollar text-[10px]"></i> كشف حساب
+                    <button onclick="switchTab('balances')" class="tab-button bg-blue-500 hover:bg-blue-400 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2">
+                        <i class="fas fa-balance-scale"></i> الأرصدة
                     </button>
                 </div>
                 
-                <div class="controls-section">
-                    <div class="print-settings-btn">
-                        <button onclick="togglePrintSettings()" class="bg-blue-500 hover:bg-blue-400 px-2 py-1 rounded text-xs font-bold border border-blue-400 flex items-center gap-1">
-                            <i class="fas fa-print text-[10px]"></i> خيارات الطباعة
-                        </button>
-                    </div>
-                    <button onclick="preparePrint()" class="bg-green-600 hover:bg-green-500 px-2 py-1 rounded text-xs font-bold border border-green-500 flex items-center gap-1">
+                <div class="flex items-center gap-3">
+                    <button onclick="preparePrint()" class="bg-green-600 hover:bg-green-500 px-3 py-1.5 rounded text-xs font-bold border border-green-500 flex items-center gap-1">
                         <i class="fas fa-print text-[10px]"></i> طباعة
                     </button>
                     <div class="flex items-center gap-2 bg-blue-700/40 p-1.5 rounded-lg border border-blue-400/30">
@@ -289,40 +253,31 @@
                 </div>
             </div>
 
-            <!-- بحث الأصناف -->
-            <div id="itemsSearch" class="tab-content active">
-                <div class="grid grid-cols-4 gap-3 pb-2">
+            <!-- بحث كشف الحساب -->
+            <div id="statementSearch" class="tab-content active">
+                <div class="grid grid-cols-6 gap-3 pb-2">
                     <div class="search-wrapper">
-                        <input type="text" id="searchCat" placeholder="التصنيف" class="input-glass search-input" autocomplete="off">
-                        <div id="suggestCat" class="suggestions-list"></div>
+                        <input type="text" id="searchStatementAccount" placeholder="اسم العميل/المورد" class="input-glass statement-search-input" autocomplete="off">
+                        <div id="suggestStatementAccount" class="suggestions-list"></div>
                     </div>
                     <div class="search-wrapper">
-                        <input type="text" id="searchSupplier" placeholder="المورد" class="input-glass search-input" autocomplete="off">
-                        <div id="suggestSupplier" class="suggestions-list"></div>
+                        <input type="date" id="searchStatementDateFrom" class="input-glass statement-search-input" placeholder="من تاريخ">
                     </div>
                     <div class="search-wrapper">
-                        <input type="text" id="searchName" placeholder="الصنف" class="input-glass search-input" autocomplete="off">
-                        <div id="suggestName" class="suggestions-list"></div>
+                        <input type="date" id="searchStatementDateTo" class="input-glass statement-search-input" placeholder="إلى تاريخ">
                     </div>
                     <div class="search-wrapper">
-                        <input type="text" id="searchQty" placeholder="الكمية" class="input-glass search-input" autocomplete="off">
-                        <div id="suggestQty" class="suggestions-list"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- بحث اليومية -->
-            <div id="journalSearch" class="tab-content">
-                <div class="grid grid-cols-4 gap-3 pb-2">
-                    <div class="search-wrapper">
-                        <input type="text" id="searchJournalDate" placeholder="التاريخ" class="input-glass journal-search-input" autocomplete="off">
-                        <div id="suggestJournalDate" class="suggestions-list"></div>
+                        <input type="text" id="searchStatementType" placeholder="النوع (مبيعات، مشتريات، مقبوضات، مدفوعات)" class="input-glass statement-search-input" autocomplete="off">
+                        <div id="suggestStatementType" class="suggestions-list"></div>
                     </div>
                     <div class="search-wrapper">
-                        <input type="text" id="searchJournalAccount" placeholder="دائن/مدين" class="input-glass journal-search-input" autocomplete="off">
-                        <div id="suggestJournalAccount" class="suggestions-list"></div>
+                        <input type="text" id="searchStatementInvoice" placeholder="رقم الفاتورة" class="input-glass statement-search-input" autocomplete="off">
+                        <div id="suggestStatementInvoice" class="suggestions-list"></div>
                     </div>
-                    <div class="col-span-2"></div>
+                    <div class="search-wrapper">
+                        <input type="text" id="searchStatementItem" placeholder="الصنف" class="input-glass statement-search-input" autocomplete="off">
+                        <div id="suggestStatementItem" class="suggestions-list"></div>
+                    </div>
                 </div>
             </div>
 
@@ -336,132 +291,116 @@
                     <div class="col-span-3"></div>
                 </div>
             </div>
-
-            <!-- بحث كشف الحساب -->
-            <div id="statementSearch" class="tab-content">
-                <div class="grid grid-cols-6 gap-3 pb-2">
-                    <div class="search-wrapper">
-                        <input type="text" id="searchStatementAccount" placeholder="اسم العميل/المورد" class="input-glass statement-search-input" autocomplete="off">
-                        <div id="suggestStatementAccount" class="suggestions-list"></div>
-                    </div>
-                    <div class="search-wrapper">
-                        <input type="date" id="searchStatementDateFrom" class="input-glass statement-search-input">
-                    </div>
-                    <div class="search-wrapper">
-                        <input type="date" id="searchStatementDateTo" class="input-glass statement-search-input">
-                    </div>
-                    <div class="search-wrapper">
-                        <input type="text" id="searchStatementType" placeholder="النوع" class="input-glass statement-search-input" autocomplete="off">
-                        <div id="suggestStatementType" class="suggestions-list"></div>
-                    </div>
-                    <div class="search-wrapper">
-                        <input type="text" id="searchStatementInvoice" placeholder="رقم الفاتورة" class="input-glass statement-search-input" autocomplete="off">
-                        <div id="suggestStatementInvoice" class="suggestions-list"></div>
-                    </div>
-                    <div class="search-wrapper">
-                        <input type="text" id="searchStatementItem" placeholder="الصنف" class="input-glass statement-search-input" autocomplete="off">
-                        <div id="suggestStatementItem" class="suggestions-list"></div>
-                    </div>
-                </div>
-            </div>
         </div>
     </header>
 
     <div id="printOptions" class="no-print">
-        <p class="font-bold text-xs mb-2">أعمدة الطباعة (الأصناف):</p>
+        <p class="font-bold text-xs mb-2">أعمدة الطباعة (كشف الحساب):</p>
         <div class="grid grid-cols-2 gap-x-6 gap-y-2 text-xs" id="columnCheckboxes"></div>
         <div class="flex gap-2 mt-4">
             <button onclick="savePrintSettings()" class="w-full bg-blue-600 text-white py-1.5 rounded text-xs font-bold">حفظ الإعدادات</button>
-            <button onclick="hideAllPrintOptions()" class="w-full bg-gray-300 text-gray-800 py-1.5 rounded text-xs font-bold">إغلاق</button>
-        </div>
-    </div>
-
-    <div id="journalPrintOptions" class="no-print">
-        <p class="font-bold text-xs mb-2">أعمدة الطباعة (اليومية):</p>
-        <div class="grid grid-cols-2 gap-x-6 gap-y-2 text-xs" id="journalColumnCheckboxes"></div>
-        <div class="flex gap-2 mt-4">
-            <button onclick="savePrintSettings()" class="w-full bg-blue-600 text-white py-1.5 rounded text-xs font-bold">حفظ الإعدادات</button>
-            <button onclick="hideAllPrintOptions()" class="w-full bg-gray-300 text-gray-800 py-1.5 rounded text-xs font-bold">إغلاق</button>
-        </div>
-    </div>
-
-    <div id="balancesPrintOptions" class="no-print">
-        <p class="font-bold text-xs mb-2">أعمدة الطباعة (الأرصدة):</p>
-        <div class="grid grid-cols-2 gap-x-6 gap-y-2 text-xs" id="balancesColumnCheckboxes"></div>
-        <div class="flex gap-2 mt-4">
-            <button onclick="savePrintSettings()" class="w-full bg-blue-600 text-white py-1.5 rounded text-xs font-bold">حفظ الإعدادات</button>
-            <button onclick="hideAllPrintOptions()" class="w-full bg-gray-300 text-gray-800 py-1.5 rounded text-xs font-bold">إغلاق</button>
-        </div>
-    </div>
-
-    <div id="statementPrintOptions" class="no-print">
-        <p class="font-bold text-xs mb-2">أعمدة الطباعة (كشف الحساب):</p>
-        <div class="grid grid-cols-2 gap-x-6 gap-y-2 text-xs" id="statementColumnCheckboxes"></div>
-        <div class="flex gap-2 mt-4">
-            <button onclick="savePrintSettings()" class="w-full bg-blue-600 text-white py-1.5 rounded text-xs font-bold">حفظ الإعدادات</button>
-            <button onclick="hideAllPrintOptions()" class="w-full bg-gray-300 text-gray-800 py-1.5 rounded text-xs font-bold">إغلاق</button>
+            <button onclick="hidePrintOptions()" class="w-full bg-gray-300 text-gray-800 py-1.5 rounded text-xs font-bold">إغلاق</button>
         </div>
     </div>
 
     <main class="container mx-auto px-4">
-        <div id="itemsTable" class="tab-content active">
+        <!-- تبويب كشف الحساب -->
+        <div id="statementTable" class="tab-content active">
+            <div id="statementHeader" class="statement-header mb-3" style="display: none;">
+                <h2 class="text-lg font-bold mb-2" id="statementAccountName"></h2>
+                <div class="text-sm" id="statementPeriod"></div>
+            </div>
+
+            <div id="statementSummary" class="statement-summary mb-3" style="display: none;">
+                <div class="summary-card">
+                    <div class="summary-title">إجمالي المبيعات</div>
+                    <div class="summary-value" id="summarySalesTotal">0.00 $</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-title">إجمالي المشتريات</div>
+                    <div class="summary-value" id="summaryPurchasesTotal">0.00 $</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-title">إجمالي المقبوضات</div>
+                    <div class="summary-value summary-positive" id="summaryReceiptsTotal">0.00 $</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-title">إجمالي المدفوعات</div>
+                    <div class="summary-value summary-negative" id="summaryPaymentsTotal">0.00 $</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-title">الرصيد الحالي</div>
+                    <div class="summary-value" id="summaryCurrentBalance">0.00 $</div>
+                </div>
+            </div>
+
             <div class="table-container">
-                <table id="mainTable">
+                <table id="statementTableContent">
                     <thead>
-                        <tr><th data-col="index" class="w-12">#</th><th data-col="cat">التصنيف</th><th data-col="supp">المورد</th><th data-col="item">الصنف</th><th data-col="qty">الكمية</th><th data-col="buy">شراء</th><th data-col="disc">حسم</th><th data-col="final">صافي</th><th data-col="plus">البيع($)</th><th data-col="syp">سوري</th></tr>
+                        <tr>
+                            <th data-col="index" class="w-12">#</th>
+                            <th data-col="date">التاريخ</th>
+                            <th data-col="type">النوع</th>
+                            <th data-col="invoice">الفاتورة</th>
+                            <th data-col="description">البيان</th>
+                            <th data-col="account">الحساب</th>
+                            <th data-col="qty">الكمية</th>
+                            <th data-col="unit_price_usd">السعر ($)</th>
+                            <th data-col="unit_price_syp">السعر (ل.س)</th>
+                            <th data-col="debit_usd">مدين ($)</th>
+                            <th data-col="credit_usd">دائن ($)</th>
+                            <th data-col="balance_usd">الرصيد ($)</th>
+                            <th data-col="debit_syp">مدين (ل.س)</th>
+                            <th data-col="credit_syp">دائن (ل.س)</th>
+                            <th data-col="balance_syp">الرصيد (ل.س)</th>
+                        </tr>
                     </thead>
-                    <tbody id="tableBody"></tbody>
+                    <tbody id="statementTableBody"></tbody>
                 </table>
             </div>
         </div>
 
-        <div id="journalTable" class="tab-content">
-            <div class="table-container">
-                <table id="journalTableContent">
-                    <thead><tr><th data-col="index">#</th><th data-col="date">التاريخ</th><th data-col="credit">دائن</th><th data-col="debit">مدين</th><th data-col="usd">$</th><th data-col="syp">ل.س</th><th data-col="description">البيان</th></tr></thead>
-                    <tbody id="journalTableBody"></tbody>
-                </table>
-            </div>
-        </div>
-
+        <!-- تبويب الأرصدة -->
         <div id="balancesTable" class="tab-content">
             <div class="totals-container mb-3 no-print">
                 <div class="grid grid-cols-2 gap-3">
-                    <div class="total-card usd-total"><div class="text-[11px] text-gray-600">إجمالي $</div><div class="text-sm" id="balancesTotalUsd">0.00 $</div></div>
-                    <div class="total-card syp-total"><div class="text-[11px] text-gray-600">إجمالي ل.س</div><div class="text-sm" id="balancesTotalSyp">0 ل.س</div></div>
+                    <div class="total-card usd-total">
+                        <div class="text-[11px] text-gray-600">إجمالي $</div>
+                        <div class="text-sm" id="balancesTotalUsd">0.00 $</div>
+                    </div>
+                    <div class="total-card syp-total">
+                        <div class="text-[11px] text-gray-600">إجمالي ل.س</div>
+                        <div class="text-sm" id="balancesTotalSyp">0 ل.س</div>
+                    </div>
                 </div>
             </div>
+            
             <div class="table-container">
                 <table id="balancesTableContent">
-                    <thead><tr><th data-col="index">#</th><th data-col="account">الحساب</th><th data-col="sales_usd">مبيعات $</th><th data-col="sales_syp">مبيعات ل.س</th><th data-col="purchases_usd">مشتريات $</th><th data-col="purchases_syp">مشتريات ل.س</th><th data-col="debit_usd">المدفوع $</th><th data-col="debit_syp">المدفوع ل.س</th><th data-col="balance_usd">الرصيد $</th><th data-col="balance_syp">الرصيد ل.س</th></tr></thead>
+                    <thead>
+                        <tr>
+                            <th data-col="index" class="w-12">#</th>
+                            <th data-col="account">الحساب</th>
+                            <th data-col="sales_usd">مبيعات $</th>
+                            <th data-col="sales_syp">مبيعات ل.س</th>
+                            <th data-col="purchases_usd">مشتريات $</th>
+                            <th data-col="purchases_syp">مشتريات ل.س</th>
+                            <th data-col="debit_usd">المدفوع $</th>
+                            <th data-col="debit_syp">المدفوع ل.س</th>
+                            <th data-col="balance_usd">الرصيد $</th>
+                            <th data-col="balance_syp">الرصيد ل.س</th>
+                        </tr>
+                    </thead>
                     <tbody id="balancesTableBody"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <div id="statementTable" class="tab-content">
-            <div id="statementHeader" class="statement-header mb-3" style="display: none;"><h2 class="text-lg font-bold mb-2" id="statementAccountName"></h2><div class="text-sm" id="statementPeriod"></div></div>
-            <div id="statementSummary" class="statement-summary mb-3" style="display: none;">
-                <div class="summary-card"><div class="summary-title">إجمالي المبيعات</div><div class="summary-value" id="summarySalesTotal">0.00 $</div></div>
-                <div class="summary-card"><div class="summary-title">إجمالي المشتريات</div><div class="summary-value" id="summaryPurchasesTotal">0.00 $</div></div>
-                <div class="summary-card"><div class="summary-title">إجمالي المقبوضات</div><div class="summary-value summary-positive" id="summaryReceiptsTotal">0.00 $</div></div>
-                <div class="summary-card"><div class="summary-title">إجمالي المدفوعات</div><div class="summary-value summary-negative" id="summaryPaymentsTotal">0.00 $</div></div>
-                <div class="summary-card"><div class="summary-title">الرصيد الحالي</div><div class="summary-value" id="summaryCurrentBalance">0.00 $</div></div>
-            </div>
-            <div class="table-container">
-                <table id="statementTableContent">
-                    <thead><tr><th data-col="index">#</th><th data-col="date">التاريخ</th><th data-col="type">النوع</th><th data-col="invoice">الفاتورة</th><th data-col="description">البيان</th><th data-col="account">الحساب</th><th data-col="qty">الكمية</th><th data-col="unit_price_usd">السعر ($)</th><th data-col="unit_price_syp">السعر (ل.س)</th><th data-col="debit_usd">مدين ($)</th><th data-col="credit_usd">دائن ($)</th><th data-col="balance_usd">الرصيد ($)</th><th data-col="debit_syp">مدين (ل.س)</th><th data-col="credit_syp">دائن (ل.س)</th><th data-col="balance_syp">الرصيد (ل.س)</th></tr></thead>
-                    <tbody id="statementTableBody"></tbody>
                 </table>
             </div>
         </div>
     </main>
 
     <script>
-        // ==================== الروابط الجديدة ====================
+        // الروابط الجديدة
         const BASE_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTGBbu8j3U5rkseyHUJ74MHYVF5daD7nKLBXoINMKYwfsj477M0q1RENq26J7TmSFI946322YqJcaf-/pub?gid=';
         const LINKS = {
-            items: { url: `${BASE_URL}313186314&single=true&output=csv`, gid: '313186314' },
             sales: { url: `${BASE_URL}1169303046&single=true&output=csv`, gid: '1169303046' },
             purchases: { url: `${BASE_URL}1461133672&single=true&output=csv`, gid: '1461133672' },
             journal: { url: `${BASE_URL}209051289&single=true&output=csv`, gid: '209051289' },
@@ -469,20 +408,34 @@
             opening: { url: `${BASE_URL}107333903&single=true&output=csv`, gid: '107333903' }
         };
 
-        let allItemsData = [], allSalesData = [], allPurchasesData = [], allJournalData = [], allBalancesData = [], allOpeningBalancesData = [];
-        let currentTab = 'items';
+        let allSalesData = [];
+        let allPurchasesData = [];
+        let allJournalData = [];
+        let allBalancesData = [];
+        let allOpeningBalancesData = [];
+        let currentTab = 'statement';
         let syncInterval;
         let currentFocusIndex = -1;
         let currentSuggestItems = [];
 
-        const itemsColumns = [{id:'index',label:'#'},{id:'cat',label:'التصنيف'},{id:'supp',label:'المورد'},{id:'item',label:'الصنف'},{id:'qty',label:'الكمية'},{id:'buy',label:'شراء'},{id:'disc',label:'حسم'},{id:'final',label:'صافي'},{id:'plus',label:'البيع($)'},{id:'syp',label:'سوري'}];
-        const journalColumns = [{id:'index',label:'#'},{id:'date',label:'التاريخ'},{id:'credit',label:'دائن'},{id:'debit',label:'مدين'},{id:'usd',label:'$'},{id:'syp',label:'ل.س'},{id:'description',label:'البيان'}];
-        const balancesColumns = [{id:'index',label:'#'},{id:'account',label:'الحساب'},{id:'sales_usd',label:'مبيعات $'},{id:'sales_syp',label:'مبيعات ل.س'},{id:'purchases_usd',label:'مشتريات $'},{id:'purchases_syp',label:'مشتريات ل.س'},{id:'debit_usd',label:'المدفوع $'},{id:'debit_syp',label:'المدفوع ل.س'},{id:'balance_usd',label:'الرصيد $'},{id:'balance_syp',label:'الرصيد ل.س'}];
-        const statementColumns = [{id:'index',label:'#'},{id:'date',label:'التاريخ'},{id:'type',label:'النوع'},{id:'invoice',label:'الفاتورة'},{id:'description',label:'البيان'},{id:'account',label:'الحساب'},{id:'qty',label:'الكمية'},{id:'unit_price_usd',label:'السعر ($)'},{id:'unit_price_syp',label:'السعر (ل.س)'},{id:'debit_usd',label:'مدين ($)'},{id:'credit_usd',label:'دائن ($)'},{id:'balance_usd',label:'الرصيد ($)'},{id:'debit_syp',label:'مدين (ل.س)'},{id:'credit_syp',label:'دائن (ل.س)'},{id:'balance_syp',label:'الرصيد (ل.س)'}];
+        const statementColumns = [
+            {id:'index',label:'#'},{id:'date',label:'التاريخ'},{id:'type',label:'النوع'},{id:'invoice',label:'الفاتورة'},
+            {id:'description',label:'البيان'},{id:'account',label:'الحساب'},{id:'qty',label:'الكمية'},
+            {id:'unit_price_usd',label:'السعر ($)'},{id:'unit_price_syp',label:'السعر (ل.س)'},
+            {id:'debit_usd',label:'مدين ($)'},{id:'credit_usd',label:'دائن ($)'},{id:'balance_usd',label:'الرصيد ($)'},
+            {id:'debit_syp',label:'مدين (ل.س)'},{id:'credit_syp',label:'دائن (ل.س)'},{id:'balance_syp',label:'الرصيد (ل.س)'}
+        ];
 
-        let printSettings = { items: {}, journal: {}, balances: {}, statement: {} };
+        const balancesColumns = [
+            {id:'index',label:'#'},{id:'account',label:'الحساب'},{id:'sales_usd',label:'مبيعات $'},
+            {id:'sales_syp',label:'مبيعات ل.س'},{id:'purchases_usd',label:'مشتريات $'},
+            {id:'purchases_syp',label:'مشتريات ل.س'},{id:'debit_usd',label:'المدفوع $'},
+            {id:'debit_syp',label:'المدفوع ل.س'},{id:'balance_usd',label:'الرصيد $'},{id:'balance_syp',label:'الرصيد ل.س'}
+        ];
 
-        async function fetchCSV(url, gid) {
+        let printSettings = { statement: {}, balances: {} };
+
+        async function fetchCSV(url) {
             const response = await fetch(`${url}&t=${Date.now()}`);
             const text = await response.text();
             return new Promise((resolve) => {
@@ -493,249 +446,631 @@
         async function fetchAllData(showSyncIndicator = false) {
             if (showSyncIndicator) document.getElementById('syncIndicator').style.display = 'block';
             try {
-                const [items, sales, purchases, journal, balances, opening] = await Promise.all([
-                    fetchCSV(LINKS.items.url, LINKS.items.gid),
-                    fetchCSV(LINKS.sales.url, LINKS.sales.gid),
-                    fetchCSV(LINKS.purchases.url, LINKS.purchases.gid),
-                    fetchCSV(LINKS.journal.url, LINKS.journal.gid),
-                    fetchCSV(LINKS.balances.url, LINKS.balances.gid),
-                    fetchCSV(LINKS.opening.url, LINKS.opening.gid)
+                const [sales, purchases, journal, balances, opening] = await Promise.all([
+                    fetchCSV(LINKS.sales.url),
+                    fetchCSV(LINKS.purchases.url),
+                    fetchCSV(LINKS.journal.url),
+                    fetchCSV(LINKS.balances.url),
+                    fetchCSV(LINKS.opening.url)
                 ]);
-                allItemsData = items.data.filter(r => Object.values(r).some(v => v && v.trim()));
+                
                 allSalesData = sales.data.filter(r => Object.values(r).some(v => v && v.trim()));
                 allPurchasesData = purchases.data.filter(r => Object.values(r).some(v => v && v.trim()));
                 allJournalData = journal.data.filter(r => Object.values(r).some(v => v && v.trim()));
                 allBalancesData = balances.data.filter(r => Object.values(r).some(v => v && v.trim()));
                 allOpeningBalancesData = opening.data.filter(r => Object.values(r).some(v => v && v.trim()));
                 
-                renderItems(); renderJournal(); renderBalances(); setupItemsDropdowns(); setupJournalDropdowns(); setupBalancesDropdowns(); setupStatementDropdowns();
-                if (currentTab === 'statement') renderStatement();
+                renderBalances();
+                renderStatement();
+                setupBalancesDropdowns();
+                setupStatementDropdowns();
+                
                 document.getElementById('loader').classList.add('hidden');
-            } catch(e) { console.error(e); document.getElementById('loader').classList.add('hidden'); }
+            } catch(e) { 
+                console.error(e); 
+                document.getElementById('loader').classList.add('hidden');
+            }
             if (showSyncIndicator) setTimeout(() => document.getElementById('syncIndicator').style.display = 'none', 2000);
         }
 
-        function startAutoSync() { if(syncInterval) clearInterval(syncInterval); syncInterval = setInterval(() => fetchAllData(true), 15000); }
-
-        function parseNumber(v) { if(!v) return 0; return parseFloat(String(v).replace(/[^\d.-]/g, '')) || 0; }
-        function parseDate(d) { if(!d) return new Date(0); let parts = d.split(/[/\-.]/); if(parts.length===3){ let [day,month,year]=parts.map(p=>parseInt(p)); if(!isNaN(day)&&!isNaN(month)&&!isNaN(year)) return new Date(year<100?2000+year:year, month-1, day); } let date=new Date(d); return isNaN(date)?new Date(0):date; }
-        function isDateInRange(dStr, from, to) { let date=parseDate(dStr); if(date.getTime()===0) return false; if(from && date < from) return false; if(to) { let end=new Date(to); end.setDate(end.getDate()+1); if(date >= end) return false; } return true; }
-        function parseHtmlDate(v) { if(!v) return null; let d=new Date(v); return isNaN(d)?null:d; }
-
-        function getOpeningBalance(acc) { let row = allOpeningBalancesData.find(r => String(r['الحساب']||'').trim()===acc || String(r['Account']||'').trim()===acc || String(r['account']||'').trim()===acc); return row ? parseNumber(row['رصيد افتتاحي دولار'] || row['Opening Balance USD'] || row['opening_balance_usd'] || row['الرصيد الافتتاحي'] || row['الرصيد']) : 0; }
-        function getOpeningBalanceSyp(acc) { let row = allOpeningBalancesData.find(r => String(r['الحساب']||'').trim()===acc || String(r['Account']||'').trim()===acc || String(r['account']||'').trim()===acc); return row ? parseNumber(row['رصيد افتتاحي سوري'] || row['Opening Balance SYP'] || row['opening_balance_syp'] || row['الرصيد الافتتاحي سوري']) : 0; }
-
-        function renderItems() {
-            let rate=parseFloat(document.getElementById('exchangeRate').value)||1;
-            let f={cat:document.getElementById('searchCat').value.toLowerCase(), supp:document.getElementById('searchSupplier').value.toLowerCase(), name:document.getElementById('searchName').value.toLowerCase(), qty:document.getElementById('searchQty').value.toLowerCase()};
-            let tbody=document.getElementById('tableBody'); tbody.innerHTML='';
-            allItemsData.filter(r=> String(r['التصنيف']||'').toLowerCase().includes(f.cat) && String(r['المورد']||'').toLowerCase().includes(f.supp) && String(r['الصنف']||'').toLowerCase().includes(f.name) && String(r['الكمية']||'').toLowerCase().includes(f.qty)).forEach((r,i)=>{
-                let buy=parseNumber(r['شراء']), disc=parseNumber(r['الحسم']), fin=buy-(buy*disc/100), plus=buy*1.15, syp=plus*rate;
-                tbody.innerHTML+=`<tr><td class="text-gray-400 text-[10px]">${i+1}</td><td><span class="bg-blue-50 text-blue-600 px-2 py-1 rounded text-[11px] font-bold">${r['التصنيف']||''}</span></td><td class="text-[11px] text-gray-500">${r['المورد']||''}</td><td class="text-right font-bold text-gray-800">${r['الصنف']||''}</td><td class="font-bold">${r['الكمية']||''}</td><td>${buy.toFixed(2)}</td><td class="text-red-500">${disc}%</td><td>${fin.toFixed(2)}</td><td class="bg-orange-50 font-bold">${plus.toFixed(2)}</td><td class="bg-green-50 text-green-700 font-bold">${Math.round(syp).toLocaleString()}</td></tr>`;
-            });
+        function startAutoSync() { 
+            if(syncInterval) clearInterval(syncInterval); 
+            syncInterval = setInterval(() => fetchAllData(true), 15000); 
         }
 
-        function renderJournal() {
-            let f={date:document.getElementById('searchJournalDate').value.toLowerCase(), account:document.getElementById('searchJournalAccount').value.toLowerCase()};
-            let tbody=document.getElementById('journalTableBody'); tbody.innerHTML='';
-            allJournalData.filter(r=> String(r['التاريخ']||'').toLowerCase().includes(f.date) && (String(r['دائن']||'').toLowerCase().includes(f.account) || String(r['مدين']||'').toLowerCase().includes(f.account))).forEach((r,i)=>{
-                let usd=parseNumber(r['دولار']), syp=parseNumber(r['سوري']);
-                tbody.innerHTML+=`<tr><td class="text-gray-400 text-[10px]">${i+1}</td><td class="text-[11px] text-gray-700">${r['التاريخ']||''}</td><td class="credit-cell text-[11px]">${r['دائن']||''}</td><td class="debit-cell text-[11px]">${r['مدين']||''}</td><td class="bg-blue-50 font-bold">${usd.toFixed(2)}</td><td class="bg-orange-50">${Math.round(syp).toLocaleString()}</td><td class="journal-description">${r['البيان']||''}</td></tr>`;
-            });
+        function parseNumber(v) { 
+            if(!v || v === '') return 0; 
+            return parseFloat(String(v).replace(/[^\d.-]/g, '')) || 0; 
+        }
+        
+        function parseDate(d) { 
+            if(!d) return new Date(0); 
+            let parts = d.split(/[/\-.]/); 
+            if(parts.length === 3) { 
+                let [day, month, year] = parts.map(p => parseInt(p)); 
+                if(!isNaN(day) && !isNaN(month) && !isNaN(year)) 
+                    return new Date(year < 100 ? 2000 + year : year, month - 1, day); 
+            } 
+            let date = new Date(d); 
+            return isNaN(date) ? new Date(0) : date; 
+        }
+        
+        function isDateInRange(dStr, from, to) { 
+            let date = parseDate(dStr); 
+            if(date.getTime() === 0) return false; 
+            if(from && date < from) return false; 
+            if(to) { 
+                let end = new Date(to); 
+                end.setDate(end.getDate() + 1); 
+                if(date >= end) return false; 
+            } 
+            return true; 
+        }
+        
+        function parseHtmlDate(v) { 
+            if(!v) return null; 
+            let d = new Date(v); 
+            return isNaN(d) ? null : d; 
+        }
+
+        function getOpeningBalance(acc) { 
+            let row = allOpeningBalancesData.find(r => String(r['الحساب'] || '').trim() === acc || String(r['Account'] || '').trim() === acc); 
+            return row ? parseNumber(row['رصيد افتتاحي دولار'] || row['Opening Balance USD'] || row['الرصيد الافتتاحي']) : 0; 
+        }
+        
+        function getOpeningBalanceSyp(acc) { 
+            let row = allOpeningBalancesData.find(r => String(r['الحساب'] || '').trim() === acc || String(r['Account'] || '').trim() === acc); 
+            return row ? parseNumber(row['رصيد افتتاحي سوري'] || row['Opening Balance SYP']) : 0; 
         }
 
         function renderBalances() {
-            let acc=document.getElementById('searchBalancesAccount').value.toLowerCase();
-            let tbody=document.getElementById('balancesTableBody'); tbody.innerHTML='';
-            let totalUsd=0, totalSyp=0;
-            allBalancesData.filter(r=>!acc || String(r['الحساب']||'').toLowerCase()===acc).forEach((r,i)=>{
-                let salesUsd=parseNumber(r['مبيعات دولار']), salesSyp=parseNumber(r['مبيعات سوري']);
-                let purUsd=parseNumber(r['مشتريات دولار']), purSyp=parseNumber(r['مشتريات سوري']);
-                let debUsd=parseNumber(r['المدفوع دولار']), debSyp=parseNumber(r['المدفوع سوري']);
-                let balUsd=parseNumber(r['الرصيد دولار']), balSyp=parseNumber(r['الرصيد سوري']);
-                if(balUsd===0 && balSyp===0) return;
-                totalUsd+=balUsd; totalSyp+=balSyp;
-                tbody.innerHTML+=`<tr><td class="text-gray-400 text-[10px]">${i+1}</td><td class="text-right font-bold text-gray-800">${r['الحساب']||''}</td><td>${salesUsd.toFixed(2)}</td><td>${Math.round(salesSyp).toLocaleString()}</td><td>${purUsd.toFixed(2)}</td><td>${Math.round(purSyp).toLocaleString()}</td><td>${debUsd.toFixed(2)}</td><td>${Math.round(debSyp).toLocaleString()}</td><td class="${balUsd>=0?'balance-usd-positive':'balance-usd-negative'} font-bold">${balUsd.toFixed(2)}</td><td class="${balSyp>=0?'balance-syp-positive':'balance-syp-negative'} font-bold">${Math.round(balSyp).toLocaleString()}</td></tr>`;
+            let acc = document.getElementById('searchBalancesAccount').value.toLowerCase();
+            let tbody = document.getElementById('balancesTableBody');
+            tbody.innerHTML = '';
+            let totalUsd = 0, totalSyp = 0;
+            
+            allBalancesData.filter(r => !acc || String(r['الحساب'] || '').toLowerCase() === acc).forEach((r, i) => {
+                let salesUsd = parseNumber(r['مبيعات دولار']), salesSyp = parseNumber(r['مبيعات سوري']);
+                let purUsd = parseNumber(r['مشتريات دولار']), purSyp = parseNumber(r['مشتريات سوري']);
+                let debUsd = parseNumber(r['المدفوع دولار']), debSyp = parseNumber(r['المدفوع سوري']);
+                let balUsd = parseNumber(r['الرصيد دولار']), balSyp = parseNumber(r['الرصيد سوري']);
+                
+                if(balUsd === 0 && balSyp === 0) return;
+                totalUsd += balUsd;
+                totalSyp += balSyp;
+                
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="text-gray-400 text-[10px]">${i + 1}</td>
+                        <td class="text-right font-bold text-gray-800">${r['الحساب'] || ''}</td>
+                        <td>${salesUsd.toFixed(2)}</td>
+                        <td>${Math.round(salesSyp).toLocaleString()}</td>
+                        <td>${purUsd.toFixed(2)}</td>
+                        <td>${Math.round(purSyp).toLocaleString()}</td>
+                        <td>${debUsd.toFixed(2)}</td>
+                        <td>${Math.round(debSyp).toLocaleString()}</td>
+                        <td class="${balUsd >= 0 ? 'text-green-600' : 'text-red-600'} font-bold">${balUsd.toFixed(2)}</td>
+                        <td class="${balSyp >= 0 ? 'text-green-600' : 'text-red-600'} font-bold">${Math.round(balSyp).toLocaleString()}</td>
+                    </tr>
+                `;
             });
-            document.getElementById('balancesTotalUsd').innerText=`${totalUsd.toFixed(2)} $`;
-            document.getElementById('balancesTotalSyp').innerText=`${Math.round(totalSyp).toLocaleString()} ل.س`;
+            
+            document.getElementById('balancesTotalUsd').innerText = `${totalUsd.toFixed(2)} $`;
+            document.getElementById('balancesTotalSyp').innerText = `${Math.round(totalSyp).toLocaleString()} ل.س`;
         }
 
         function renderStatement() {
-            let acc=document.getElementById('searchStatementAccount').value.trim();
-            let from=parseHtmlDate(document.getElementById('searchStatementDateFrom').value), to=parseHtmlDate(document.getElementById('searchStatementDateTo').value);
-            let typeF=document.getElementById('searchStatementType').value.toLowerCase(), invF=document.getElementById('searchStatementInvoice').value.toLowerCase(), itemF=document.getElementById('searchStatementItem').value.toLowerCase();
-            let hasItem=!!itemF, hasInv=!!invF;
-            let tbody=document.getElementById('statementTableBody'); tbody.innerHTML='';
-            let data=[], totalSales=0, totalPur=0, totalRec=0, totalPay=0, totalSalesS=0, totalPurS=0, totalRecS=0, totalPayS=0;
+            let acc = document.getElementById('searchStatementAccount').value.trim();
+            let from = parseHtmlDate(document.getElementById('searchStatementDateFrom').value);
+            let to = parseHtmlDate(document.getElementById('searchStatementDateTo').value);
+            let typeF = document.getElementById('searchStatementType').value.toLowerCase();
+            let invF = document.getElementById('searchStatementInvoice').value.toLowerCase();
+            let itemF = document.getElementById('searchStatementItem').value.toLowerCase();
             
-            // Sales
-            allSalesData.filter(r=> (!acc || String(r['العميل']||'').trim()===acc) && isDateInRange(r['التاريخ'],from,to) && (!typeF || 'مبيعات'.includes(typeF)) && (!invF || String(r['الفاتورة']||'').toLowerCase().includes(invF)) && (!itemF || String(r['الصنف']||'').toLowerCase().includes(itemF))).forEach(r=>{
-                let q=parseNumber(r['الكمية']), pu=parseNumber(r['السعر دولار']), ps=parseNumber(r['السعر سوري']), tu=q*pu, ts=q*ps;
-                totalSales+=tu; totalSalesS+=ts;
-                data.push({date:r['التاريخ'], type:'مبيعات', typeClass:'type-sales', invoice:r['الفاتورة']||'', desc:r['الصنف']||'', account:r['العميل']||'', qty:q, upu:pu, ups:ps, debU:tu, creU:0, debS:ts, creS:0, raw:parseDate(r['التاريخ'])});
-            });
-            // Purchases
-            allPurchasesData.filter(r=> (!acc || String(r['المورد']||'').trim()===acc) && isDateInRange(r['التاريخ'],from,to) && (!typeF || 'مشتريات'.includes(typeF)) && (!invF || String(r['الفاتورة']||'').toLowerCase().includes(invF)) && (!itemF || String(r['الصنف']||'').toLowerCase().includes(itemF))).forEach(r=>{
-                let q=parseNumber(r['الكمية']), pu=parseNumber(r['السعر']), disc=parseNumber(r['الحسم']), puAfter=pu-(pu*disc/100), tu=q*puAfter;
-                totalPur+=tu;
-                data.push({date:r['التاريخ'], type:'مشتريات', typeClass:'type-purchase', invoice:r['الفاتورة']||'', desc:r['الصنف']||'', account:r['المورد']||'', qty:q, upu:puAfter, ups:0, debU:0, creU:tu, debS:0, creS:0, raw:parseDate(r['التاريخ'])});
-            });
-            // Journal (only if no item/invoice filter)
-            if(!hasItem && !hasInv){
-                allJournalData.filter(r=> (!acc || String(r['دائن']||'').trim()===acc || String(r['مدين']||'').trim()===acc) && isDateInRange(r['التاريخ'],from,to) && (!typeF || typeF==='' || typeF==='يومية' || typeF==='مقبوضات' || typeF==='مدفوعات')).forEach(r=>{
-                    let usd=parseNumber(r['دولار']), syp=parseNumber(r['سوري']), cred=String(r['دائن']||'').trim(), deb=String(r['مدين']||'').trim(), desc=r['البيان']||'';
-                    if(cred===acc || (!acc && cred)){
-                        totalRec+=usd; totalRecS+=syp;
-                        if(!typeF || typeF==='' || typeF==='مقبوضات' || typeF==='يومية')
-                            data.push({date:r['التاريخ'], type:'مقبوضات', typeClass:'type-receipt', invoice:'', desc:desc, account:cred, qty:1, upu:usd, ups:syp, debU:0, creU:usd, debS:0, creS:syp, raw:parseDate(r['التاريخ'])});
-                    } else if(deb===acc || (!acc && deb)){
-                        totalPay+=usd; totalPayS+=syp;
-                        if(!typeF || typeF==='' || typeF==='مدفوعات' || typeF==='يومية')
-                            data.push({date:r['التاريخ'], type:'مدفوعات', typeClass:'type-payment', invoice:'', desc:desc, account:deb, qty:1, upu:usd, ups:syp, debU:usd, creU:0, debS:syp, creS:0, raw:parseDate(r['التاريخ'])});
-                    }
-                });
-            }
-            data.sort((a,b)=>a.raw-b.raw);
+            let tbody = document.getElementById('statementTableBody');
+            tbody.innerHTML = '';
             
-            let header=document.getElementById('statementHeader'), summaryDiv=document.getElementById('statementSummary');
-            if(acc){
-                header.style.display='block'; summaryDiv.style.display='grid';
-                document.getElementById('statementAccountName').innerText=`كشف حساب: ${acc}`;
-                let openUsd=getOpeningBalance(acc), openSyp=getOpeningBalanceSyp(acc);
-                let finalUsd=openUsd+totalSales-totalPur+totalPay-totalRec, finalSyp=openSyp+totalSalesS-totalPurS+totalPayS-totalRecS;
-                document.getElementById('summarySalesTotal').innerText=`${totalSales.toFixed(2)} $`;
-                document.getElementById('summaryPurchasesTotal').innerText=`${totalPur.toFixed(2)} $`;
-                document.getElementById('summaryReceiptsTotal').innerText=`${totalRec.toFixed(2)} $`;
-                document.getElementById('summaryPaymentsTotal').innerText=`${totalPay.toFixed(2)} $`;
-                let sumEl=document.getElementById('summaryCurrentBalance'); sumEl.innerText=`${finalUsd.toFixed(2)} $`;
-                sumEl.className=`summary-value ${finalUsd>=0?'summary-positive':'summary-negative'}`;
+            let data = [];
+            let totalSales = 0, totalPur = 0, totalRec = 0, totalPay = 0;
+            let totalSalesS = 0, totalPurS = 0, totalRecS = 0, totalPayS = 0;
+            
+            // 1. المبيعات
+            allSalesData.filter(r => {
+                let matchAcc = !acc || String(r['العميل'] || '').trim() === acc;
+                let matchDate = isDateInRange(r['التاريخ'], from, to);
+                let matchType = !typeF || 'مبيعات'.includes(typeF);
+                let matchInv = !invF || String(r['الفاتورة'] || '').toLowerCase().includes(invF);
+                let matchItem = !itemF || String(r['الصنف'] || '').toLowerCase().includes(itemF);
+                return matchAcc && matchDate && matchType && matchInv && matchItem;
+            }).forEach(r => {
+                let qty = parseNumber(r['الكمية']);
+                let priceUsd = parseNumber(r['السعر دولار']);
+                let priceSyp = parseNumber(r['السعر سوري']);
+                let totalUsdRow = qty * priceUsd;
+                let totalSypRow = qty * priceSyp;
                 
-                let runUsd=openUsd, runSyp=openSyp;
-                if(openUsd!==0 || openSyp!==0){
-                    let row=`<tr class="bg-gray-100 font-bold"><td class="text-gray-500 text-[10px]">-</td><td class="text-[11px] text-gray-700">رصيد افتتاحي</td><td><span class="statement-type type-journal">افتتاحي</span></td><td class="font-bold">-</td><td class="text-right">الرصيد الافتتاحي</td><td class="text-right font-bold">${acc}</td><td>-</td><td>${openUsd!==0?openUsd.toFixed(2):''}</td><td>${openSyp!==0?Math.round(openSyp).toLocaleString():''}</td><td class="${openUsd>=0?'debit-cell':''}">${openUsd>=0?openUsd.toFixed(2):''}</td><td class="${openUsd<0?'credit-cell':''}">${openUsd<0?Math.abs(openUsd).toFixed(2):''}</td><td class="font-bold ${runUsd>=0?'text-green-600':'text-red-600'}">${runUsd.toFixed(2)}</td><td class="${openSyp>=0?'debit-cell':''}">${openSyp>=0?Math.round(openSyp).toLocaleString():''}</td><td class="${openSyp<0?'credit-cell':''}">${openSyp<0?Math.round(Math.abs(openSyp)).toLocaleString():''}</td><td class="font-bold ${runSyp>=0?'text-green-600':'text-red-600'}">${Math.round(runSyp).toLocaleString()}</td></tr>`;
-                    tbody.innerHTML+=row;
-                }
-                data.forEach((d,i)=>{
-                    runUsd+=d.debU - d.creU; runSyp+=d.debS - d.creS;
-                    tbody.innerHTML+=`<tr><td class="text-gray-400 text-[10px]">${i+1}</td><td class="text-[11px] text-gray-700">${d.date}</td><td><span class="statement-type ${d.typeClass}">${d.type}</span></td><td class="font-bold">${d.invoice}</td><td class="text-right">${d.desc}</td><td class="text-right font-bold text-blue-700">${d.account}</td><td class="text-center">${d.type==='مقبوضات'||d.type==='مدفوعات'?'-':d.qty}</td><td class="text-center">${d.type==='مقبوضات'||d.type==='مدفوعات'?'-':d.upu.toFixed(2)}</td><td class="text-center">${d.type==='مقبوضات'||d.type==='مدفوعات'?'-':Math.round(d.ups).toLocaleString()}</td><td class="debit-cell">${d.debU>0?d.debU.toFixed(2):''}</td><td class="credit-cell">${d.creU>0?d.creU.toFixed(2):''}</td><td class="font-bold ${runUsd>=0?'text-green-600':'text-red-600'}">${runUsd.toFixed(2)}</td><td class="debit-cell">${d.debS>0?Math.round(d.debS).toLocaleString():''}</td><td class="credit-cell">${d.creS>0?Math.round(d.creS).toLocaleString():''}</td><td class="font-bold ${runSyp>=0?'text-green-600':'text-red-600'}">${Math.round(runSyp).toLocaleString()}</td></tr>`;
+                totalSales += totalUsdRow;
+                totalSalesS += totalSypRow;
+                
+                data.push({
+                    date: r['التاريخ'] || '',
+                    type: 'مبيعات',
+                    typeClass: 'type-sales',
+                    invoice: r['الفاتورة'] || '',
+                    description: r['الصنف'] || '',
+                    account: r['العميل'] || '',
+                    qty: qty,
+                    unitPriceUsd: priceUsd,
+                    unitPriceSyp: priceSyp,
+                    debitUsd: totalUsdRow,
+                    creditUsd: 0,
+                    debitSyp: totalSypRow,
+                    creditSyp: 0,
+                    rawDate: parseDate(r['التاريخ'])
                 });
-                document.getElementById('statementPeriod').innerText=data.length?`الفترة: ${data[0].date} إلى ${data[data.length-1].date}`:(openUsd!==0||openSyp!==0?'لا توجد حركات - رصيد افتتاحي فقط':'لا توجد حركات');
-                if(data.length || openUsd!==0 || openSyp!==0){
-                    tbody.innerHTML+=`<tr class="bg-gray-50 font-bold"><td colspan="7" class="text-right py-2">الإجمالي</td><td class="py-2">-</td><td class="py-2">-</td><td class="debit-cell py-2">${totalSales.toFixed(2)}</td><td class="credit-cell py-2">${totalPur.toFixed(2)}</td><td class="font-bold py-2 ${finalUsd>=0?'text-green-600':'text-red-600'}">${finalUsd.toFixed(2)}</td><td class="debit-cell py-2">${Math.round(totalSalesS).toLocaleString()}</td><td class="credit-cell py-2">${Math.round(totalPurS).toLocaleString()}</td><td class="font-bold py-2 ${finalSyp>=0?'text-green-600':'text-red-600'}">${Math.round(finalSyp).toLocaleString()}</td></tr>`;
+            });
+            
+            // 2. المشتريات
+            allPurchasesData.filter(r => {
+                let matchAcc = !acc || String(r['المورد'] || '').trim() === acc;
+                let matchDate = isDateInRange(r['التاريخ'], from, to);
+                let matchType = !typeF || 'مشتريات'.includes(typeF);
+                let matchInv = !invF || String(r['الفاتورة'] || '').toLowerCase().includes(invF);
+                let matchItem = !itemF || String(r['الصنف'] || '').toLowerCase().includes(itemF);
+                return matchAcc && matchDate && matchType && matchInv && matchItem;
+            }).forEach(r => {
+                let qty = parseNumber(r['الكمية']);
+                let priceUsd = parseNumber(r['السعر']);
+                let discount = parseNumber(r['الحسم']);
+                let priceAfter = priceUsd - (priceUsd * discount / 100);
+                let totalUsdRow = qty * priceAfter;
+                
+                totalPur += totalUsdRow;
+                
+                data.push({
+                    date: r['التاريخ'] || '',
+                    type: 'مشتريات',
+                    typeClass: 'type-purchase',
+                    invoice: r['الفاتورة'] || '',
+                    description: r['الصنف'] || '',
+                    account: r['المورد'] || '',
+                    qty: qty,
+                    unitPriceUsd: priceAfter,
+                    unitPriceSyp: 0,
+                    debitUsd: 0,
+                    creditUsd: totalUsdRow,
+                    debitSyp: 0,
+                    creditSyp: 0,
+                    rawDate: parseDate(r['التاريخ'])
+                });
+            });
+            
+            // 3. اليومية (مقبوضات ومدفوعات)
+            allJournalData.filter(r => {
+                let cred = String(r['دائن'] || '').trim();
+                let deb = String(r['مدين'] || '').trim();
+                let matchAcc = !acc || cred === acc || deb === acc;
+                let matchDate = isDateInRange(r['التاريخ'], from, to);
+                let matchType = !typeF || typeF === '' || typeF === 'مقبوضات' || typeF === 'مدفوعات';
+                return matchAcc && matchDate && matchType;
+            }).forEach(r => {
+                let usd = parseNumber(r['دولار']);
+                let syp = parseNumber(r['سوري']);
+                let cred = String(r['دائن'] || '').trim();
+                let deb = String(r['مدين'] || '').trim();
+                let desc = r['البيان'] || '';
+                
+                if(cred === acc || (!acc && cred)) {
+                    totalRec += usd;
+                    totalRecS += syp;
+                    if(!typeF || typeF === '' || typeF === 'مقبوضات') {
+                        data.push({
+                            date: r['التاريخ'] || '',
+                            type: 'مقبوضات',
+                            typeClass: 'type-receipt',
+                            invoice: '',
+                            description: desc,
+                            account: cred,
+                            qty: 1,
+                            unitPriceUsd: usd,
+                            unitPriceSyp: syp,
+                            debitUsd: 0,
+                            creditUsd: usd,
+                            debitSyp: 0,
+                            creditSyp: syp,
+                            rawDate: parseDate(r['التاريخ'])
+                        });
+                    }
+                } else if(deb === acc || (!acc && deb)) {
+                    totalPay += usd;
+                    totalPayS += syp;
+                    if(!typeF || typeF === '' || typeF === 'مدفوعات') {
+                        data.push({
+                            date: r['التاريخ'] || '',
+                            type: 'مدفوعات',
+                            typeClass: 'type-payment',
+                            invoice: '',
+                            description: desc,
+                            account: deb,
+                            qty: 1,
+                            unitPriceUsd: usd,
+                            unitPriceSyp: syp,
+                            debitUsd: usd,
+                            creditUsd: 0,
+                            debitSyp: syp,
+                            creditSyp: 0,
+                            rawDate: parseDate(r['التاريخ'])
+                        });
+                    }
+                }
+            });
+            
+            // ترتيب حسب التاريخ
+            data.sort((a, b) => a.rawDate - b.rawDate);
+            
+            let header = document.getElementById('statementHeader');
+            let summaryDiv = document.getElementById('statementSummary');
+            
+            if(acc) {
+                header.style.display = 'block';
+                summaryDiv.style.display = 'grid';
+                document.getElementById('statementAccountName').innerText = `كشف حساب: ${acc}`;
+                
+                let openUsd = getOpeningBalance(acc);
+                let openSyp = getOpeningBalanceSyp(acc);
+                let finalUsd = openUsd + totalSales - totalPur + totalPay - totalRec;
+                let finalSyp = openSyp + totalSalesS - totalPurS + totalPayS - totalRecS;
+                
+                document.getElementById('summarySalesTotal').innerText = `${totalSales.toFixed(2)} $`;
+                document.getElementById('summaryPurchasesTotal').innerText = `${totalPur.toFixed(2)} $`;
+                document.getElementById('summaryReceiptsTotal').innerText = `${totalRec.toFixed(2)} $`;
+                document.getElementById('summaryPaymentsTotal').innerText = `${totalPay.toFixed(2)} $`;
+                let sumEl = document.getElementById('summaryCurrentBalance');
+                sumEl.innerText = `${finalUsd.toFixed(2)} $`;
+                sumEl.className = `summary-value ${finalUsd >= 0 ? 'summary-positive' : 'summary-negative'}`;
+                
+                let runUsd = openUsd;
+                let runSyp = openSyp;
+                
+                // الرصيد الافتتاحي
+                if(openUsd !== 0 || openSyp !== 0) {
+                    tbody.innerHTML += `
+                        <tr class="bg-gray-100 font-bold">
+                            <td class="text-gray-500 text-[10px]">-</td>
+                            <td class="text-[11px] text-gray-700">رصيد افتتاحي</td>
+                            <td><span class="statement-type type-journal">افتتاحي</span></td>
+                            <td class="font-bold">-</td>
+                            <td class="text-right">الرصيد الافتتاحي</td>
+                            <td class="text-right font-bold">${acc}</td>
+                            <td>-</td>
+                            <td>${openUsd !== 0 ? openUsd.toFixed(2) : ''}</td>
+                            <td>${openSyp !== 0 ? Math.round(openSyp).toLocaleString() : ''}</td>
+                            <td class="${openUsd >= 0 ? 'debit-cell' : ''}">${openUsd >= 0 ? openUsd.toFixed(2) : ''}</td>
+                            <td class="${openUsd < 0 ? 'credit-cell' : ''}">${openUsd < 0 ? Math.abs(openUsd).toFixed(2) : ''}</td>
+                            <td class="font-bold ${runUsd >= 0 ? 'text-green-600' : 'text-red-600'}">${runUsd.toFixed(2)}</td>
+                            <td class="${openSyp >= 0 ? 'debit-cell' : ''}">${openSyp >= 0 ? Math.round(openSyp).toLocaleString() : ''}</td>
+                            <td class="${openSyp < 0 ? 'credit-cell' : ''}">${openSyp < 0 ? Math.round(Math.abs(openSyp)).toLocaleString() : ''}</td>
+                            <td class="font-bold ${runSyp >= 0 ? 'text-green-600' : 'text-red-600'}">${Math.round(runSyp).toLocaleString()}</td>
+                        </tr>
+                    `;
+                }
+                
+                data.forEach((item, i) => {
+                    runUsd += item.debitUsd - item.creditUsd;
+                    runSyp += item.debitSyp - item.creditSyp;
+                    
+                    tbody.innerHTML += `
+                        <tr>
+                            <td class="text-gray-400 text-[10px]">${i + 1}</td>
+                            <td class="text-[11px] text-gray-700">${item.date}</td>
+                            <td><span class="statement-type ${item.typeClass}">${item.type}</span></td>
+                            <td class="font-bold">${item.invoice}</td>
+                            <td class="text-right">${item.description}</td>
+                            <td class="text-right font-bold text-blue-700">${item.account}</td>
+                            <td class="text-center">${item.type === 'مقبوضات' || item.type === 'مدفوعات' ? '-' : item.qty}</td>
+                            <td class="text-center">${item.type === 'مقبوضات' || item.type === 'مدفوعات' ? '-' : item.unitPriceUsd.toFixed(2)}</td>
+                            <td class="text-center">${item.type === 'مقبوضات' || item.type === 'مدفوعات' ? '-' : Math.round(item.unitPriceSyp).toLocaleString()}</td>
+                            <td class="debit-cell">${item.debitUsd > 0 ? item.debitUsd.toFixed(2) : ''}</td>
+                            <td class="credit-cell">${item.creditUsd > 0 ? item.creditUsd.toFixed(2) : ''}</td>
+                            <td class="font-bold ${runUsd >= 0 ? 'text-green-600' : 'text-red-600'}">${runUsd.toFixed(2)}</td>
+                            <td class="debit-cell">${item.debitSyp > 0 ? Math.round(item.debitSyp).toLocaleString() : ''}</td>
+                            <td class="credit-cell">${item.creditSyp > 0 ? Math.round(item.creditSyp).toLocaleString() : ''}</td>
+                            <td class="font-bold ${runSyp >= 0 ? 'text-green-600' : 'text-red-600'}">${Math.round(runSyp).toLocaleString()}</td>
+                        </tr>
+                    `;
+                });
+                
+                let periodText = '';
+                if(data.length > 0) {
+                    periodText = `الفترة: ${data[0].date} إلى ${data[data.length - 1].date}`;
+                } else if(openUsd !== 0 || openSyp !== 0) {
+                    periodText = 'لا توجد حركات - رصيد افتتاحي فقط';
+                } else {
+                    periodText = 'لا توجد حركات للحساب';
+                }
+                document.getElementById('statementPeriod').innerText = periodText;
+                
+                if(data.length > 0 || openUsd !== 0 || openSyp !== 0) {
+                    tbody.innerHTML += `
+                        <tr class="bg-gray-50 font-bold">
+                            <td colspan="7" class="text-right py-2">الإجمالي</td>
+                            <td class="py-2">-</td>
+                            <td class="py-2">-</td>
+                            <td class="debit-cell py-2">${totalSales.toFixed(2)}</td>
+                            <td class="credit-cell py-2">${totalPur.toFixed(2)}</td>
+                            <td class="font-bold py-2 ${finalUsd >= 0 ? 'text-green-600' : 'text-red-600'}">${finalUsd.toFixed(2)}</td>
+                            <td class="debit-cell py-2">${Math.round(totalSalesS).toLocaleString()}</td>
+                            <td class="credit-cell py-2">${Math.round(totalPurS).toLocaleString()}</td>
+                            <td class="font-bold py-2 ${finalSyp >= 0 ? 'text-green-600' : 'text-red-600'}">${Math.round(finalSyp).toLocaleString()}</td>
+                        </tr>
+                    `;
                 }
             } else {
-                header.style.display='none'; summaryDiv.style.display='none';
-                data.forEach((d,i)=>{
-                    tbody.innerHTML+=`<tr><td class="text-gray-400 text-[10px]">${i+1}</td><td class="text-[11px] text-gray-700">${d.date}</td><td><span class="statement-type ${d.typeClass}">${d.type}</span></td><td class="font-bold">${d.invoice}</td><td class="text-right">${d.desc}</td><td class="text-right font-bold text-blue-700">${d.account}</td><td class="text-center">${d.type==='مقبوضات'||d.type==='مدفوعات'?'-':d.qty}</td><td class="text-center">${d.type==='مقبوضات'||d.type==='مدفوعات'?'-':d.upu.toFixed(2)}</td><td class="text-center">${d.type==='مقبوضات'||d.type==='مدفوعات'?'-':Math.round(d.ups).toLocaleString()}</td><td class="debit-cell">${d.debU>0?d.debU.toFixed(2):''}</td><td class="credit-cell">${d.creU>0?d.creU.toFixed(2):''}</td><td class="text-gray-500 text-sm">-</td><td class="debit-cell">${d.debS>0?Math.round(d.debS).toLocaleString():''}</td><td class="credit-cell">${d.creS>0?Math.round(d.creS).toLocaleString():''}</td><td class="text-gray-500 text-sm">-</td></tr>`;
+                header.style.display = 'none';
+                summaryDiv.style.display = 'none';
+                
+                data.forEach((item, i) => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td class="text-gray-400 text-[10px]">${i + 1}</td>
+                            <td class="text-[11px] text-gray-700">${item.date}</td>
+                            <td><span class="statement-type ${item.typeClass}">${item.type}</span></td>
+                            <td class="font-bold">${item.invoice}</td>
+                            <td class="text-right">${item.description}</td>
+                            <td class="text-right font-bold text-blue-700">${item.account}</td>
+                            <td class="text-center">${item.type === 'مقبوضات' || item.type === 'مدفوعات' ? '-' : item.qty}</td>
+                            <td class="text-center">${item.type === 'مقبوضات' || item.type === 'مدفوعات' ? '-' : item.unitPriceUsd.toFixed(2)}</td>
+                            <td class="text-center">${item.type === 'مقبوضات' || item.type === 'مدفوعات' ? '-' : Math.round(item.unitPriceSyp).toLocaleString()}</td>
+                            <td class="debit-cell">${item.debitUsd > 0 ? item.debitUsd.toFixed(2) : ''}</td>
+                            <td class="credit-cell">${item.creditUsd > 0 ? item.creditUsd.toFixed(2) : ''}</td>
+                            <td class="text-gray-500 text-sm">-</td>
+                            <td class="debit-cell">${item.debitSyp > 0 ? Math.round(item.debitSyp).toLocaleString() : ''}</td>
+                            <td class="credit-cell">${item.creditSyp > 0 ? Math.round(item.creditSyp).toLocaleString() : ''}</td>
+                            <td class="text-gray-500 text-sm">-</td>
+                        </tr>
+                    `;
                 });
             }
-            if(!data.length && (!acc || (getOpeningBalance(acc)===0 && getOpeningBalanceSyp(acc)===0))) tbody.innerHTML='<tr><td colspan="15" class="text-center py-4 text-gray-500"><i class="fas fa-search ml-2"></i> لا توجد حركات تطابق معايير البحث</td></tr>';
+            
+            if(data.length === 0 && (!acc || (getOpeningBalance(acc) === 0 && getOpeningBalanceSyp(acc) === 0))) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="15" class="text-center py-4 text-gray-500">
+                            <i class="fas fa-search ml-2"></i> لا توجد حركات تطابق معايير البحث
+                        </td>
+                    </tr>
+                `;
+            }
         }
 
-        function setupDropdownsForData(configs, data) {
-            configs.forEach(c=>{
-                let inp=document.getElementById(c.id), list=document.getElementById(c.suggestId);
-                if(!inp||!list) return;
-                let update=()=>{
-                    let val=inp.value.toLowerCase();
-                    let vals=[...new Set(data.map(r=>String(r[c.key]||'')))].filter(v=>v&&v.toLowerCase().includes(val)).slice(0,15);
-                    list.innerHTML=''; currentSuggestItems=[];
-                    if(vals.length){ vals.forEach(v=>{ let div=document.createElement('div'); div.className='suggestion-item'; div.textContent=v; div.onclick=()=>{ inp.value=v; hideAllSuggestLists(); if(currentTab==='items') renderItems(); else if(currentTab==='journal') renderJournal(); else if(currentTab==='balances') renderBalances(); }; list.appendChild(div); currentSuggestItems.push(div); }); list.style.display='block'; currentFocusIndex=-1; }
-                    else { list.style.display='none'; currentFocusIndex=-1; currentSuggestItems=[]; }
-                };
-                inp.onfocus=()=>{ hideAllSuggestLists(); update(); };
-                inp.oninput=()=>{ update(); clearTimeout(inp.st); inp.st=setTimeout(()=>{ if(currentTab==='items') renderItems(); else if(currentTab==='journal') renderJournal(); else if(currentTab==='balances') renderBalances(); },300); };
-                inp.onkeydown=(e)=>{ if(e.key==='ArrowDown'){ e.preventDefault(); if(currentSuggestItems.length){ currentFocusIndex=Math.min(currentFocusIndex+1, currentSuggestItems.length-1); updateActiveItem(); } } else if(e.key==='ArrowUp'){ e.preventDefault(); if(currentSuggestItems.length){ currentFocusIndex=Math.max(currentFocusIndex-1,0); updateActiveItem(); } } else if(e.key==='Enter'){ e.preventDefault(); if(currentFocusIndex>=0&&currentSuggestItems[currentFocusIndex]) currentSuggestItems[currentFocusIndex].click(); else if(currentSuggestItems[0]) currentSuggestItems[0].click(); } else if(e.key==='Escape') hideAllSuggestLists(); };
-            });
-        }
-        function setupItemsDropdowns() { setupDropdownsForData([{id:'searchCat',suggestId:'suggestCat',key:'التصنيف'},{id:'searchSupplier',suggestId:'suggestSupplier',key:'المورد'},{id:'searchName',suggestId:'suggestName',key:'الصنف'},{id:'searchQty',suggestId:'suggestQty',key:'الكمية'}], allItemsData); }
-        function setupJournalDropdowns() {
-            setupDropdownsForData([{id:'searchJournalDate',suggestId:'suggestJournalDate',key:'التاريخ'}], allJournalData);
-            let inp=document.getElementById('searchJournalAccount'), list=document.getElementById('suggestJournalAccount');
-            let update=()=>{
-                let val=inp.value.toLowerCase();
-                let names=[...new Set([...allJournalData.map(r=>String(r['دائن']||'')), ...allJournalData.map(r=>String(r['مدين']||''))])].filter(n=>n&&n.toLowerCase().includes(val)).slice(0,15);
-                list.innerHTML=''; currentSuggestItems=[];
-                if(names.length){ names.forEach(n=>{ let div=document.createElement('div'); div.className='suggestion-item'; div.textContent=n; div.onclick=()=>{ inp.value=n; hideAllSuggestLists(); renderJournal(); }; list.appendChild(div); currentSuggestItems.push(div); }); list.style.display='block'; currentFocusIndex=-1; }
-                else { list.style.display='none'; currentFocusIndex=-1; currentSuggestItems=[]; }
-            };
-            inp.onfocus=()=>{ hideAllSuggestLists(); update(); }; inp.oninput=update; inp.onkeydown=(e)=>{ if(e.key==='ArrowDown'){ e.preventDefault(); if(currentSuggestItems.length){ currentFocusIndex=Math.min(currentFocusIndex+1, currentSuggestItems.length-1); updateActiveItem(); } } else if(e.key==='ArrowUp'){ e.preventDefault(); if(currentSuggestItems.length){ currentFocusIndex=Math.max(currentFocusIndex-1,0); updateActiveItem(); } } else if(e.key==='Enter'){ e.preventDefault(); if(currentFocusIndex>=0&&currentSuggestItems[currentFocusIndex]) currentSuggestItems[currentFocusIndex].click(); else if(currentSuggestItems[0]) currentSuggestItems[0].click(); } else if(e.key==='Escape') hideAllSuggestLists(); };
-        }
         function setupBalancesDropdowns() {
-            let inp=document.getElementById('searchBalancesAccount'), list=document.getElementById('suggestBalancesAccount');
-            let update=()=>{
-                let val=inp.value.toLowerCase();
-                let names=[...new Set(allBalancesData.map(r=>String(r['الحساب']||'')))].filter(n=>n&&n.toLowerCase().includes(val)).slice(0,15);
-                list.innerHTML=''; currentSuggestItems=[];
-                if(names.length){ names.forEach(n=>{ let div=document.createElement('div'); div.className='suggestion-item'; div.textContent=n; div.onclick=()=>{ inp.value=n; hideAllSuggestLists(); renderBalances(); }; list.appendChild(div); currentSuggestItems.push(div); }); list.style.display='block'; currentFocusIndex=-1; }
-                else { list.style.display='none'; currentFocusIndex=-1; currentSuggestItems=[]; }
+            let inp = document.getElementById('searchBalancesAccount');
+            let list = document.getElementById('suggestBalancesAccount');
+            
+            let update = () => {
+                let val = inp.value.toLowerCase();
+                let names = [...new Set(allBalancesData.map(r => String(r['الحساب'] || '')))].filter(n => n && n.toLowerCase().includes(val)).slice(0, 15);
+                list.innerHTML = '';
+                currentSuggestItems = [];
+                if(names.length) {
+                    names.forEach(n => {
+                        let div = document.createElement('div');
+                        div.className = 'suggestion-item';
+                        div.textContent = n;
+                        div.onclick = () => { inp.value = n; hideAllSuggestLists(); renderBalances(); };
+                        list.appendChild(div);
+                        currentSuggestItems.push(div);
+                    });
+                    list.style.display = 'block';
+                    currentFocusIndex = -1;
+                } else {
+                    list.style.display = 'none';
+                }
             };
-            inp.onfocus=()=>{ hideAllSuggestLists(); update(); }; inp.oninput=update; inp.onkeydown=(e)=>{ if(e.key==='ArrowDown'){ e.preventDefault(); if(currentSuggestItems.length){ currentFocusIndex=Math.min(currentFocusIndex+1, currentSuggestItems.length-1); updateActiveItem(); } } else if(e.key==='ArrowUp'){ e.preventDefault(); if(currentSuggestItems.length){ currentFocusIndex=Math.max(currentFocusIndex-1,0); updateActiveItem(); } } else if(e.key==='Enter'){ e.preventDefault(); if(currentFocusIndex>=0&&currentSuggestItems[currentFocusIndex]) currentSuggestItems[currentFocusIndex].click(); else if(currentSuggestItems[0]) currentSuggestItems[0].click(); } else if(e.key==='Escape') hideAllSuggestLists(); };
+            
+            inp.onfocus = () => { hideAllSuggestLists(); update(); };
+            inp.oninput = () => { update(); clearTimeout(inp.st); inp.st = setTimeout(() => renderBalances(), 300); };
+            inp.onkeydown = (e) => handleKeydown(e, update);
         }
+
         function setupStatementDropdowns() {
-            ['searchStatementAccount','searchStatementType','searchStatementInvoice','searchStatementItem'].forEach(id=>{
-                let inp=document.getElementById(id), list=document.getElementById(`suggest${id.replace('searchStatement','')}`);
-                if(!inp||!list) return;
-                let update=()=>{
-                    let val=inp.value.toLowerCase(), uniq=[];
-                    if(id==='searchStatementAccount') uniq=[...new Set([...allSalesData.map(r=>r['العميل']),...allPurchasesData.map(r=>r['المورد']),...allJournalData.map(r=>r['دائن']),...allJournalData.map(r=>r['مدين']),...allOpeningBalancesData.map(r=>r['الحساب'])])].filter(n=>n&&n.toLowerCase().includes(val));
-                    else if(id==='searchStatementType') uniq=['مبيعات','مشتريات','مقبوضات','مدفوعات','يومية'].filter(t=>t.includes(val));
-                    else if(id==='searchStatementInvoice') uniq=[...new Set([...allSalesData.map(r=>r['الفاتورة']),...allPurchasesData.map(r=>r['الفاتورة'])])].filter(n=>n&&n.toLowerCase().includes(val));
-                    else if(id==='searchStatementItem') uniq=[...new Set([...allSalesData.map(r=>r['الصنف']),...allPurchasesData.map(r=>r['الصنف'])])].filter(n=>n&&n.toLowerCase().includes(val));
-                    list.innerHTML=''; currentSuggestItems=[];
-                    if(uniq.length){ uniq.slice(0,15).forEach(v=>{ let div=document.createElement('div'); div.className='suggestion-item'; div.textContent=v; div.onclick=()=>{ inp.value=v; hideAllSuggestLists(); setTimeout(()=>renderStatement(),100); }; list.appendChild(div); currentSuggestItems.push(div); }); list.style.display='block'; currentFocusIndex=-1; }
-                    else { list.style.display='none'; currentFocusIndex=-1; currentSuggestItems=[]; }
+            const inputs = ['searchStatementAccount', 'searchStatementType', 'searchStatementInvoice', 'searchStatementItem'];
+            inputs.forEach(id => {
+                let inp = document.getElementById(id);
+                let list = document.getElementById(`suggest${id.replace('searchStatement', '')}`);
+                if(!inp || !list) return;
+                
+                let update = () => {
+                    let val = inp.value.toLowerCase();
+                    let uniq = [];
+                    if(id === 'searchStatementAccount') {
+                        uniq = [...new Set([
+                            ...allSalesData.map(r => r['العميل']),
+                            ...allPurchasesData.map(r => r['المورد']),
+                            ...allJournalData.map(r => r['دائن']),
+                            ...allJournalData.map(r => r['مدين']),
+                            ...allOpeningBalancesData.map(r => r['الحساب'])
+                        ])].filter(n => n && n.toLowerCase().includes(val));
+                    } else if(id === 'searchStatementType') {
+                        uniq = ['مبيعات', 'مشتريات', 'مقبوضات', 'مدفوعات'].filter(t => t.includes(val));
+                    } else if(id === 'searchStatementInvoice') {
+                        uniq = [...new Set([
+                            ...allSalesData.map(r => r['الفاتورة']),
+                            ...allPurchasesData.map(r => r['الفاتورة'])
+                        ])].filter(n => n && n.toLowerCase().includes(val));
+                    } else if(id === 'searchStatementItem') {
+                        uniq = [...new Set([
+                            ...allSalesData.map(r => r['الصنف']),
+                            ...allPurchasesData.map(r => r['الصنف'])
+                        ])].filter(n => n && n.toLowerCase().includes(val));
+                    }
+                    
+                    list.innerHTML = '';
+                    currentSuggestItems = [];
+                    if(uniq.length) {
+                        uniq.slice(0, 15).forEach(v => {
+                            let div = document.createElement('div');
+                            div.className = 'suggestion-item';
+                            div.textContent = v;
+                            div.onclick = () => { inp.value = v; hideAllSuggestLists(); setTimeout(() => renderStatement(), 100); };
+                            list.appendChild(div);
+                            currentSuggestItems.push(div);
+                        });
+                        list.style.display = 'block';
+                        currentFocusIndex = -1;
+                    } else {
+                        list.style.display = 'none';
+                    }
                 };
-                inp.onfocus=()=>{ hideAllSuggestLists(); update(); };
-                inp.oninput=()=>{ update(); clearTimeout(inp.st); inp.st=setTimeout(()=>{ if(currentTab==='statement') renderStatement(); },500); };
-                inp.onkeydown=(e)=>{ if(e.key==='ArrowDown'){ e.preventDefault(); if(currentSuggestItems.length){ currentFocusIndex=Math.min(currentFocusIndex+1, currentSuggestItems.length-1); updateActiveItem(); } } else if(e.key==='ArrowUp'){ e.preventDefault(); if(currentSuggestItems.length){ currentFocusIndex=Math.max(currentFocusIndex-1,0); updateActiveItem(); } } else if(e.key==='Enter'){ e.preventDefault(); if(currentFocusIndex>=0&&currentSuggestItems[currentFocusIndex]) currentSuggestItems[currentFocusIndex].click(); else if(currentSuggestItems[0]) currentSuggestItems[0].click(); else renderStatement(); } else if(e.key==='Escape') hideAllSuggestLists(); };
+                
+                inp.onfocus = () => { hideAllSuggestLists(); update(); };
+                inp.oninput = () => { update(); clearTimeout(inp.st); inp.st = setTimeout(() => { if(currentTab === 'statement') renderStatement(); }, 500); };
+                inp.onkeydown = (e) => handleKeydown(e, update);
             });
-            document.getElementById('searchStatementDateFrom').addEventListener('change',()=>{ if(currentTab==='statement') renderStatement(); });
-            document.getElementById('searchStatementDateTo').addEventListener('change',()=>{ if(currentTab==='statement') renderStatement(); });
+            
+            document.getElementById('searchStatementDateFrom').addEventListener('change', () => { if(currentTab === 'statement') renderStatement(); });
+            document.getElementById('searchStatementDateTo').addEventListener('change', () => { if(currentTab === 'statement') renderStatement(); });
         }
-        function updateActiveItem(){ currentSuggestItems.forEach(i=>i.classList.remove('active')); if(currentFocusIndex>=0&&currentSuggestItems[currentFocusIndex]){ currentSuggestItems[currentFocusIndex].classList.add('active'); currentSuggestItems[currentFocusIndex].scrollIntoView({block:'nearest'}); } }
-        function hideAllSuggestLists(){ document.querySelectorAll('.suggestions-list').forEach(l=>l.style.display='none'); currentFocusIndex=-1; currentSuggestItems=[]; }
-        document.addEventListener('click',(e)=>{ if(!e.target.classList.contains('search-input')&&!e.target.classList.contains('journal-search-input')&&!e.target.classList.contains('balances-search-input')&&!e.target.classList.contains('statement-search-input')&&!e.target.classList.contains('suggestion-item')) hideAllSuggestLists(); });
 
-        function switchTab(tab){ currentTab=tab; document.querySelectorAll('.tab-button').forEach(btn=>btn.classList.remove('active')); document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active')); document.getElementById(`${tab}Search`).classList.add('active'); document.getElementById(`${tab}Table`).classList.add('active'); document.querySelector(`[onclick="switchTab('${tab}')"]`).classList.add('active'); hideAllSuggestLists(); if(tab==='statement'){ let has=document.getElementById('searchStatementAccount').value||document.getElementById('searchStatementType').value||document.getElementById('searchStatementInvoice').value||document.getElementById('searchStatementItem').value||document.getElementById('searchStatementDateFrom').value||document.getElementById('searchStatementDateTo').value; if(has) renderStatement(); else { let tb=document.getElementById('statementTableBody'); tb.innerHTML='<tr><td colspan="15" class="text-center py-8 text-gray-500"><i class="fas fa-info-circle text-2xl mb-2 block"></i><p class="font-bold mb-1">مرحباً بك في كشف الحساب</p><p class="text-sm">يمكنك البحث باستخدام أي من الخيارات التالية</p><ul class="text-xs mt-2 text-right list-none pr-4"><li>✓ اسم العميل أو المورد</li><li>✓ تاريخ محدد أو نطاق تاريخ</li><li>✓ نوع الحركة (مبيعات، مشتريات، إلخ)</li><li>✓ رقم الفاتورة</li><li>✓ اسم الصنف</li></ul></td></tr>'; } } }
+        function handleKeydown(e, updateFn) {
+            if(e.key === 'ArrowDown') {
+                e.preventDefault();
+                if(currentSuggestItems.length) {
+                    currentFocusIndex = Math.min(currentFocusIndex + 1, currentSuggestItems.length - 1);
+                    updateActiveItem();
+                }
+            } else if(e.key === 'ArrowUp') {
+                e.preventDefault();
+                if(currentSuggestItems.length) {
+                    currentFocusIndex = Math.max(currentFocusIndex - 1, 0);
+                    updateActiveItem();
+                }
+            } else if(e.key === 'Enter') {
+                e.preventDefault();
+                if(currentFocusIndex >= 0 && currentSuggestItems[currentFocusIndex]) {
+                    currentSuggestItems[currentFocusIndex].click();
+                } else if(currentSuggestItems[0]) {
+                    currentSuggestItems[0].click();
+                } else if(updateFn) {
+                    if(currentTab === 'statement') renderStatement();
+                    else if(currentTab === 'balances') renderBalances();
+                }
+            } else if(e.key === 'Escape') {
+                hideAllSuggestLists();
+            }
+        }
 
-        function initPrintOptions(){
-            let saved=localStorage.getItem('printSettings'); if(saved) printSettings=JSON.parse(saved);
-            let itemsC=document.getElementById('columnCheckboxes'); itemsC.innerHTML=''; itemsColumns.forEach(c=>{ let ch=printSettings.items[c.id]!==false; itemsC.innerHTML+=`<label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" ${ch?'checked':''} data-col-ref="${c.id}"> ${c.label}</label>`; });
-            let jourC=document.getElementById('journalColumnCheckboxes'); jourC.innerHTML=''; journalColumns.forEach(c=>{ let ch=printSettings.journal[c.id]!==false; jourC.innerHTML+=`<label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" ${ch?'checked':''} data-col-ref="${c.id}"> ${c.label}</label>`; });
-            let balC=document.getElementById('balancesColumnCheckboxes'); balC.innerHTML=''; balancesColumns.forEach(c=>{ let ch=printSettings.balances[c.id]!==false; balC.innerHTML+=`<label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" ${ch?'checked':''} data-col-ref="${c.id}"> ${c.label}</label>`; });
-            let statC=document.getElementById('statementColumnCheckboxes'); statC.innerHTML=''; statementColumns.forEach(c=>{ let ch=printSettings.statement[c.id]!==false; statC.innerHTML+=`<label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" ${ch?'checked':''} data-col-ref="${c.id}"> ${c.label}</label>`; });
+        function updateActiveItem() {
+            currentSuggestItems.forEach(i => i.classList.remove('active'));
+            if(currentFocusIndex >= 0 && currentSuggestItems[currentFocusIndex]) {
+                currentSuggestItems[currentFocusIndex].classList.add('active');
+                currentSuggestItems[currentFocusIndex].scrollIntoView({ block: 'nearest' });
+            }
         }
-        function savePrintSettings(){
-            document.querySelectorAll('#columnCheckboxes input').forEach(c=>printSettings.items[c.dataset.colRef]=c.checked);
-            document.querySelectorAll('#journalColumnCheckboxes input').forEach(c=>printSettings.journal[c.dataset.colRef]=c.checked);
-            document.querySelectorAll('#balancesColumnCheckboxes input').forEach(c=>printSettings.balances[c.dataset.colRef]=c.checked);
-            document.querySelectorAll('#statementColumnCheckboxes input').forEach(c=>printSettings.statement[c.dataset.colRef]=c.checked);
-            localStorage.setItem('printSettings',JSON.stringify(printSettings));
-            hideAllPrintOptions(); alert('تم حفظ إعدادات الطباعة بنجاح');
+
+        function hideAllSuggestLists() {
+            document.querySelectorAll('.suggestions-list').forEach(l => l.style.display = 'none');
+            currentFocusIndex = -1;
+            currentSuggestItems = [];
         }
-        function togglePrintSettings(){ let m={items:'printOptions',journal:'journalPrintOptions',balances:'balancesPrintOptions',statement:'statementPrintOptions'}; hideAllPrintOptions(); let div=document.getElementById(m[currentTab]); div.style.display=div.style.display==='block'?'none':'block'; }
-        function hideAllPrintOptions(){ ['printOptions','journalPrintOptions','balancesPrintOptions','statementPrintOptions'].forEach(id=>document.getElementById(id).style.display='none'); }
-        function preparePrint(){
-            let m={items:{sel:'#mainTable',cols:itemsColumns},journal:{sel:'#journalTableContent',cols:journalColumns},balances:{sel:'#balancesTableContent',cols:balancesColumns},statement:{sel:'#statementTableContent',cols:statementColumns}};
-            let cfg=m[currentTab], settings=printSettings[currentTab];
-            Object.keys(settings).forEach(colId=>{ if(!settings[colId]){ let th=document.querySelector(`${cfg.sel} th[data-col="${colId}"]`); if(th){ let idx=Array.from(th.parentNode.children).indexOf(th)+1; th.classList.add('print-hidden'); document.querySelectorAll(`${cfg.sel} tbody tr td:nth-child(${idx})`).forEach(td=>td.classList.add('print-hidden')); } } });
+
+        document.addEventListener('click', (e) => {
+            if(!e.target.classList.contains('input-glass') && !e.target.classList.contains('suggestion-item')) {
+                hideAllSuggestLists();
+            }
+        });
+
+        function switchTab(tabName) {
+            currentTab = tabName;
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            document.getElementById(`${tabName}Search`).classList.add('active');
+            document.getElementById(`${tabName}Table`).classList.add('active');
+            document.querySelector(`[onclick="switchTab('${tabName}')"]`).classList.add('active');
+            
+            hideAllSuggestLists();
+            
+            if(tabName === 'statement') {
+                let hasCriteria = document.getElementById('searchStatementAccount').value ||
+                    document.getElementById('searchStatementType').value ||
+                    document.getElementById('searchStatementInvoice').value ||
+                    document.getElementById('searchStatementItem').value ||
+                    document.getElementById('searchStatementDateFrom').value ||
+                    document.getElementById('searchStatementDateTo').value;
+                if(hasCriteria) renderStatement();
+            }
+        }
+
+        function initPrintOptions() {
+            let saved = localStorage.getItem('printSettings');
+            if(saved) printSettings = JSON.parse(saved);
+            
+            let container = document.getElementById('columnCheckboxes');
+            container.innerHTML = '';
+            statementColumns.forEach(col => {
+                let isChecked = printSettings.statement[col.id] !== false;
+                container.innerHTML += `
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" ${isChecked ? 'checked' : ''} data-col-ref="${col.id}"> ${col.label}
+                    </label>
+                `;
+            });
+        }
+
+        function savePrintSettings() {
+            document.querySelectorAll('#columnCheckboxes input').forEach(c => {
+                printSettings.statement[c.dataset.colRef] = c.checked;
+            });
+            localStorage.setItem('printSettings', JSON.stringify(printSettings));
+            hidePrintOptions();
+            alert('تم حفظ إعدادات الطباعة بنجاح');
+        }
+
+        function hidePrintOptions() {
+            document.getElementById('printOptions').style.display = 'none';
+        }
+
+        function preparePrint() {
+            let settings = printSettings.statement;
+            let ths = document.querySelectorAll('#statementTableContent thead th');
+            
+            Object.keys(settings).forEach(colId => {
+                if(!settings[colId]) {
+                    let th = document.querySelector(`#statementTableContent th[data-col="${colId}"]`);
+                    if(th) {
+                        let idx = Array.from(th.parentNode.children).indexOf(th) + 1;
+                        th.classList.add('print-hidden');
+                        document.querySelectorAll(`#statementTableContent tbody tr td:nth-child(${idx})`).forEach(td => {
+                            td.classList.add('print-hidden');
+                        });
+                    }
+                }
+            });
+            
             window.print();
-            setTimeout(()=>{ document.querySelectorAll(`${cfg.sel} th, ${cfg.sel} td`).forEach(el=>el.classList.remove('print-hidden')); },100);
+            
+            setTimeout(() => {
+                document.querySelectorAll('#statementTableContent th, #statementTableContent td').forEach(el => {
+                    el.classList.remove('print-hidden');
+                });
+            }, 100);
         }
 
-        document.getElementById('exchangeRate').addEventListener('input',()=>{ if(currentTab==='items') renderItems(); if(currentTab==='statement') renderStatement(); });
-        document.querySelectorAll('.search-input').forEach(el=>el.addEventListener('input',renderItems));
-        document.querySelectorAll('.journal-search-input').forEach(el=>el.addEventListener('input',renderJournal));
-        document.querySelectorAll('.balances-search-input').forEach(el=>el.addEventListener('input',renderBalances));
-        document.querySelectorAll('.statement-search-input').forEach(el=>{ el.addEventListener('input',function(){ clearTimeout(this.st); this.st=setTimeout(()=>{ if(currentTab==='statement') renderStatement(); },300); }); });
+        document.getElementById('exchangeRate').addEventListener('input', () => {
+            if(currentTab === 'statement') renderStatement();
+        });
         
-        window.onload=()=>{
-            initPrintOptions(); fetchAllData(); startAutoSync();
-            let today=new Date().toISOString().split('T')[0];
-            document.getElementById('searchStatementDateTo').value=today;
-            let lastMonth=new Date(); lastMonth.setFullYear(lastMonth.getFullYear()-1); document.getElementById('searchStatementDateFrom').value=lastMonth.toISOString().split('T')[0];
+        window.onload = () => {
+            initPrintOptions();
+            fetchAllData();
+            startAutoSync();
+            
+            let today = new Date().toISOString().split('T')[0];
+            document.getElementById('searchStatementDateTo').value = today;
+            let lastYear = new Date();
+            lastYear.setFullYear(lastYear.getFullYear() - 1);
+            document.getElementById('searchStatementDateFrom').value = lastYear.toISOString().split('T')[0];
         };
     </script>
 </body>
