@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>الوداد للتجارة</title>
+    <title>معرض ال.جي - كشف الحساب والأرصدة</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -230,7 +230,7 @@
         <div class="container mx-auto">
             <div class="flex justify-between items-center flex-wrap gap-3 mb-3">
                 <div class="flex items-center gap-3">
-                    <h1 class="text-xl font-bold">الوداد للتجارة</h1>
+                    <h1 class="text-xl font-bold">معرض ال.جي</h1>
                 </div>
                 
                 <div class="flex gap-2">
@@ -385,8 +385,6 @@
                             <th data-col="sales_syp">مبيعات ل.س</th>
                             <th data-col="purchases_usd">مشتريات $</th>
                             <th data-col="purchases_syp">مشتريات ل.س</th>
-                            <th data-col="debit_usd">المدفوع $</th>
-                            <th data-col="debit_syp">المدفوع ل.س</th>
                             <th data-col="balance_usd">الرصيد $</th>
                             <th data-col="balance_syp">الرصيد ل.س</th>
                         </tr>
@@ -398,7 +396,7 @@
     </main>
 
     <script>
-        // الروابط الجديدة
+        // الروابط
         const BASE_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTGBbu8j3U5rkseyHUJ74MHYVF5daD7nKLBXoINMKYwfsj477M0q1RENq26J7TmSFI946322YqJcaf-/pub?gid=';
         const LINKS = {
             sales: { url: `${BASE_URL}1169303046&single=true&output=csv`, gid: '1169303046' },
@@ -426,14 +424,7 @@
             {id:'debit_syp',label:'مدين (ل.س)'},{id:'credit_syp',label:'دائن (ل.س)'},{id:'balance_syp',label:'الرصيد (ل.س)'}
         ];
 
-        const balancesColumns = [
-            {id:'index',label:'#'},{id:'account',label:'الحساب'},{id:'sales_usd',label:'مبيعات $'},
-            {id:'sales_syp',label:'مبيعات ل.س'},{id:'purchases_usd',label:'مشتريات $'},
-            {id:'purchases_syp',label:'مشتريات ل.س'},{id:'debit_usd',label:'المدفوع $'},
-            {id:'debit_syp',label:'المدفوع ل.س'},{id:'balance_usd',label:'الرصيد $'},{id:'balance_syp',label:'الرصيد ل.س'}
-        ];
-
-        let printSettings = { statement: {}, balances: {} };
+        let printSettings = { statement: {} };
 
         async function fetchCSV(url) {
             const response = await fetch(`${url}&t=${Date.now()}`);
@@ -523,42 +514,89 @@
             return row ? parseNumber(row['رصيد افتتاحي سوري'] || row['Opening Balance SYP']) : 0; 
         }
 
+        // عرض الأرصدة (بدون تأثير اليومية)
         function renderBalances() {
             let acc = document.getElementById('searchBalancesAccount').value.toLowerCase();
             let tbody = document.getElementById('balancesTableBody');
             tbody.innerHTML = '';
             let totalUsd = 0, totalSyp = 0;
             
-            allBalancesData.filter(r => !acc || String(r['الحساب'] || '').toLowerCase() === acc).forEach((r, i) => {
-                let salesUsd = parseNumber(r['مبيعات دولار']), salesSyp = parseNumber(r['مبيعات سوري']);
-                let purUsd = parseNumber(r['مشتريات دولار']), purSyp = parseNumber(r['مشتريات سوري']);
-                let debUsd = parseNumber(r['المدفوع دولار']), debSyp = parseNumber(r['المدفوع سوري']);
-                let balUsd = parseNumber(r['الرصيد دولار']), balSyp = parseNumber(r['الرصيد سوري']);
-                
-                if(balUsd === 0 && balSyp === 0) return;
-                totalUsd += balUsd;
-                totalSyp += balSyp;
+            // تجميع حسابات المبيعات والمشتريات فقط (بدون اليومية)
+            let accountsMap = new Map();
+            
+            // جمع المبيعات لكل حساب
+            allSalesData.forEach(row => {
+                let account = String(row['العميل'] || '').trim();
+                if(account) {
+                    if(!accountsMap.has(account)) {
+                        accountsMap.set(account, { salesUsd: 0, salesSyp: 0, purchasesUsd: 0, purchasesSyp: 0 });
+                    }
+                    let qty = parseNumber(row['الكمية']);
+                    let priceUsd = parseNumber(row['السعر دولار']);
+                    let priceSyp = parseNumber(row['السعر سوري']);
+                    accountsMap.get(account).salesUsd += qty * priceUsd;
+                    accountsMap.get(account).salesSyp += qty * priceSyp;
+                }
+            });
+            
+            // جمع المشتريات لكل حساب
+            allPurchasesData.forEach(row => {
+                let account = String(row['المورد'] || '').trim();
+                if(account) {
+                    if(!accountsMap.has(account)) {
+                        accountsMap.set(account, { salesUsd: 0, salesSyp: 0, purchasesUsd: 0, purchasesSyp: 0 });
+                    }
+                    let qty = parseNumber(row['الكمية']);
+                    let priceUsd = parseNumber(row['السعر']);
+                    let discount = parseNumber(row['الحسم']);
+                    let priceAfter = priceUsd - (priceUsd * discount / 100);
+                    accountsMap.get(account).purchasesUsd += qty * priceAfter;
+                    accountsMap.get(account).purchasesSyp += 0; // المشتريات ليس لها سعر سوري
+                }
+            });
+            
+            // إضافة الأرصدة الافتتاحية من جدول الأرصدة
+            allBalancesData.forEach(row => {
+                let account = String(row['الحساب'] || '').trim();
+                if(account) {
+                    if(!accountsMap.has(account)) {
+                        accountsMap.set(account, { salesUsd: 0, salesSyp: 0, purchasesUsd: 0, purchasesSyp: 0 });
+                    }
+                    let balUsd = parseNumber(row['الرصيد دولار']);
+                    let balSyp = parseNumber(row['الرصيد سوري']);
+                    accountsMap.get(account).salesUsd += balUsd;
+                    accountsMap.get(account).salesSyp += balSyp;
+                }
+            });
+            
+            let index = 1;
+            for(let [account, data] of accountsMap) {
+                if(acc && !account.toLowerCase().includes(acc)) continue;
+                let balanceUsd = data.salesUsd - data.purchasesUsd;
+                let balanceSyp = data.salesSyp - data.purchasesSyp;
+                if(balanceUsd === 0 && balanceSyp === 0) continue;
+                totalUsd += balanceUsd;
+                totalSyp += balanceSyp;
                 
                 tbody.innerHTML += `
                     <tr>
-                        <td class="text-gray-400 text-[10px]">${i + 1}</td>
-                        <td class="text-right font-bold text-gray-800">${r['الحساب'] || ''}</td>
-                        <td>${salesUsd.toFixed(2)}</td>
-                        <td>${Math.round(salesSyp).toLocaleString()}</td>
-                        <td>${purUsd.toFixed(2)}</td>
-                        <td>${Math.round(purSyp).toLocaleString()}</td>
-                        <td>${debUsd.toFixed(2)}</td>
-                        <td>${Math.round(debSyp).toLocaleString()}</td>
-                        <td class="${balUsd >= 0 ? 'text-green-600' : 'text-red-600'} font-bold">${balUsd.toFixed(2)}</td>
-                        <td class="${balSyp >= 0 ? 'text-green-600' : 'text-red-600'} font-bold">${Math.round(balSyp).toLocaleString()}</td>
+                        <td class="text-gray-400 text-[10px]">${index++}</td>
+                        <td class="text-right font-bold text-gray-800">${account}</td>
+                        <td>${data.salesUsd.toFixed(2)}</td>
+                        <td>${Math.round(data.salesSyp).toLocaleString()}</td>
+                        <td>${data.purchasesUsd.toFixed(2)}</td>
+                        <td>${Math.round(data.purchasesSyp).toLocaleString()}</td>
+                        <td class="${balanceUsd >= 0 ? 'text-green-600' : 'text-red-600'} font-bold">${balanceUsd.toFixed(2)}</td>
+                        <td class="${balanceSyp >= 0 ? 'text-green-600' : 'text-red-600'} font-bold">${Math.round(balanceSyp).toLocaleString()}</td>
                     </tr>
                 `;
-            });
+            }
             
             document.getElementById('balancesTotalUsd').innerText = `${totalUsd.toFixed(2)} $`;
             document.getElementById('balancesTotalSyp').innerText = `${Math.round(totalSyp).toLocaleString()} ل.س`;
         }
 
+        // عرض كشف الحساب (مع تضمين اليومية كمقبوضات ومدفوعات)
         function renderStatement() {
             let acc = document.getElementById('searchStatementAccount').value.trim();
             let from = parseHtmlDate(document.getElementById('searchStatementDateFrom').value);
@@ -584,7 +622,7 @@
                 return matchAcc && matchDate && matchType && matchInv && matchItem;
             }).forEach(r => {
                 let qty = parseNumber(r['الكمية']);
-                let priceUsd = parseNumber(r['بعد الحسم']);
+                let priceUsd = parseNumber(r['السعر دولار']);
                 let priceSyp = parseNumber(r['السعر سوري']);
                 let totalUsdRow = qty * priceUsd;
                 let totalSypRow = qty * priceSyp;
@@ -645,7 +683,7 @@
                 });
             });
             
-            // 3. اليومية (مقبوضات ومدفوعات)
+            // 3. اليومية (مقبوضات ومدفوعات) - تظهر فقط في كشف الحساب
             allJournalData.filter(r => {
                 let cred = String(r['دائن'] || '').trim();
                 let deb = String(r['مدين'] || '').trim();
