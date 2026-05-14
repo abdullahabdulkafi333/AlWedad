@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>معرض ال.جي - نظام المبيعات والمشتريات</title>
+    <title>الوداد للتجارة</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -208,6 +208,14 @@
             animation: pulse 2s infinite;
         }
         
+        /* زر التحديث اليدوي */
+        .refresh-btn {
+            transition: all 0.3s ease;
+        }
+        .refresh-btn:active {
+            transform: rotate(180deg);
+        }
+        
         @keyframes pulse {
             0% { opacity: 1; }
             50% { opacity: 0.7; }
@@ -243,6 +251,9 @@
                 </div>
                 
                 <div class="flex items-center gap-3">
+                    <button onclick="manualRefresh()" class="bg-yellow-500 hover:bg-yellow-400 px-3 py-1.5 rounded text-xs font-bold flex items-center gap-1 refresh-btn" title="تحديث يدوي">
+                        <i class="fas fa-sync-alt text-[10px]"></i> تحديث
+                    </button>
                     <button onclick="preparePrint()" class="bg-green-600 hover:bg-green-500 px-3 py-1.5 rounded text-xs font-bold border border-green-500 flex items-center gap-1">
                         <i class="fas fa-print text-[10px]"></i> طباعة
                     </button>
@@ -398,14 +409,15 @@
     </main>
 
     <script>
-        // الروابط الجديدة
+        // الروابط الجديدة مع إضافة параметر لتجنب الكاش
         const BASE_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTGBbu8j3U5rkseyHUJ74MHYVF5daD7nKLBXoINMKYwfsj477M0q1RENq26J7TmSFI946322YqJcaf-/pub?gid=';
+        
         const LINKS = {
-            sales: { url: `${BASE_URL}1169303046&single=true&output=csv`, gid: '1169303046' },
-            purchases: { url: `${BASE_URL}1461133672&single=true&output=csv`, gid: '1461133672' },
-            journal: { url: `${BASE_URL}209051289&single=true&output=csv`, gid: '209051289' },
-            balances: { url: `${BASE_URL}1938588271&single=true&output=csv`, gid: '1938588271' },
-            opening: { url: `${BASE_URL}107333903&single=true&output=csv`, gid: '107333903' }
+            sales: { url: `${BASE_URL}1169303046&single=true&output=csv`, name: 'المبيعات' },
+            purchases: { url: `${BASE_URL}1461133672&single=true&output=csv`, name: 'المشتريات' },
+            journal: { url: `${BASE_URL}209051289&single=true&output=csv`, name: 'اليومية' },
+            balances: { url: `${BASE_URL}1938588271&single=true&output=csv`, name: 'الأرصدة' },
+            opening: { url: `${BASE_URL}107333903&single=true&output=csv`, name: 'الرصيد الافتتاحي' }
         };
 
         let allSalesData = [];
@@ -417,6 +429,7 @@
         let syncInterval;
         let currentFocusIndex = -1;
         let currentSuggestItems = [];
+        let isRefreshing = false;
 
         const statementColumns = [
             {id:'index',label:'#'},{id:'date',label:'التاريخ'},{id:'type',label:'النوع'},{id:'invoice',label:'الفاتورة'},
@@ -435,31 +448,103 @@
 
         let printSettings = { statement: {}, balances: {} };
 
-        async function fetchCSV(url) {
-            const response = await fetch(`${url}&t=${Date.now()}`);
-            const text = await response.text();
-            return new Promise((resolve) => {
-                Papa.parse(text, { header: true, skipEmptyLines: true, complete: resolve });
-            });
+        // دالة محسنة لجلب CSV مع تجنب الكاش بشكل قوي
+        async function fetchCSV(url, sheetName) {
+            try {
+                // إضافة معامل عشوائي قوي جداً لمنع الكاش
+                const antiCache = Date.now() + Math.random().toString(36).substring(2);
+                const finalUrl = `${url}&_nocache=${antiCache}`;
+                
+                console.log(`جلب البيانات من ${sheetName}...`);
+                const response = await fetch(finalUrl, {
+                    cache: 'no-store',
+                    headers: {
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const text = await response.text();
+                
+                return new Promise((resolve) => {
+                    Papa.parse(text, { 
+                        header: true, 
+                        skipEmptyLines: true,
+                        complete: (result) => {
+                            console.log(`تم جلب ${result.data.length} صف من ${sheetName}`);
+                            resolve(result);
+                        }
+                    });
+                });
+            } catch (error) {
+                console.error(`خطأ في جلب ${sheetName}:`, error);
+                return { data: [] };
+            }
+        }
+
+        // دالة التحديث اليدوي
+        async function manualRefresh() {
+            if (isRefreshing) return;
+            isRefreshing = true;
+            
+            const indicator = document.getElementById('syncIndicator');
+            indicator.style.display = 'block';
+            indicator.innerHTML = '<i class="fas fa-sync-alt ml-2 fa-spin"></i> جاري تحديث البيانات يدوياً...';
+            
+            try {
+                await fetchAllData(false);
+                indicator.innerHTML = '<i class="fas fa-check-circle ml-2"></i> تم التحديث بنجاح!';
+                setTimeout(() => {
+                    indicator.style.display = 'none';
+                    indicator.innerHTML = '<i class="fas fa-sync-alt ml-2"></i> جاري تحديث البيانات...';
+                }, 2000);
+            } catch (e) {
+                console.error(e);
+                indicator.innerHTML = '<i class="fas fa-exclamation-triangle ml-2"></i> فشل التحديث';
+                setTimeout(() => {
+                    indicator.style.display = 'none';
+                    indicator.innerHTML = '<i class="fas fa-sync-alt ml-2"></i> جاري تحديث البيانات...';
+                }, 2000);
+            } finally {
+                isRefreshing = false;
+            }
         }
 
         async function fetchAllData(showSyncIndicator = false) {
-            if (showSyncIndicator) document.getElementById('syncIndicator').style.display = 'block';
+            if (showSyncIndicator && !isRefreshing) {
+                document.getElementById('syncIndicator').style.display = 'block';
+            }
+            
             try {
+                // جلب جميع البيانات بشكل متوازي
                 const [sales, purchases, journal, balances, opening] = await Promise.all([
-                    fetchCSV(LINKS.sales.url),
-                    fetchCSV(LINKS.purchases.url),
-                    fetchCSV(LINKS.journal.url),
-                    fetchCSV(LINKS.balances.url),
-                    fetchCSV(LINKS.opening.url)
+                    fetchCSV(LINKS.sales.url, LINKS.sales.name),
+                    fetchCSV(LINKS.purchases.url, LINKS.purchases.name),
+                    fetchCSV(LINKS.journal.url, LINKS.journal.name),
+                    fetchCSV(LINKS.balances.url, LINKS.balances.name),
+                    fetchCSV(LINKS.opening.url, LINKS.opening.name)
                 ]);
                 
-                allSalesData = sales.data.filter(r => Object.values(r).some(v => v && v.trim()));
-                allPurchasesData = purchases.data.filter(r => Object.values(r).some(v => v && v.trim()));
-                allJournalData = journal.data.filter(r => Object.values(r).some(v => v && v.trim()));
-                allBalancesData = balances.data.filter(r => Object.values(r).some(v => v && v.trim()));
-                allOpeningBalancesData = opening.data.filter(r => Object.values(r).some(v => v && v.trim()));
+                allSalesData = sales.data.filter(r => Object.values(r).some(v => v && v.toString().trim()));
+                allPurchasesData = purchases.data.filter(r => Object.values(r).some(v => v && v.toString().trim()));
+                allJournalData = journal.data.filter(r => Object.values(r).some(v => v && v.toString().trim()));
+                allBalancesData = balances.data.filter(r => Object.values(r).some(v => v && v.toString().trim()));
+                allOpeningBalancesData = opening.data.filter(r => Object.values(r).some(v => v && v.toString().trim()));
                 
+                console.log('البيانات المستلمة:', {
+                    مبيعات: allSalesData.length,
+                    مشتريات: allPurchasesData.length,
+                    يومية: allJournalData.length,
+                    أرصدة: allBalancesData.length,
+                    رصيد_افتتاحي: allOpeningBalancesData.length
+                });
+                
+                // تحديث الواجهة
                 renderBalances();
                 renderStatement();
                 setupBalancesDropdowns();
@@ -467,20 +552,26 @@
                 
                 document.getElementById('loader').classList.add('hidden');
             } catch(e) { 
-                console.error(e); 
+                console.error('خطأ عام:', e); 
                 document.getElementById('loader').classList.add('hidden');
             }
-            if (showSyncIndicator) setTimeout(() => document.getElementById('syncIndicator').style.display = 'none', 2000);
+            
+            if (showSyncIndicator && !isRefreshing) {
+                setTimeout(() => document.getElementById('syncIndicator').style.display = 'none', 2000);
+            }
         }
 
         function startAutoSync() { 
             if(syncInterval) clearInterval(syncInterval); 
-            syncInterval = setInterval(() => fetchAllData(true), 15000); 
+            // تحديث كل 10 ثواني بدلاً من 15 للحصول على بيانات أحدث
+            syncInterval = setInterval(() => fetchAllData(true), 10000); 
         }
 
         function parseNumber(v) { 
             if(!v || v === '') return 0; 
-            return parseFloat(String(v).replace(/[^\d.-]/g, '')) || 0; 
+            const cleaned = String(v).replace(/[^\d.-]/g, '');
+            const num = parseFloat(cleaned);
+            return isNaN(num) ? 0 : num;
         }
         
         function parseDate(d) { 
@@ -496,6 +587,7 @@
         }
         
         function isDateInRange(dStr, from, to) { 
+            if(!dStr) return true;
             let date = parseDate(dStr); 
             if(date.getTime() === 0) return false; 
             if(from && date < from) return false; 
@@ -574,139 +666,144 @@
             let totalSales = 0, totalPur = 0, totalRec = 0, totalPay = 0;
             let totalSalesS = 0, totalPurS = 0, totalRecS = 0, totalPayS = 0;
             
+            console.log('بدء عرض كشف الحساب، عدد المبيعات:', allSalesData.length);
+            
             // 1. المبيعات
-            allSalesData.filter(r => {
+            allSalesData.forEach(r => {
                 let matchAcc = !acc || String(r['العميل'] || '').trim() === acc;
                 let matchDate = isDateInRange(r['التاريخ'], from, to);
                 let matchType = !typeF || 'مبيعات'.includes(typeF);
                 let matchInv = !invF || String(r['الفاتورة'] || '').toLowerCase().includes(invF);
                 let matchItem = !itemF || String(r['الصنف'] || '').toLowerCase().includes(itemF);
-                return matchAcc && matchDate && matchType && matchInv && matchItem;
-            }).forEach(r => {
-                let qty = parseNumber(r['الكمية']);
-                let priceUsd = parseNumber(r['السعر دولار']);
-                let priceSyp = parseNumber(r['السعر سوري']);
-                let totalUsdRow = qty * priceUsd;
-                let totalSypRow = qty * priceSyp;
                 
-                totalSales += totalUsdRow;
-                totalSalesS += totalSypRow;
-                
-                data.push({
-                    date: r['التاريخ'] || '',
-                    type: 'مبيعات',
-                    typeClass: 'type-sales',
-                    invoice: r['الفاتورة'] || '',
-                    description: r['الصنف'] || '',
-                    account: r['العميل'] || '',
-                    qty: qty,
-                    unitPriceUsd: priceUsd,
-                    unitPriceSyp: priceSyp,
-                    debitUsd: totalUsdRow,
-                    creditUsd: 0,
-                    debitSyp: totalSypRow,
-                    creditSyp: 0,
-                    rawDate: parseDate(r['التاريخ'])
-                });
+                if(matchAcc && matchDate && matchType && matchInv && matchItem) {
+                    let qty = parseNumber(r['الكمية']);
+                    let priceUsd = parseNumber(r['السعر دولار']);
+                    let priceSyp = parseNumber(r['السعر سوري']);
+                    let totalUsdRow = qty * priceUsd;
+                    let totalSypRow = qty * priceSyp;
+                    
+                    totalSales += totalUsdRow;
+                    totalSalesS += totalSypRow;
+                    
+                    data.push({
+                        date: r['التاريخ'] || '',
+                        type: 'مبيعات',
+                        typeClass: 'type-sales',
+                        invoice: r['الفاتورة'] || '',
+                        description: r['الصنف'] || '',
+                        account: r['العميل'] || '',
+                        qty: qty,
+                        unitPriceUsd: priceUsd,
+                        unitPriceSyp: priceSyp,
+                        debitUsd: totalUsdRow,
+                        creditUsd: 0,
+                        debitSyp: totalSypRow,
+                        creditSyp: 0,
+                        rawDate: parseDate(r['التاريخ'])
+                    });
+                }
             });
             
             // 2. المشتريات
-            allPurchasesData.filter(r => {
+            allPurchasesData.forEach(r => {
                 let matchAcc = !acc || String(r['المورد'] || '').trim() === acc;
                 let matchDate = isDateInRange(r['التاريخ'], from, to);
                 let matchType = !typeF || 'مشتريات'.includes(typeF);
                 let matchInv = !invF || String(r['الفاتورة'] || '').toLowerCase().includes(invF);
                 let matchItem = !itemF || String(r['الصنف'] || '').toLowerCase().includes(itemF);
-                return matchAcc && matchDate && matchType && matchInv && matchItem;
-            }).forEach(r => {
-                let qty = parseNumber(r['الكمية']);
-                let priceUsd = parseNumber(r['السعر']);
-                let discount = parseNumber(r['الحسم']);
-                let priceAfter = priceUsd - (priceUsd * discount / 100);
-                let totalUsdRow = qty * priceAfter;
                 
-                totalPur += totalUsdRow;
-                
-                data.push({
-                    date: r['التاريخ'] || '',
-                    type: 'مشتريات',
-                    typeClass: 'type-purchase',
-                    invoice: r['الفاتورة'] || '',
-                    description: r['الصنف'] || '',
-                    account: r['المورد'] || '',
-                    qty: qty,
-                    unitPriceUsd: priceAfter,
-                    unitPriceSyp: 0,
-                    debitUsd: 0,
-                    creditUsd: totalUsdRow,
-                    debitSyp: 0,
-                    creditSyp: 0,
-                    rawDate: parseDate(r['التاريخ'])
-                });
+                if(matchAcc && matchDate && matchType && matchInv && matchItem) {
+                    let qty = parseNumber(r['الكمية']);
+                    let priceUsd = parseNumber(r['السعر']);
+                    let discount = parseNumber(r['الحسم']);
+                    let priceAfter = priceUsd - (priceUsd * discount / 100);
+                    let totalUsdRow = qty * priceAfter;
+                    
+                    totalPur += totalUsdRow;
+                    
+                    data.push({
+                        date: r['التاريخ'] || '',
+                        type: 'مشتريات',
+                        typeClass: 'type-purchase',
+                        invoice: r['الفاتورة'] || '',
+                        description: r['الصنف'] || '',
+                        account: r['المورد'] || '',
+                        qty: qty,
+                        unitPriceUsd: priceAfter,
+                        unitPriceSyp: 0,
+                        debitUsd: 0,
+                        creditUsd: totalUsdRow,
+                        debitSyp: 0,
+                        creditSyp: 0,
+                        rawDate: parseDate(r['التاريخ'])
+                    });
+                }
             });
             
             // 3. اليومية (مقبوضات ومدفوعات)
-            allJournalData.filter(r => {
+            allJournalData.forEach(r => {
                 let cred = String(r['دائن'] || '').trim();
                 let deb = String(r['مدين'] || '').trim();
                 let matchAcc = !acc || cred === acc || deb === acc;
                 let matchDate = isDateInRange(r['التاريخ'], from, to);
                 let matchType = !typeF || typeF === '' || typeF === 'مقبوضات' || typeF === 'مدفوعات';
-                return matchAcc && matchDate && matchType;
-            }).forEach(r => {
-                let usd = parseNumber(r['دولار']);
-                let syp = parseNumber(r['سوري']);
-                let cred = String(r['دائن'] || '').trim();
-                let deb = String(r['مدين'] || '').trim();
-                let desc = r['البيان'] || '';
                 
-                if(cred === acc || (!acc && cred)) {
-                    totalRec += usd;
-                    totalRecS += syp;
-                    if(!typeF || typeF === '' || typeF === 'مقبوضات') {
-                        data.push({
-                            date: r['التاريخ'] || '',
-                            type: 'مقبوضات',
-                            typeClass: 'type-receipt',
-                            invoice: '',
-                            description: desc,
-                            account: cred,
-                            qty: 1,
-                            unitPriceUsd: usd,
-                            unitPriceSyp: syp,
-                            debitUsd: 0,
-                            creditUsd: usd,
-                            debitSyp: 0,
-                            creditSyp: syp,
-                            rawDate: parseDate(r['التاريخ'])
-                        });
-                    }
-                } else if(deb === acc || (!acc && deb)) {
-                    totalPay += usd;
-                    totalPayS += syp;
-                    if(!typeF || typeF === '' || typeF === 'مدفوعات') {
-                        data.push({
-                            date: r['التاريخ'] || '',
-                            type: 'مدفوعات',
-                            typeClass: 'type-payment',
-                            invoice: '',
-                            description: desc,
-                            account: deb,
-                            qty: 1,
-                            unitPriceUsd: usd,
-                            unitPriceSyp: syp,
-                            debitUsd: usd,
-                            creditUsd: 0,
-                            debitSyp: syp,
-                            creditSyp: 0,
-                            rawDate: parseDate(r['التاريخ'])
-                        });
+                if(matchAcc && matchDate && matchType) {
+                    let usd = parseNumber(r['دولار']);
+                    let syp = parseNumber(r['سوري']);
+                    let desc = r['البيان'] || '';
+                    
+                    if(cred === acc || (!acc && cred)) {
+                        totalRec += usd;
+                        totalRecS += syp;
+                        if(!typeF || typeF === '' || typeF === 'مقبوضات') {
+                            data.push({
+                                date: r['التاريخ'] || '',
+                                type: 'مقبوضات',
+                                typeClass: 'type-receipt',
+                                invoice: '',
+                                description: desc,
+                                account: cred,
+                                qty: 1,
+                                unitPriceUsd: usd,
+                                unitPriceSyp: syp,
+                                debitUsd: 0,
+                                creditUsd: usd,
+                                debitSyp: 0,
+                                creditSyp: syp,
+                                rawDate: parseDate(r['التاريخ'])
+                            });
+                        }
+                    } else if(deb === acc || (!acc && deb)) {
+                        totalPay += usd;
+                        totalPayS += syp;
+                        if(!typeF || typeF === '' || typeF === 'مدفوعات') {
+                            data.push({
+                                date: r['التاريخ'] || '',
+                                type: 'مدفوعات',
+                                typeClass: 'type-payment',
+                                invoice: '',
+                                description: desc,
+                                account: deb,
+                                qty: 1,
+                                unitPriceUsd: usd,
+                                unitPriceSyp: syp,
+                                debitUsd: usd,
+                                creditUsd: 0,
+                                debitSyp: syp,
+                                creditSyp: 0,
+                                rawDate: parseDate(r['التاريخ'])
+                            });
+                        }
                     }
                 }
             });
             
             // ترتيب حسب التاريخ
             data.sort((a, b) => a.rawDate - b.rawDate);
+            
+            console.log('عدد الحركات المعروضة:', data.length);
             
             let header = document.getElementById('statementHeader');
             let summaryDiv = document.getElementById('statementSummary');
