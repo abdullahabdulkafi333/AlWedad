@@ -615,7 +615,7 @@
                 let matchItem = !itemF || String(r['الصنف'] || '').toLowerCase().includes(itemF);
                 if(matchAcc && matchDate && matchInv && matchItem) {
                     let qty = parseNumber(r['الكمية']);
-                    let priceUsd = parseNumber(r['السعر دولار']);
+                    let priceUsd = parseNumber(r['بعد الحسم']);
                     let priceSyp = parseNumber(r['السعر سوري']);
                     let totalUsdRow = qty * priceUsd;
                     let totalSypRow = qty * priceSyp;
