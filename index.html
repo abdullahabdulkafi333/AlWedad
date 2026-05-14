@@ -622,7 +622,7 @@
                 return matchAcc && matchDate && matchType && matchInv && matchItem;
             }).forEach(r => {
                 let qty = parseNumber(r['الكمية']);
-                let priceUsd = parseNumber(r['السعر دولار']);
+                let priceUsd = parseNumber(r['بعد الحسم']);
                 let priceSyp = parseNumber(r['السعر سوري']);
                 let totalUsdRow = qty * priceUsd;
                 let totalSypRow = qty * priceSyp;
