@@ -104,7 +104,7 @@
 
         @media print {
             @page { size: A4; margin: 1cm; }
-            header, .no-print, #loader, #printOptions, .suggestions-list, .tab-buttons, .totals-container { display: none !important; }
+            header, .no-print, #loader, #printOptions, .suggestions-list, .tab-buttons { display: none !important; }
             .table-container { max-height: none !important; overflow: visible !important; border: none !important; box-shadow: none !important; margin-bottom: 0 !important; }
             table { width: 100%; border-collapse: collapse; }
             th { position: static !important; background-color: #eee !important; color: black !important; border: 1px solid #000 !important; }
@@ -122,26 +122,6 @@
             z-index: 100; border: 1px solid #cbd5e1;
         }
 
-        .totals-container {
-            background: white;
-            padding: 0.75rem;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-            border: 1px solid #e2e8f0;
-            margin-bottom: 0.5rem;
-        }
-
-        .total-card {
-            padding: 0.5rem;
-            border-radius: 6px;
-            text-align: center;
-            font-weight: 700;
-            font-size: 0.85rem;
-        }
-
-        .usd-total { background: #dbeafe; color: #1e40af; }
-        .syp-total { background: #dcfce7; color: #166534; }
-        
         .statement-header {
             background: #1e3a8a;
             color: white;
@@ -213,6 +193,9 @@
             50% { opacity: 0.7; }
             100% { opacity: 1; }
         }
+        
+        .balance-positive { color: #059669 !important; font-weight: 700; }
+        .balance-negative { color: #dc2626 !important; font-weight: 700; }
     </style>
 </head>
 <body>
@@ -230,7 +213,7 @@
         <div class="container mx-auto">
             <div class="flex justify-between items-center flex-wrap gap-3 mb-3">
                 <div class="flex items-center gap-3">
-                    <h1 class="text-xl font-bold">معرض ال.جي</h1>
+                    <h1 class="text-xl font-bold">الوداد للتجارة</h1>
                 </div>
                 
                 <div class="flex gap-2">
@@ -362,29 +345,16 @@
 
         <!-- تبويب الأرصدة -->
         <div id="balancesTable" class="tab-content">
-            <div class="totals-container mb-3 no-print">
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="total-card usd-total">
-                        <div class="text-[11px] text-gray-600">إجمالي $</div>
-                        <div class="text-sm" id="balancesTotalUsd">0.00 $</div>
-                    </div>
-                    <div class="total-card syp-total">
-                        <div class="text-[11px] text-gray-600">إجمالي ل.س</div>
-                        <div class="text-sm" id="balancesTotalSyp">0 ل.س</div>
-                    </div>
-                </div>
-            </div>
-            
             <div class="table-container">
                 <table id="balancesTableContent">
                     <thead>
                         <tr>
                             <th data-col="index" class="w-12">#</th>
                             <th data-col="account">الحساب</th>
-                            <th data-col="sales_usd">مبيعات $</th>
-                            <th data-col="sales_syp">مبيعات ل.س</th>
-                            <th data-col="purchases_usd">مشتريات $</th>
-                            <th data-col="purchases_syp">مشتريات ل.س</th>
+                            <th data-col="sales_usd">إجمالي المبيعات $</th>
+                            <th data-col="sales_syp">إجمالي المبيعات ل.س</th>
+                            <th data-col="purchases_usd">إجمالي المشتريات $</th>
+                            <th data-col="purchases_syp">إجمالي المشتريات ل.س</th>
                             <th data-col="balance_usd">الرصيد $</th>
                             <th data-col="balance_syp">الرصيد ل.س</th>
                         </tr>
@@ -402,14 +372,12 @@
             sales: { url: `${BASE_URL}1169303046&single=true&output=csv`, gid: '1169303046' },
             purchases: { url: `${BASE_URL}1461133672&single=true&output=csv`, gid: '1461133672' },
             journal: { url: `${BASE_URL}209051289&single=true&output=csv`, gid: '209051289' },
-            balances: { url: `${BASE_URL}1938588271&single=true&output=csv`, gid: '1938588271' },
             opening: { url: `${BASE_URL}107333903&single=true&output=csv`, gid: '107333903' }
         };
 
         let allSalesData = [];
         let allPurchasesData = [];
         let allJournalData = [];
-        let allBalancesData = [];
         let allOpeningBalancesData = [];
         let currentTab = 'statement';
         let syncInterval;
@@ -437,18 +405,16 @@
         async function fetchAllData(showSyncIndicator = false) {
             if (showSyncIndicator) document.getElementById('syncIndicator').style.display = 'block';
             try {
-                const [sales, purchases, journal, balances, opening] = await Promise.all([
+                const [sales, purchases, journal, opening] = await Promise.all([
                     fetchCSV(LINKS.sales.url),
                     fetchCSV(LINKS.purchases.url),
                     fetchCSV(LINKS.journal.url),
-                    fetchCSV(LINKS.balances.url),
                     fetchCSV(LINKS.opening.url)
                 ]);
                 
                 allSalesData = sales.data.filter(r => Object.values(r).some(v => v && v.trim()));
                 allPurchasesData = purchases.data.filter(r => Object.values(r).some(v => v && v.trim()));
                 allJournalData = journal.data.filter(r => Object.values(r).some(v => v && v.trim()));
-                allBalancesData = balances.data.filter(r => Object.values(r).some(v => v && v.trim()));
                 allOpeningBalancesData = opening.data.filter(r => Object.values(r).some(v => v && v.trim()));
                 
                 renderBalances();
@@ -514,84 +480,102 @@
             return row ? parseNumber(row['رصيد افتتاحي سوري'] || row['Opening Balance SYP']) : 0; 
         }
 
-        // عرض الأرصدة (بدون تأثير اليومية)
+        // عرض الأرصدة بشكل صحيح
         function renderBalances() {
-            let acc = document.getElementById('searchBalancesAccount').value.toLowerCase();
+            let accFilter = document.getElementById('searchBalancesAccount').value.toLowerCase();
             let tbody = document.getElementById('balancesTableBody');
             tbody.innerHTML = '';
-            let totalUsd = 0, totalSyp = 0;
             
-            let accountsMap = new Map();
-            
+            // تجميع بيانات المبيعات لكل حساب
+            let salesMap = new Map();
             allSalesData.forEach(row => {
                 let account = String(row['العميل'] || '').trim();
                 if(account) {
-                    if(!accountsMap.has(account)) {
-                        accountsMap.set(account, { salesUsd: 0, salesSyp: 0, purchasesUsd: 0, purchasesSyp: 0 });
+                    if(!salesMap.has(account)) {
+                        salesMap.set(account, { usd: 0, syp: 0 });
                     }
                     let qty = parseNumber(row['الكمية']);
                     let priceUsd = parseNumber(row['السعر دولار']);
                     let priceSyp = parseNumber(row['السعر سوري']);
-                    accountsMap.get(account).salesUsd += qty * priceUsd;
-                    accountsMap.get(account).salesSyp += qty * priceSyp;
+                    salesMap.get(account).usd += qty * priceUsd;
+                    salesMap.get(account).syp += qty * priceSyp;
                 }
             });
             
+            // تجميع بيانات المشتريات لكل حساب
+            let purchasesMap = new Map();
             allPurchasesData.forEach(row => {
                 let account = String(row['المورد'] || '').trim();
                 if(account) {
-                    if(!accountsMap.has(account)) {
-                        accountsMap.set(account, { salesUsd: 0, salesSyp: 0, purchasesUsd: 0, purchasesSyp: 0 });
+                    if(!purchasesMap.has(account)) {
+                        purchasesMap.set(account, { usd: 0, syp: 0 });
                     }
                     let qty = parseNumber(row['الكمية']);
                     let priceUsd = parseNumber(row['السعر']);
                     let discount = parseNumber(row['الحسم']);
                     let priceAfter = priceUsd - (priceUsd * discount / 100);
-                    accountsMap.get(account).purchasesUsd += qty * priceAfter;
+                    purchasesMap.get(account).usd += qty * priceAfter;
+                    // المشتريات ليس لها سعر سوري
                 }
             });
             
-            allBalancesData.forEach(row => {
+            // تجميع جميع الحسابات
+            let allAccounts = new Set([...salesMap.keys(), ...purchasesMap.keys()]);
+            
+            // إضافة الأرصدة الافتتاحية
+            allOpeningBalancesData.forEach(row => {
                 let account = String(row['الحساب'] || '').trim();
                 if(account) {
-                    if(!accountsMap.has(account)) {
-                        accountsMap.set(account, { salesUsd: 0, salesSyp: 0, purchasesUsd: 0, purchasesSyp: 0 });
-                    }
-                    let balUsd = parseNumber(row['الرصيد دولار']);
-                    let balSyp = parseNumber(row['الرصيد سوري']);
-                    accountsMap.get(account).salesUsd += balUsd;
-                    accountsMap.get(account).salesSyp += balSyp;
+                    allAccounts.add(account);
                 }
             });
             
             let index = 1;
-            for(let [account, data] of accountsMap) {
-                if(acc && !account.toLowerCase().includes(acc)) continue;
-                let balanceUsd = data.salesUsd - data.purchasesUsd;
-                let balanceSyp = data.salesSyp - data.purchasesSyp;
-                if(balanceUsd === 0 && balanceSyp === 0) continue;
-                totalUsd += balanceUsd;
-                totalSyp += balanceSyp;
+            for(let account of allAccounts) {
+                if(accFilter && !account.toLowerCase().includes(accFilter)) continue;
+                
+                let salesUsd = salesMap.get(account)?.usd || 0;
+                let salesSyp = salesMap.get(account)?.syp || 0;
+                let purchasesUsd = purchasesMap.get(account)?.usd || 0;
+                let purchasesSyp = purchasesMap.get(account)?.syp || 0;
+                
+                // إضافة الرصيد الافتتاحي
+                let openingUsd = getOpeningBalance(account);
+                let openingSyp = getOpeningBalanceSyp(account);
+                
+                // حساب الرصيد النهائي: الرصيد الافتتاحي + المبيعات - المشتريات
+                let balanceUsd = openingUsd + salesUsd - purchasesUsd;
+                let balanceSyp = openingSyp + salesSyp - purchasesSyp;
+                
+                // إجمالي المبيعات مع الرصيد الافتتاحي
+                let totalSalesUsd = openingUsd + salesUsd;
+                let totalSalesSyp = openingSyp + salesSyp;
+                
+                if(balanceUsd === 0 && balanceSyp === 0 && salesUsd === 0 && purchasesUsd === 0 && openingUsd === 0) continue;
+                
+                let balanceClass = balanceUsd >= 0 ? 'balance-positive' : 'balance-negative';
+                let balanceSypClass = balanceSyp >= 0 ? 'balance-positive' : 'balance-negative';
                 
                 tbody.innerHTML += `
                     <tr>
                         <td class="text-gray-400 text-[10px]">${index++}</td>
                         <td class="text-right font-bold text-gray-800">${account}</td>
-                        <td>${data.salesUsd.toFixed(2)}</td>
-                        <td>${Math.round(data.salesSyp).toLocaleString()}</td>
-                        <td>${data.purchasesUsd.toFixed(2)}</td>
-                        <td>${Math.round(data.purchasesSyp).toLocaleString()}</td>
-                        <td class="${balanceUsd >= 0 ? 'text-green-600' : 'text-red-600'} font-bold">${balanceUsd.toFixed(2)}</td>
-                        <td class="${balanceSyp >= 0 ? 'text-green-600' : 'text-red-600'} font-bold">${Math.round(balanceSyp).toLocaleString()}</td>
+                        <td class="text-green-600 font-bold">${totalSalesUsd.toFixed(2)}</td>
+                        <td class="text-green-600 font-bold">${Math.round(totalSalesSyp).toLocaleString()}</td>
+                        <td class="text-red-600 font-bold">${purchasesUsd.toFixed(2)}</td>
+                        <td class="text-red-600 font-bold">${Math.round(purchasesSyp).toLocaleString()}</td>
+                        <td class="${balanceClass} font-bold">${balanceUsd.toFixed(2)}</td>
+                        <td class="${balanceSypClass} font-bold">${Math.round(balanceSyp).toLocaleString()}</td>
                     </tr>
                 `;
             }
             
-            document.getElementById('balancesTotalUsd').innerText = `${totalUsd.toFixed(2)} $`;
-            document.getElementById('balancesTotalSyp').innerText = `${Math.round(totalSyp).toLocaleString()} ل.س`;
+            if(index === 1) {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-gray-500">لا توجد بيانات للأرصدة</td></tr>';
+            }
         }
 
-        // عرض كشف الحساب (مع تضمين اليومية كمقبوضات ومدفوعات)
+        // عرض كشف الحساب
         function renderStatement() {
             let acc = document.getElementById('searchStatementAccount').value.trim();
             let from = parseHtmlDate(document.getElementById('searchStatementDateFrom').value);
@@ -692,7 +676,6 @@
                     let syp = parseNumber(r['سوري']);
                     let desc = r['البيان'] || '';
                     
-                    // مقبوضات (الحساب دائن - استلام مبلغ)
                     if(cred === acc && acc) {
                         if(!typeF || typeF === '' || typeF === 'مقبوضات') {
                             totalRec += usd;
@@ -715,7 +698,6 @@
                             });
                         }
                     } 
-                    // مدفوعات (الحساب مدين - دفع مبلغ)
                     else if(deb === acc && acc) {
                         if(!typeF || typeF === '' || typeF === 'مدفوعات') {
                             totalPay += usd;
@@ -738,9 +720,7 @@
                             });
                         }
                     }
-                    // بدون تحديد حساب محدد - عرض جميع الحركات
                     else if(!acc && (!typeF || typeF === '' || typeF === 'مقبوضات' || typeF === 'مدفوعات')) {
-                        // مقبوضات
                         if(cred) {
                             totalRec += usd;
                             totalRecS += syp;
@@ -761,7 +741,6 @@
                                 rawDate: parseDate(r['التاريخ'])
                             });
                         }
-                        // مدفوعات
                         if(deb) {
                             totalPay += usd;
                             totalPayS += syp;
@@ -813,7 +792,6 @@
                 let runUsd = openUsd;
                 let runSyp = openSyp;
                 
-                // الرصيد الافتتاحي
                 if(openUsd !== 0 || openSyp !== 0) {
                     tbody.innerHTML += `
                         <tr class="bg-gray-100 font-bold">
@@ -930,7 +908,13 @@
             
             let update = () => {
                 let val = inp.value.toLowerCase();
-                let names = [...new Set(allBalancesData.map(r => String(r['الحساب'] || '')))].filter(n => n && n.toLowerCase().includes(val)).slice(0, 15);
+                let accounts = new Set();
+                
+                allSalesData.forEach(r => { let a = String(r['العميل'] || '').trim(); if(a) accounts.add(a); });
+                allPurchasesData.forEach(r => { let a = String(r['المورد'] || '').trim(); if(a) accounts.add(a); });
+                allOpeningBalancesData.forEach(r => { let a = String(r['الحساب'] || '').trim(); if(a) accounts.add(a); });
+                
+                let names = [...accounts].filter(n => n && n.toLowerCase().includes(val)).slice(0, 15);
                 list.innerHTML = '';
                 currentSuggestItems = [];
                 if(names.length) {
@@ -961,24 +945,23 @@
             
             let updateAccount = () => {
                 let val = accountInput.value.toLowerCase();
-                let accounts = [...new Set([
-                    ...allSalesData.map(r => r['العميل']),
-                    ...allPurchasesData.map(r => r['المورد']),
-                    ...allJournalData.map(r => r['دائن']),
-                    ...allJournalData.map(r => r['مدين']),
-                    ...allOpeningBalancesData.map(r => r['الحساب'])
-                ])].filter(n => n && n.trim() !== '' && n.toLowerCase().includes(val)).slice(0, 15);
+                let accounts = new Set();
                 
+                allSalesData.forEach(r => { let a = String(r['العميل'] || '').trim(); if(a) accounts.add(a); });
+                allPurchasesData.forEach(r => { let a = String(r['المورد'] || '').trim(); if(a) accounts.add(a); });
+                allJournalData.forEach(r => { let a = String(r['دائن'] || '').trim(); if(a) accounts.add(a); });
+                allJournalData.forEach(r => { let a = String(r['مدين'] || '').trim(); if(a) accounts.add(a); });
+                allOpeningBalancesData.forEach(r => { let a = String(r['الحساب'] || '').trim(); if(a) accounts.add(a); });
+                
+                let names = [...accounts].filter(n => n && n.toLowerCase().includes(val)).slice(0, 15);
                 accountList.innerHTML = '';
-                currentSuggestItems = [];
-                if(accounts.length) {
-                    accounts.forEach(acc => {
+                if(names.length) {
+                    names.forEach(acc => {
                         let div = document.createElement('div');
                         div.className = 'suggestion-item';
                         div.textContent = acc;
                         div.onclick = () => { accountInput.value = acc; hideAllSuggestLists(); renderStatement(); };
                         accountList.appendChild(div);
-                        currentSuggestItems.push(div);
                     });
                     accountList.style.display = 'block';
                 } else {
@@ -1022,14 +1005,14 @@
             
             let updateInvoice = () => {
                 let val = invoiceInput.value.toLowerCase();
-                let invoices = [...new Set([
-                    ...allSalesData.map(r => r['الفاتورة']),
-                    ...allPurchasesData.map(r => r['الفاتورة'])
-                ])].filter(n => n && n.trim() !== '' && n.toLowerCase().includes(val)).slice(0, 15);
+                let invoices = new Set();
+                allSalesData.forEach(r => { let inv = String(r['الفاتورة'] || '').trim(); if(inv) invoices.add(inv); });
+                allPurchasesData.forEach(r => { let inv = String(r['الفاتورة'] || '').trim(); if(inv) invoices.add(inv); });
                 
+                let invs = [...invoices].filter(n => n && n.toLowerCase().includes(val)).slice(0, 15);
                 invoiceList.innerHTML = '';
-                if(invoices.length) {
-                    invoices.forEach(inv => {
+                if(invs.length) {
+                    invs.forEach(inv => {
                         let div = document.createElement('div');
                         div.className = 'suggestion-item';
                         div.textContent = inv;
@@ -1051,14 +1034,14 @@
             
             let updateItem = () => {
                 let val = itemInput.value.toLowerCase();
-                let items = [...new Set([
-                    ...allSalesData.map(r => r['الصنف']),
-                    ...allPurchasesData.map(r => r['الصنف'])
-                ])].filter(n => n && n.trim() !== '' && n.toLowerCase().includes(val)).slice(0, 15);
+                let items = new Set();
+                allSalesData.forEach(r => { let it = String(r['الصنف'] || '').trim(); if(it) items.add(it); });
+                allPurchasesData.forEach(r => { let it = String(r['الصنف'] || '').trim(); if(it) items.add(it); });
                 
+                let its = [...items].filter(n => n && n.toLowerCase().includes(val)).slice(0, 15);
                 itemList.innerHTML = '';
-                if(items.length) {
-                    items.forEach(it => {
+                if(its.length) {
+                    its.forEach(it => {
                         let div = document.createElement('div');
                         div.className = 'suggestion-item';
                         div.textContent = it;
@@ -1139,14 +1122,7 @@
             hideAllSuggestLists();
             
             if(tabName === 'statement') {
-                let hasCriteria = document.getElementById('searchStatementAccount').value ||
-                    document.getElementById('searchStatementType').value ||
-                    document.getElementById('searchStatementInvoice').value ||
-                    document.getElementById('searchStatementItem').value ||
-                    document.getElementById('searchStatementDateFrom').value ||
-                    document.getElementById('searchStatementDateTo').value;
-                if(hasCriteria) renderStatement();
-                else renderStatement();
+                renderStatement();
             }
         }
 
